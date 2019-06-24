@@ -6,7 +6,7 @@ from nmigen import *
 from nmigen.back import pysim
 from nmigen.cli import main
 
-from cores.gizmo import Gizmo
+from cores.gizmo import Gizmo, _GizmoCollection
 
 
 class Boneless(Elaboratable):
@@ -18,6 +18,7 @@ class Boneless(Elaboratable):
         # Gizmos
         self.addr = 0
         self.gizmos = []
+        self.g = _GizmoCollection()
 
     def add_gizmo(self, giz):
         self.gizmos.append(giz)
@@ -33,8 +34,11 @@ class Boneless(Elaboratable):
         for g in self.gizmos:
             g.prepare(self)
         print("Dump gizmo data")
+        dump = []
         for g in self.gizmos:
-            g.dump()
+            dump += g.dump()
+        print("Register Dump")
+        print(dump)
         # TODO , map registers bits and code fragments from gizmos
 
         # Code

@@ -70,9 +70,9 @@ class IO:
             return False
 
     def dump(self):
-        print(self.name, "-", self.addr)
-        for bit in self.bits:
-            bit.dump(self.name)
+        #for bit in self.bits:
+        #    bit.dump(self.name)
+        return (self.name,self.addr)
 
     def __repr__(self):
         return str(self.addr) + "--" + str(self.sig_in) + "--" + str(self.sig_out)
@@ -93,8 +93,11 @@ class Gizmo:
         self.build()
 
     def dump(self):
+        data = []
         for r in self.registers:
-            r.dump()
+            tmp = r.dump()
+            data.append(tmp)
+        return data
 
     def build(self):
         " add the modules and IO and BITS to itself"
@@ -114,10 +117,11 @@ class Gizmo:
 
     def prepare(self, boneless):
         " Build internal and map external bus addresses "
-        print("Preparing " + str(self.name) + " within " + str(boneless))
-        print(self.registers)
-        print(self.devices)
-        print("----")
+        if self.debug:
+            print("Preparing " + str(self.name) + " within " + str(boneless))
+            print(self.registers)
+            print(self.devices)
+            print("----")
         if len(self.registers) > 0:
             for reg in self.registers:
                 reg.set_addr(boneless.addr)

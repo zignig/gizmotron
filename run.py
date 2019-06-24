@@ -19,6 +19,9 @@ if __name__ == "__main__":
 
     if args.action == "info":
         print("Show info")
+        platform = BB()
+        cpu = construct.CPU(platform)
+
     if args.action == "build":
         print("Build")
         platform = BB()
