@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 import argparse
-
-
+import construct
+from plat import BB
 
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
@@ -21,5 +21,8 @@ if __name__ == "__main__":
         print("Show info")
     if args.action == "build":
         print("Build")
+        platform = BB()
+        cpu = construct.CPU(platform)
+        platform.build(cpu, do_program=True)
     if args.action == "program":
         print("Program")
