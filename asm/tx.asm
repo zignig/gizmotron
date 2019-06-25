@@ -41,15 +41,15 @@ J init
 init:
     MOVI d2,49
     MOVI max,55
+    clear_ack 
 loop:
     NOP
-    put_tx_data d2
-    set_ack
-    clear_ack 
 wait:
     get_tx_status
     CMP data,zero
     JE wait
+    put_tx_data d2
+    set_ack
     ADDI d2,1
     CMP d2,max
     JE init
