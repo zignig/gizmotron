@@ -23,7 +23,7 @@ def io(addr, data=None):
         if addr == 10:
             return 0 
         if addr == 1:
-            return 1
+            return 0
         return 0
     else:
         if addr == 2:

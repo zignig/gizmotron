@@ -9,6 +9,7 @@ J init
 .def addr , R1
 .def d2 , R4
 .def zero , R6
+.def one, R7
 .def max,R3
 
 .string test,"this is a longer string to see if this works"
@@ -40,16 +41,23 @@ J init
 
 init:
     MOVI d2,49
-    MOVI max,55
+    MOVI max,128
+    MOVI one,1
     clear_ack 
 loop:
     NOP
-wait:
-    get_tx_status
-    CMP data,zero
-    JE wait
     put_tx_data d2
     set_ack
+    clear_ack
+wait_up:
+    get_tx_status
+    CMP data,one
+    JE wait_up
+wait_down:
+    get_tx_status
+    CMP data,zero
+    JE wait_down
+
     ADDI d2,1
     CMP d2,max
     JE init

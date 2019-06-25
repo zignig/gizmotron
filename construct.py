@@ -12,7 +12,7 @@ from cores.pwm import Pwm
 
 
 class CPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/base.asm"):
+    def __init__(self, platform, asm_file="asm/tx.asm"):
         b = Boneless(asm_file=asm_file)
         self.b = b
         self.platform = platform
@@ -56,5 +56,16 @@ if __name__ == "__main__":
     from plat import BB
 
     platform = BB()
-    cpu = CPU(platform)
-    platform.build(cpu, do_program=True)
+    #cpu = CPU(platform)
+    #platform.build(cpu, do_program=True)
+    import argparse
+    from nmigen import cli
+
+    parser = argparse.ArgumentParser()
+    cli.main_parser(parser)
+    args = parser.parse_args()
+
+    tb = CPU(platform)
+    ios = ()
+
+    cli.main_runner(parser, args, tb,platform=platform, name="boneless_core", ports=ios)

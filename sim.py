@@ -10,8 +10,8 @@ from cores.serial import Serial
 from cores.counter import Counter
 from cores.pwm import Pwm
 
-
-class CPU(Elaboratable):
+# CPU for simulator
+class simCPU(Elaboratable):
     def __init__(self, platform, asm_file="asm/tx.asm"):
         b = Boneless(asm_file=asm_file)
         self.b = b
@@ -23,7 +23,7 @@ class CPU(Elaboratable):
         b.add_gizmo(l)
 
         s = Serial(
-            "serial_port", platform=platform, number=0, baud=16000
+            "serial_port", platform=platform, number=0, baud=9600
         )  # should pass baud
         b.add_gizmo(s)
 
@@ -59,6 +59,6 @@ if __name__ == "__main__":
     cli.main_parser(parser)
     args = parser.parse_args()
     platform =BB()
-    tb = CPU(platform)
+    tb = simCPU(platform)
     ios = ()
     cli.main_runner(parser, args, tb, platform=platform,name="boneless_core", ports=ios)
