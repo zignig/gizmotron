@@ -7,9 +7,17 @@ J init
 .def data , R0
 .def addr , R1
 
+.macro get_tx_status
+	MOVI addr,tx_status
+	LDX data,addr,0
+.endm
+
+.macro put_tx_data
+	MOVI addr,tx_data
+	STX data,addr,0
+.endm
+
 init:
-    MOVI R0,2
-    MOVI R1,1
     MOVI R4,49
     MOVI R5,60
 loop:
@@ -18,14 +26,7 @@ wait:
     LDX R6, R1,0
     CMP R3,R6
     JE wait
-
-    STX R4, R0, 0 
-;    STX R1, R1, 0
-;    STX R1, R3, 0 
-;    CMP R4,R5
-;    JE init
-
-;    ADDI R4,1
-;    STX R3, R1, 0
+    MOV R4,R1
+    put_tx_data
     J loop
 
