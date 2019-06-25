@@ -20,11 +20,13 @@ print(cpu.b)
 def io(addr, data=None):
     global strin, exit
     if data == None:
-        if addr == 2:
+        if addr == 10:
             return 0 
+        if addr == 1:
+            return 1
         return 0
     else:
-        if addr == 0:
+        if addr == 2:
             print(chr(data), end="")
         if addr == 1:
             print("")
