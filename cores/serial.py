@@ -9,7 +9,7 @@ from .uart import UART, Loopback
 from .other_uart import UART as newUART
 
 
-class Serial(Gizmo):
+class BSerial(Gizmo):
     " Uart connection in 4 registers"
 
     def build(self):
@@ -35,7 +35,7 @@ class Serial(Gizmo):
         self.add_reg(rx_data)
 
 
-class OldSerial(Gizmo):
+class Serial(Gizmo):
     " Uart connection in 4 registers"
 
     def build(self):
