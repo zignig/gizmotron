@@ -40,8 +40,8 @@ J init
 .endm
 
 init:
-    MOVI d2,49
-    MOVI max,128
+    MOVI d2,32
+    MOVI max,126
     MOVI one,1
     clear_ack 
 loop:
@@ -61,5 +61,5 @@ wait_down:
     ADDI d2,1
     CMP d2,max
     JE init
-    J loop
+J loop
 

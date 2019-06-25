@@ -23,7 +23,7 @@ class CPU(Elaboratable):
         b.add_gizmo(l)
 
         s = Serial(
-            "serial_port", platform=platform, number=0, baud=9600
+            "serial_port", platform=platform, number=0, baud=19200
         )  # should pass baud
         b.add_gizmo(s)
 
