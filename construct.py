@@ -10,12 +10,9 @@ from cores.serial import Serial
 from cores.counter import Counter
 from cores.pwm import Pwm
 
-
-class CPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/tx.asm"):
+# The device construct
+def Construct(platform,asm_file="asm/tx.asm"):
         b = Boneless(asm_file=asm_file)
-        self.b = b
-        self.platform = platform
 
         # TODO gizmo needs **Kwargs , to add extra variables to gizmos
 
@@ -27,11 +24,11 @@ class CPU(Elaboratable):
         )  # should pass baud
         b.add_gizmo(s)
 
-        c = Counter("counter1", platform=platform)
-        b.add_gizmo(c)
+        #c = Counter("counter1", platform=platform)
+        #b.add_gizmo(c)
 
-        c2 = Counter("counter2", platform=platform)
-        b.add_gizmo(c2)
+        #c2 = Counter("counter2", platform=platform)
+        #b.add_gizmo(c2)
 
         # p = Pwm("pwm",platform=platform,pin=12)
         # b.add_gizmo(p)
@@ -39,7 +36,14 @@ class CPU(Elaboratable):
         # Assign addresses , get code etch
         # TODO test and fix
         # TODO integrate assembler
-        self.b.prepare()
+        b.prepare()
+        return b
+
+# For FPGA
+class CPU(Elaboratable):
+    def __init__(self, platform, asm_file="asm/tx.asm"):
+        self.b = Construct(platform,asm_file=asm_file)
+        self.platform = platform
 
     def elaborate(self, platform):
         clk16 = platform.request("clk16", 0)
@@ -51,13 +55,21 @@ class CPU(Elaboratable):
         m.submodules.boneless = self.b
         return m
 
+# For Simulation 
+class simCPU(Elaboratable):
+    def __init__(self, platform, asm_file="asm/tx.asm"):
+        self.b = Construct(platform,asm_file=asm_file)
+        self.platform = platform
+
+    def elaborate(self, platform):
+        m = Module()
+        m.submodules.boneless = self.b
+        return m
 
 if __name__ == "__main__":
     from plat import BB
 
     platform = BB()
-    #cpu = CPU(platform)
-    #platform.build(cpu, do_program=True)
     import argparse
     from nmigen import cli
 
@@ -67,5 +79,4 @@ if __name__ == "__main__":
 
     tb = CPU(platform)
     ios = ()
-
     cli.main_runner(parser, args, tb,platform=platform, name="boneless_core", ports=ios)

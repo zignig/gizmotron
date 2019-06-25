@@ -6,8 +6,6 @@ from plat import BB
 from nmigen.hdl.ir import Fragment
 from nmigen.back import pysim,rtlil,verilog
 
-from sim import simCPU 
-
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
     p = argparse.ArgumentParser()
@@ -38,7 +36,7 @@ if __name__ == "__main__":
 
     if args.action == "simulate":
         print("Simulation")
-        design = simCPU(platform)
+        design = construct.simCPU(platform)
         fragment = Fragment.get(design, platform)
         f = open('test.vcd','w')
         with pysim.Simulator(fragment,
