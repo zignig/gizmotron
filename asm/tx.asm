@@ -55,6 +55,7 @@ wait_up:
     JE wait_up
 wait_down:
     get_tx_status
+    ;STX data,zero,0
     CMP data,zero
     JE wait_down
 

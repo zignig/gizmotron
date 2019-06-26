@@ -24,14 +24,14 @@ def Construct(platform,asm_file="asm/tx.asm"):
         )  # should pass baud
         b.add_gizmo(s)
 
-        #c = Counter("counter1", platform=platform)
-        #b.add_gizmo(c)
+        c = Counter("counter1", platform=platform)
+        b.add_gizmo(c)
 
-        #c2 = Counter("counter2", platform=platform)
-        #b.add_gizmo(c2)
+        c2 = Counter("counter2", platform=platform)
+        b.add_gizmo(c2)
 
-        # p = Pwm("pwm",platform=platform,pin=12)
-        # b.add_gizmo(p)
+        p = Pwm("pwm",platform=platform,pin=12)
+        b.add_gizmo(p)
 
         # Assign addresses , get code etch
         # TODO test and fix
@@ -41,7 +41,7 @@ def Construct(platform,asm_file="asm/tx.asm"):
 
 # For FPGA
 class CPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/tx.asm"):
+    def __init__(self, platform, asm_file="asm/rx.asm"):
         self.b = Construct(platform,asm_file=asm_file)
         self.platform = platform
 

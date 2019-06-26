@@ -42,7 +42,7 @@ class Boneless(Elaboratable):
         # TODO , map registers bits and code fragments from gizmos
 
         # Code
-        code = Assembler(file_name=self.asm_file)
+        code = Assembler(file_name=self.asm_file,debug=True)
         code.assemble()
         self.memory.init = code.code
         self.devices = []
