@@ -19,6 +19,7 @@ if __name__ == "__main__":
 
     action.add_parser("simulate")
 
+
     args = p.parse_args()
 
     platform = BB()

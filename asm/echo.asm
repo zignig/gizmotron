@@ -1,5 +1,4 @@
 J init
-; Some delay macros 
 
 .equ leds,0
 .equ tx_status,1
@@ -9,12 +8,24 @@ J init
 
 .def data , R0
 .def addr , R1
+.def char , R2
 .def d2 , R4
 .def zero , R6
-.def one, R7
+.def one, R5
+.def rtn, R7
 .def max,R3
 
 .string test,"this is a longer string to see if this works"
+.alloc pad,80
+
+; 
+.macro _call, jump
+    JAL rtn,$jump
+.endm
+
+.macro _return
+    JR rtn,0
+.endm
 
 .macro get_rx_status
 	MOVI addr,rx_status
@@ -47,7 +58,7 @@ J init
 
 .macro get_tx_status
 	MOVI addr,tx_status
-	LDX data,addr,0
+	LDX d2,addr,0
 .endm
 
 .macro ack_tx_status, value
@@ -70,19 +81,8 @@ J init
 	STX data,addr,0
 .endm
 
-init:
-    MOVI one,1
-    clear_ack 
-loop:
-    get_rx_status
-    CMP data,zero
-    JNE echo
-    J loop 
-echo:
-    get_rx_data
-    set_rx_ack
-    clear_rx_ack
-    write_leds
+; put the data register onto the uart and wait.
+put_char:
     put_tx_data data
     set_ack
     clear_ack
@@ -90,5 +90,26 @@ wait_up:
     get_tx_status
     CMP d2,one
     JE wait_up
-J loop
+_return
 
+; wait for a key press
+wait_key:
+    get_rx_status
+    CMP data,zero
+    JNE is_key 
+    J wait_key
+is_key:
+    get_rx_data
+    set_rx_ack
+    clear_rx_ack
+_return 
+
+init:
+    MOVI one,1
+    clear_ack 
+loop:
+echo:
+    _call wait_key
+    write_leds
+    _call put_char
+J loop
