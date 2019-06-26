@@ -10,18 +10,19 @@ exit = False
 strin = ""
 debug = True
 
-from construct import CPU 
+from construct import CPU
 from plat import BB
 
 cpu = CPU(BB())
 cpu.b.prepare()
 print(cpu.b)
 
+
 def io(addr, data=None):
     global strin, exit
     if data == None:
         if addr == 10:
-            return 0 
+            return 0
         if addr == 1:
             return 0
         return 0
@@ -33,7 +34,7 @@ def io(addr, data=None):
             exit = True
 
 
-cpu = BonelessSimulator(start_pc=0,mem_size=1024)
+cpu = BonelessSimulator(start_pc=0, mem_size=1024)
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
 else:
@@ -46,13 +47,12 @@ cpu.register_io(io)
 
 
 def get_line():
-    global strin,debug
+    global strin, debug
     strin = input(">")
     if strin.startswith("\\"):
-        if strin[1:] == 'd':
-            debug= not debug
+        if strin[1:] == "d":
+            debug = not debug
         strin = ""
-
 
 
 def line(asmblr):
@@ -69,10 +69,11 @@ def line(asmblr):
         label = asmblr.rev_labels[cpu.pc]
     else:
         label = ""
-    print(pc, "|", code, "|", reg, "|")#, stack,"|",rstack, "->", label,"|",ref)
+    print(pc, "|", code, "|", reg, "|")  # , stack,"|",rstack, "->", label,"|",ref)
+
 
 deadline = 5000
-counter = 0 
+counter = 0
 while not end:
     while 1:
         cpu.stepi()
@@ -85,5 +86,5 @@ while not end:
         if counter == deadline:
             end = True
             break
-        
+
     get_line()

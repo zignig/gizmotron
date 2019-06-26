@@ -16,7 +16,11 @@ J init
 .def max,R3
 
 .string test,"this is a longer string to see if this works"
-.alloc pad,80
+
+.alloc pad,10
+.equ stack_size,10
+.alloc stack,stack_size
+.alloc return_stack,stack_size
 
 ; 
 .macro _call, jump

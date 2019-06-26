@@ -11,38 +11,39 @@ from cores.counter import Counter
 from cores.pwm import Pwm
 
 # The device construct
-def Construct(platform,asm_file="asm/tx.asm"):
-        b = Boneless(asm_file=asm_file)
+def Construct(platform, asm_file="asm/tx.asm"):
+    b = Boneless(asm_file=asm_file)
 
-        # TODO gizmo needs **Kwargs , to add extra variables to gizmos
+    # TODO gizmo needs **Kwargs , to add extra variables to gizmos
 
-        l = UserLeds("leds", platform=platform)
-        b.add_gizmo(l)
+    l = UserLeds("leds", platform=platform)
+    b.add_gizmo(l)
 
-        s = Serial(
-            "serial_port", platform=platform, number=0, baud=57600
-        )  # should pass baud
-        b.add_gizmo(s)
+    s = Serial(
+        "serial_port", platform=platform, number=0, baud=57600
+    )  # should pass baud
+    b.add_gizmo(s)
 
-        #c = Counter("counter1", platform=platform)
-        #b.add_gizmo(c)
+    # c = Counter("counter1", platform=platform)
+    # b.add_gizmo(c)
 
-        #c2 = Counter("counter2", platform=platform)
-        #b.add_gizmo(c2)
+    # c2 = Counter("counter2", platform=platform)
+    # b.add_gizmo(c2)
 
-        #p = Pwm("pwm",platform=platform,pin=12)
-        #b.add_gizmo(p)
+    # p = Pwm("pwm",platform=platform,pin=12)
+    # b.add_gizmo(p)
 
-        # Assign addresses , get code etch
-        # TODO test and fix
-        # TODO integrate assembler
-        b.prepare()
-        return b
+    # Assign addresses , get code etch
+    # TODO test and fix
+    # TODO integrate assembler
+    b.prepare()
+    return b
+
 
 # For FPGA
 class CPU(Elaboratable):
     def __init__(self, platform, asm_file="asm/echo.asm"):
-        self.b = Construct(platform,asm_file=asm_file)
+        self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
 
     def elaborate(self, platform):
@@ -55,16 +56,23 @@ class CPU(Elaboratable):
         m.submodules.boneless = self.b
         return m
 
-# For Simulation 
+
+# For Simulation
 class simCPU(Elaboratable):
     def __init__(self, platform, asm_file="asm/tx.asm"):
-        self.b = Construct(platform,asm_file=asm_file)
+        self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
+        self.first = Signal(10)
+        self.second = Signal(4)
+        self.bip = Signal()
 
     def elaborate(self, platform):
         m = Module()
         m.submodules.boneless = self.b
+        with m.If(self.first == self.second):
+            m.d.sync += self.bip.eq(1)
         return m
+
 
 if __name__ == "__main__":
     from plat import BB
@@ -79,4 +87,6 @@ if __name__ == "__main__":
 
     tb = CPU(platform)
     ios = ()
-    cli.main_runner(parser, args, tb,platform=platform, name="boneless_core", ports=ios)
+    cli.main_runner(
+        parser, args, tb, platform=platform, name="boneless_core", ports=ios
+    )
