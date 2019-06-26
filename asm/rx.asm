@@ -28,16 +28,16 @@ J init
 
 .macro ack_rx_status, value
 	MOVI addr,rx_status
-	MOVI data,$value
-	STX data,addr,0	
+	MOVI d2,$value
+	STX d2,addr,0	
 .endm
 
 .macro set_rx_ack
-	ack_rx_status 0
+	ack_rx_status 1
 .endm
 
 .macro clear_rx_ack
-	ack_rx_status 1
+	ack_rx_status 0
 .endm
 
 .macro write_leds
@@ -48,12 +48,12 @@ J init
 .macro get_tx_status
 	MOVI addr,tx_status
 	LDX data,addr,0
-.end
+.endm
 
 .macro ack_tx_status, value
 	MOVI addr,tx_status
-	MOVI data,$value
-	STX data,addr,0	
+	MOVI d2,$value
+	STX d2,addr,0	
 .endm
 
 .macro set_ack
@@ -71,16 +71,24 @@ J init
 .endm
 
 init:
-    MOVI d2,32
     MOVI one,1
     clear_ack 
 loop:
     get_rx_status
     CMP data,zero
-    JNE loop
+    JNE echo
+    J loop 
+echo:
     get_rx_data
-    write_leds
     set_rx_ack
     clear_rx_ack
+    write_leds
+    put_tx_data data
+    set_ack
+    clear_ack
+wait_up:
+    get_tx_status
+    CMP d2,one
+    JE wait_up
 J loop
 
