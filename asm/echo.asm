@@ -1,12 +1,14 @@
-J init
+.include asm/stack.asm
+J init ; jump to init
 
-.equ leds,0
+; some symbolic names 
+.equ leds,0 		; makes a constant symbol
 .equ tx_status,1
 .equ tx_data,2
 .equ rx_status,3
 .equ rx_data,4
 
-.def data , R0
+.def data , R0		; makes an alias for a register 
 .def addr , R1
 .def char , R2
 .def d2 , R4
@@ -15,14 +17,14 @@ J init
 .def rtn, R7
 .def max,R3
 
+; creates a string with the word add the address holding the length
 .string test,"this is a longer string to see if this works"
 
-.alloc pad,10
-.equ stack_size,10
-.alloc stack,stack_size
-.alloc return_stack,stack_size
+; create a place to put the incoming characters
+.alloc pad,64
+.alloc bob,1
 
-; 
+; helper functions for call and return
 .macro _call, jump
     JAL rtn,$jump
 .endm
@@ -31,11 +33,15 @@ J init
     JR rtn,0
 .endm
 
+
+; helper macros for talking to the primary serial port 
 .macro get_rx_status
 	MOVI addr,rx_status
-	LDX data,addr,0
+	LDX d2,addr,0
 .endm
 
+; copy serial data into data register
+; ----- RX macros
 .macro get_rx_data
         MOVI addr,rx_data
         LDX data,addr,0
@@ -55,11 +61,7 @@ J init
 	ack_rx_status 0
 .endm
 
-.macro write_leds
-        MOVI addr,leds
-        STX data,addr,0
-.endm
-
+; ------ TX macros
 .macro get_tx_status
 	MOVI addr,tx_status
 	LDX d2,addr,0
@@ -98,8 +100,8 @@ _return
 
 ; wait for a key press
 wait_key:
-    get_rx_status
-    CMP data,zero
+    get_rx_status 
+    CMP d2,zero
     JNE is_key 
     J wait_key
 is_key:
@@ -108,12 +110,21 @@ is_key:
     clear_rx_ack
 _return 
 
+; end serial helpers
+
+; send data to the userleds
+.macro write_leds
+        MOVI addr,leds
+        STX data,addr,0
+.endm
+
+; main loop
 init:
     MOVI one,1
     clear_ack 
 loop:
-echo:
     _call wait_key
     write_leds
     _call put_char
 J loop
+
