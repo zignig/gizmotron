@@ -1,8 +1,8 @@
 from nmigen import *
 
-from ..arch.opcode_v3 import *
-from .formal import *
-from .alsru import *
+from opcode_v3 import *
+#from .formal import *
+from alsru import *
 
 
 class Arbiter:
@@ -237,7 +237,7 @@ class Decoder:
 
 class CoreFSM:
     def __init__(self, mem_rdport, mem_wrport, alsru_cls):
-        self.formal  = BonelessFormalInterface(mem_wrport=mem_wrport)
+        #self.formal  = BonelessFormalInterface(mem_wrport=mem_wrport)
         self.alsru   = alsru_cls(width=16)
         self.decoder = Decoder(alsru_cls)
         self.arbiter = Arbiter(mem_rdport, mem_wrport)
