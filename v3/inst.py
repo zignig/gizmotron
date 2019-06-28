@@ -1,3 +1,4 @@
+import opcode_v3
 # instruction format
 OPCODE_BITS = 5
 INSTRUCTION_SIZE = 16
@@ -5,75 +6,81 @@ REGISTERS = 8
 
 
 class opcode:
+    bits = OPCODE_BITS 
     def __init__(self, opc):
         self.opcode = opc
 
 
 class op4(opcode):
+    bits = 4 
     pass
 
 
 class op3(opcode):
+    bits = 3
     pass
 
 
 class instruction:
+    bits = INSTRUCTION_SIZE
     opcodes = []
 
+class grain:
+    bits = 1 
+    def __init__(self,val):
+        self.val = val
+        if isinstance(val,str):
+            print('string')
+        if isinstance(val,int):
+            assert val < 2**self.bits
+        print(type(val),self.val)
+        
 
-class register:
-    def __init__(self):
-        self.val = 5
 
+class register(grain):
+    bits = 3
 
-class _type:
+class _type(grain):
     bits = 2
-    pass
 
 
-class imm3:
+class imm3(grain):
     bits = 3
-    pass
 
 
-class imm5:
+class imm5(grain):
     bits = 5
-    pass
 
 
-class imm8:
+class imm8(grain):
     bits = 8
-    pass
 
 
-class flag:
+class mode(grain):
     bits = 1
-    pass
 
+class flag(grain):
+    bits = 1
 
-class cond:
+class cond(grain):
     bits = 3
-    pass
 
-
-class off8:
+class off8(grain):
     bits = 8
-    pass
 
-
-class imm13:
+class imm13(grain):
     bits = 13
-    pass
 
 
 class RRR(instruction):
-    def __init__(self, opc, ra, rb, t, rsd):
-        self.opcode = opcode(opc)
-        self.Rsd = register(ra)
-        self.Ra = register(rb)
+    def __init__(self, opc,m,rsd,ra,t,rb):
+        self.opcode = op4(opc)
+        self.mode = mode(m)
+        self.Rsd = register(rsd)
+        self.Ra = register(ra)
         self.t = _type(t)
-        self.Rb = register(rsd)
-        build = [self.opcode, self.Rsd, self.Ra, self.t, self.Rb]
+        self.Rb = register(rb)
+        self.build = [self.opcode, self.Rsd, self.Ra, self.t, self.Rb]
 
 
 class RR3(instruction):
@@ -87,12 +94,13 @@ class RR3(instruction):
 
 
 class RR5(instruction):
-    def __init__(self, opc,rsd,ra,im):
-        self.opcode = opcode(opc)
+    def __init__(self, opc,m,rsd,ra,im):
+        self.opcode = op4(opc)
+        self.mode = mode(m)
         self.Rsd = register(rsd)
         self.Ra = register(ra)
         self.i5 = imm5(im)
-        self.build = [self.opcode, self.Rsd, self.Ra, self.i5]
+        self.build = [self.opcode,self.mode, self.Rsd, self.Ra, self.i5]
 
 
 class R8(instruction):
