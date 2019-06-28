@@ -10,29 +10,29 @@ class ALSRU:
     # defined by subclasses
     CTRL_BITS = None
 
-    CTRL_A    = None
-    CTRL_B    = None
-    CTRL_nB   = None
-    CTRL_AaB  = None
-    CTRL_AoB  = None
-    CTRL_AxB  = None
-    CTRL_ApB  = None
-    CTRL_AmB  = None
-    CTRL_SL   = None
-    CTRL_SR   = None
+    CTRL_A = None
+    CTRL_B = None
+    CTRL_nB = None
+    CTRL_AaB = None
+    CTRL_AoB = None
+    CTRL_AxB = None
+    CTRL_ApB = None
+    CTRL_AmB = None
+    CTRL_SL = None
+    CTRL_SR = None
 
     def __init__(self, width):
-        self.a  = Signal(width)
-        self.b  = Signal(width)
-        self.o  = Signal(width)
-        self.r  = Signal(width)
+        self.a = Signal(width)
+        self.b = Signal(width)
+        self.o = Signal(width)
+        self.r = Signal(width)
 
-        self.ci = Signal() # carry in
-        self.co = Signal() # carry out
-        self.vo = Signal() # overflow out
+        self.ci = Signal()  # carry in
+        self.co = Signal()  # carry out
+        self.vo = Signal()  # overflow out
 
-        self.si = Signal() # shift in
-        self.so = Signal() # shift out
+        self.si = Signal()  # shift in
+        self.so = Signal()  # shift out
 
         self.ctrl = None  # defined by subclasses
 
@@ -95,36 +95,36 @@ class ALSRU_4LUT(ALSRU):
     #   R<<1: S=SLn-1         Y=S   O=Y    (pre-load R)
     #   R>>1: S=SRn+1         Y=S   O=Y    (pre-load R)
 
-    MUX_S_x   = 0
-    MUX_S_L   = 0b0
-    MUX_S_R   = 0b1
+    MUX_S_x = 0
+    MUX_S_L = 0b0
+    MUX_S_R = 0b1
 
-    MUX_X_x   =  0
-    MUX_X_AaB =  0b00
-    MUX_X_AoB =  0b01
-    MUX_X_AxB =  0b10
-    MUX_X_A   =  0b11
+    MUX_X_x = 0
+    MUX_X_AaB = 0b00
+    MUX_X_AoB = 0b01
+    MUX_X_AxB = 0b10
+    MUX_X_A = 0b11
 
-    MUX_Y_0   =    0b00
-    MUX_Y_S   =    0b01
-    MUX_Y_B   =    0b10
-    MUX_Y_nB  =    0b11
+    MUX_Y_0 = 0b00
+    MUX_Y_S = 0b01
+    MUX_Y_B = 0b10
+    MUX_Y_nB = 0b11
 
-    MUX_O_XpY =      0b0
-    MUX_O_Y   =      0b1
+    MUX_O_XpY = 0b0
+    MUX_O_Y = 0b1
 
     CTRL_BITS = 6
 
-    CTRL_A    = Cat(C(MUX_S_x, 1), C(MUX_X_A,   2), C(MUX_Y_0,  2), C(MUX_O_XpY, 1))
-    CTRL_B    = Cat(C(MUX_S_x, 1), C(MUX_X_x,   2), C(MUX_Y_B,  2), C(MUX_O_Y,   1))
-    CTRL_nB   = Cat(C(MUX_S_x, 1), C(MUX_X_x,   2), C(MUX_Y_nB, 2), C(MUX_O_Y,   1))
-    CTRL_AaB  = Cat(C(MUX_S_x, 1), C(MUX_X_AaB, 2), C(MUX_Y_0,  2), C(MUX_O_XpY, 1))
-    CTRL_AoB  = Cat(C(MUX_S_x, 1), C(MUX_X_AoB, 2), C(MUX_Y_0,  2), C(MUX_O_XpY, 1))
-    CTRL_AxB  = Cat(C(MUX_S_x, 1), C(MUX_X_AxB, 2), C(MUX_Y_0,  2), C(MUX_O_XpY, 1))
-    CTRL_ApB  = Cat(C(MUX_S_x, 1), C(MUX_X_A,   2), C(MUX_Y_B,  2), C(MUX_O_XpY, 1))
-    CTRL_AmB  = Cat(C(MUX_S_x, 1), C(MUX_X_A,   2), C(MUX_Y_nB, 2), C(MUX_O_XpY, 1))
-    CTRL_SL   = Cat(C(MUX_S_L, 1), C(MUX_X_x,   2), C(MUX_Y_S,  2), C(MUX_O_Y,   1))
-    CTRL_SR   = Cat(C(MUX_S_R, 1), C(MUX_X_x,   2), C(MUX_Y_S,  2), C(MUX_O_Y,   1))
+    CTRL_A = Cat(C(MUX_S_x, 1), C(MUX_X_A, 2), C(MUX_Y_0, 2), C(MUX_O_XpY, 1))
+    CTRL_B = Cat(C(MUX_S_x, 1), C(MUX_X_x, 2), C(MUX_Y_B, 2), C(MUX_O_Y, 1))
+    CTRL_nB = Cat(C(MUX_S_x, 1), C(MUX_X_x, 2), C(MUX_Y_nB, 2), C(MUX_O_Y, 1))
+    CTRL_AaB = Cat(C(MUX_S_x, 1), C(MUX_X_AaB, 2), C(MUX_Y_0, 2), C(MUX_O_XpY, 1))
+    CTRL_AoB = Cat(C(MUX_S_x, 1), C(MUX_X_AoB, 2), C(MUX_Y_0, 2), C(MUX_O_XpY, 1))
+    CTRL_AxB = Cat(C(MUX_S_x, 1), C(MUX_X_AxB, 2), C(MUX_Y_0, 2), C(MUX_O_XpY, 1))
+    CTRL_ApB = Cat(C(MUX_S_x, 1), C(MUX_X_A, 2), C(MUX_Y_B, 2), C(MUX_O_XpY, 1))
+    CTRL_AmB = Cat(C(MUX_S_x, 1), C(MUX_X_A, 2), C(MUX_Y_nB, 2), C(MUX_O_XpY, 1))
+    CTRL_SL = Cat(C(MUX_S_L, 1), C(MUX_X_x, 2), C(MUX_Y_S, 2), C(MUX_O_Y, 1))
+    CTRL_SR = Cat(C(MUX_S_R, 1), C(MUX_X_x, 2), C(MUX_Y_S, 2), C(MUX_O_Y, 1))
 
     def __init__(self, width):
         super().__init__(width)
@@ -133,12 +133,7 @@ class ALSRU_4LUT(ALSRU):
         self.x = Signal(width)
         self.y = Signal(width)
 
-        self.ctrl = Record([
-            ("s", 1),
-            ("x", 2),
-            ("y", 2),
-            ("o", 1),
-        ])
+        self.ctrl = Record([("s", 1), ("x", 2), ("y", 2), ("o", 1)])
 
     def elaborate(self, platform):
         m = Module()
@@ -148,8 +143,8 @@ class ALSRU_4LUT(ALSRU):
                 m.d.comb += self.s.eq(Cat(self.si, self.r[:-1]))
                 m.d.comb += self.so.eq(self.r[-1])
             with m.Case(self.MUX_S_R):
-                m.d.comb += self.s.eq(Cat(self.r[ 1:], self.si))
-                m.d.comb += self.so.eq(self.r[ 0])
+                m.d.comb += self.s.eq(Cat(self.r[1:], self.si))
+                m.d.comb += self.so.eq(self.r[0])
 
         with m.Switch(self.ctrl.x):
             with m.Case(self.MUX_X_AaB):
@@ -191,6 +186,7 @@ class ALSRU_4LUT(ALSRU):
 
         return m.lower(platform)
 
+
 # -------------------------------------------------------------------------------------------------
 
 import argparse
@@ -199,19 +195,25 @@ from nmigen import cli
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--type",  choices=["4lut"], default="4lut")
+    parser.add_argument("-t", "--type", choices=["4lut"], default="4lut")
     parser.add_argument("-w", "--width", type=int, default=16)
     cli.main_parser(parser)
 
     args = parser.parse_args()
     if args.type == "4lut":
         alsru = ALSRU_4LUT(args.width)
-        ctrl  = (alsru.ctrl.s, alsru.ctrl.x, alsru.ctrl.y, alsru.ctrl.o)
+        ctrl = (alsru.ctrl.s, alsru.ctrl.x, alsru.ctrl.y, alsru.ctrl.o)
 
     ports = (
-        alsru.a,  alsru.b,  alsru.o,  alsru.r,
-        alsru.ci, alsru.co, alsru.vo,
-        alsru.si, alsru.so,
-        *ctrl
+        alsru.a,
+        alsru.b,
+        alsru.o,
+        alsru.r,
+        alsru.ci,
+        alsru.co,
+        alsru.vo,
+        alsru.si,
+        alsru.so,
+        *ctrl,
     )
     cli.main_runner(parser, args, alsru, name="alsru", ports=ports)
