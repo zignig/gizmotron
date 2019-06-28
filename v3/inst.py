@@ -1,29 +1,9 @@
-import opcode_v3
+import opcode_v3  as op
 # instruction format
 OPCODE_BITS = 5
 INSTRUCTION_SIZE = 16
 REGISTERS = 8
 
-
-class opcode:
-    bits = OPCODE_BITS 
-    def __init__(self, opc):
-        self.opcode = opc
-
-
-class op4(opcode):
-    bits = 4 
-    pass
-
-
-class op3(opcode):
-    bits = 3
-    pass
-
-
-class instruction:
-    bits = INSTRUCTION_SIZE
-    opcodes = []
 
 class grain:
     bits = 1 
@@ -34,9 +14,23 @@ class grain:
         if isinstance(val,int):
             assert val < 2**self.bits
         print(type(val),self.val)
+
+class opcode(grain):
+    bits = OPCODE_BITS 
+
+class op4(opcode):
+    bits = 4 
+
+
+class op3(opcode):
+    bits = 3
+
+
+class instruction:
+    bits = INSTRUCTION_SIZE
+    opcodes = []
+
         
-
-
 class register(grain):
     bits = 3
 
@@ -136,5 +130,5 @@ class X(instruction):
 
 
 
-def AND(ra, rb, rd):
-    return RRR(0b00000, ra, rb, 0b00, rd)
+def AND(ra, rb, rd): return RRR(op.OPCODE4_LOGIC,0, ra, rb, 0b00, rd)
+def ANDI(ra, rb, rd): return RRR(op.OPCODE4_LOGIC,1, ra, rb, 0b00, rd)
