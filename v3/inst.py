@@ -1,5 +1,5 @@
-import opcode_v3  as op
 # instruction format
+from opcode_v3 import * 
 OPCODE_BITS = 5
 INSTRUCTION_SIZE = 16
 REGISTERS = 8
@@ -120,13 +120,12 @@ class RR3(instruction):
 
 
 class RR5(instruction):
-    def __init__(self, opc,m,rsd,ra,im):
-        self.opcode = op4(opc)
-        self.mode = mode(m)
+    def __init__(self, opc,rsd,ra,im):
+        self.opcode = opcode(opc)
         self.Rsd = register(rsd)
         self.Ra = register(ra)
         self.i5 = imm5(im)
-        self.build = [self.opcode,self.mode, self.Rsd, self.Ra, self.i5]
+        self.build = [self.opcode,self.Rsd, self.Ra, self.i5]
 
 
 class R8(instruction):
@@ -138,12 +137,11 @@ class R8(instruction):
 
 
 class C(instruction):
-    def __init__(self,opc,f,c,off):
-        self.opcode = op4(opc)
-        self.f = flag(f)
+    def __init__(self,opc,c,off):
+        self.opcode = opcode(opc)
         self.c = cond(c)
         self.off = off8(off)
-        self.build = [self.opcode, self.f, self.c, self.off]
+        self.build = [self.opcode, self.c, self.off]
 
 
 class E(instruction):
@@ -162,52 +160,100 @@ class X(instruction):
 
 
 # logic
-def AND(ra, rb, rd): return RRR(op.OPCODE4_LOGIC,0, ra, rb, 0b00, rd)
-def ANDI(ra, rb, im): return RR3(op.OPCODE4_LOGIC,1, ra, rb, 0b00, im)
-def OR(ra, rb, rd): return RRR(op.OPCODE4_LOGIC,0, ra, rb, 0b01, rd)
-def ORI(ra, rb, im): return RR3(op.OPCODE4_LOGIC,1, ra, rb, 0b01, im)
-def XOR(ra, rb, rd): return RRR(op.OPCODE4_LOGIC,0, ra, rb, 0b10, rd)
-def XORI(ra, rb, im): return RR3(op.OPCODE4_LOGIC,1, ra, rb, 0b10, im)
-def CMP(ra, rb, rd): return RRR(op.OPCODE4_LOGIC,0, ra, rb, 0b11, rd)
-def CMPI(ra, rb, im): return RR3(op.OPCODE4_LOGIC,1, ra, rb, 0b11, im)
+def AND(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, OPTYPE2_AND, rd)
+def ANDI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, OPTYPE2_AND, im)
+def OR(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, OPTYPE2_OR, rd)
+def ORI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, OPTYPE2_OR, im)
+def XOR(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, 0b10, rd)
+def XORI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, 0b10, im)
+def CMP(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, 0b11, rd)
+def CMPI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, 0b11, im)
 
 # arith
-def ADD(ra, rb, rd): return RRR(op.OPCODE4_ARITH,0, ra, rb, 0b00, rd)
-def ADDI(ra, rb, im): return RR3(op.OPCODE4_ARITH,1, ra, rb, 0b00, im)
-def ADC(ra, rb, rd): return RRR(op.OPCODE4_ARITH,0, ra, rb, 0b01, rd)
-def ADCI(ra, rb, im): return RR3(op.OPCODE4_ARITH,1, ra, rb, 0b01, im)
-def SUB(ra, rb, rd): return RRR(op.OPCODE4_ARITH,0, ra, rb, 0b10, rd)
-def SUBI(ra, rb, im): return RR3(op.OPCODE4_ARITH,1, ra, rb, 0b10, im)
-def SBB(ra, rb, rd): return RRR(op.OPCODE4_ARITH,0, ra, rb, 0b11, rd)
-def SBBI(ra, rb, im): return RR3(op.OPCODE4_ARITH,1, ra, rb, 0b11, im)
+def ADD(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b00, rd)
+def ADDI(ra, rb, im): return RR3(OPCODE4_ARITH,1, ra, rb, 0b00, im)
+def ADC(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b01, rd)
+def ADCI(ra, rb, im): return RR3(OPCODE4_ARITH,1, ra, rb, 0b01, im)
+def SUB(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b10, rd)
+def SUBI(ra, rb, im): return RR3(OPCODE4_ARITH,1, ra, rb, 0b10, im)
+def SBB(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b11, rd)
+def SBBI(ra, rb, im): return RR3(OPCODE4_ARITH,1, ra, rb, 0b11, im)
 
 # shift
-def SLL(ra, rb, rd): return RRR(op.OPCODE4_SHIFT,0, ra, rb, 0b00, rd)
-def SLLI(ra, rb, im): return RR3(op.OPCODE4_SHIFT,1, ra, rb, 0b00, im)
-def ROT(ra, rb, rd): return RRR(op.OPCODE4_SHIFT,0, ra, rb, 0b01, rd)
-def ROTI(ra, rb, im): return RR3(op.OPCODE4_SHIFT,1, ra, rb, 0b01, im)
-def SRL(ra, rb, rd): return RRR(op.OPCODE4_SHIFT,0, ra, rb, 0b10, rd)
-def SRLI(ra, rb, im): return RR3(op.OPCODE4_SHIFT,1, ra, rb, 0b10, im)
-def SRA(ra, rb, rd): return RRR(op.OPCODE4_SHIFT,0, ra, rb, 0b11, rd)
-def SRAI(ra, rb, im): return RR3(op.OPCODE4_SHIFT,1, ra, rb, 0b11, im)
+def SLL(ra, rb, rd): return RRR(OPCODE4_SHIFT,0, ra, rb, 0b00, rd)
+def SLLI(ra, rb, im): return RR3(OPCODE4_SHIFT,1, ra, rb, 0b00, im)
+def ROT(ra, rb, rd): return RRR(OPCODE4_SHIFT,0, ra, rb, 0b01, rd)
+def ROTI(ra, rb, im): return RR3(OPCODE4_SHIFT,1, ra, rb, 0b01, im)
+def SRL(ra, rb, rd): return RRR(OPCODE4_SHIFT,0, ra, rb, 0b10, rd)
+def SRLI(ra, rb, im): return RR3(OPCODE4_SHIFT,1, ra, rb, 0b10, im)
+def SRA(ra, rb, rd): return RRR(OPCODE4_SHIFT,0, ra, rb, 0b11, rd)
+def SRAI(ra, rb, im): return RR3(OPCODE4_SHIFT,1, ra, rb, 0b11, im)
 
 # mem
+def LD(rsd,ra,im): return RR5(OPCODE5_LD,rsd,ra,im)
+def LDR(rsd,ra,im): return RR5(OPCODE5_LDR,rsd,ra,im)
+def ST(rsd,ra,im): return RR5(OPCODE5_ST,rsd,ra,im)
+def STR(rsd,ra,im): return RR5(OPCODE5_STR,rsd,ra,im)
+def LDX(rsd,ra,off5): return RR5(OPCODE5_LDX,rsd,ra,off5)
+def LDXA(rd,off8): return R8(OPCODE5_LDXA,rd,off8)
+def STX(rd,off5): return RR5(OPCODE5_STX,rd,ra,off5)
+def STXA(rs,off8): return R8(OPCODE5_STXA,rs,off8)
+
+# move 
+def MOVR(rsd,im): return R8(OPCODE5_MOVR,rsd,im)
+def MOVI(rsd,im): return R8(OPCODE5_MOVI,rsd,im)
+
+# 1001 unassigned 
+
+# windows and jumps
+#def SWPW(Rsd,ra,imm3): return RR3(OPCODE_WIN,Rsd,ra,imm3)
+#def JR()
+#def JALR()
+#def JV
+#def JT
 
 # jumps
 
+def JNZ(off8): return C(OPCODE5_JCC0,0b000,off8)
+def JZ(off8): return C(OPCODE5_JCC1,0b000,off8)
+def JNE(off8): return C(OPCODE5_JCC0,0b000,off8)
+def JE(off8): return C(OPCODE5_JCC1,0b000,off8)
+
+def JNS(off8): return C(OPCODE5_JCC0,0b000,off8)
+def JS(off8): return C(OPCODE5_JCC1,0b001,off8)
+
+def JNC(off8): return C(OPCODE5_JCC0,0b010,off8)
+def JC(off8): return C(OPCODE5_JCC1,0b010,off8)
+def JULT(off8): return C(OPCODE5_JCC0,0b010,off8)
+def JUGE(off8): return C(OPCODE5_JCC1,0b010,off8)
+
+def JNO(off8): return C(OPCODE5_JCC0,0b011,off8)
+def JO(off8): return C(OPCODE5_JCC1,0b011,off8)
+
+def JUGT(off8): return C(OPCODE5_JCC0,0b100,off8)
+def JULE(off8): return C(OPCODE5_JCC1,0b100,off8)
+def JSGE(off8): return C(OPCODE5_JCC0,0b101,off8)
+def JSLT(off8): return C(OPCODE5_JCC1,0b101,off8)
+def JSGT(off8): return C(OPCODE5_JCC0,0b110,off8)
+def JSLE(off8): return C(OPCODE5_JCC1,0b110,off8)
+
+def JN(off8): return C(OPCODE5_JCC0,0b111,off8)
+def J(off8): return C(OPCODE5_JCC1,0b111,off8)
+
+def JAL(ra,off8): return R8(OPCODE5_JAL,ra,off8)
+
 # extended
-def EXTI(imm): return E(op.OPCODE3_EXTI,imm)
-# new commands
+def EXTI(imm): return E(OPCODE3_EXTI,imm)
 
-# testing 
-ADD(0,0,0).val
-ADD(7,7,7).val
+# custom
+def CUST(imm): return X(OPCODE3_CUST,imm13) 
 
-
-
-
-
-
-
-
+# pseudo
+def MOV(rd,rs) : return AND(rd,rs,rs)
+def XCHG(rd,rs): return [XOR(rd,rd,rs),XOR(rs,rs,rd),XOR(rd,rd,rs)]
+def RORI(rd,rs,imm3): return ROTI(rd,rs,16-imm3)
+#def ENTR
+#def ROLI
+#def JALR
+#def LEAV
 
