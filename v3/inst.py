@@ -27,34 +27,42 @@ class register:
 
 
 class _type:
+    bits = 2
     pass
 
 
 class imm3:
+    bits = 3
     pass
 
 
 class imm5:
+    bits = 5
     pass
 
 
 class imm8:
+    bits = 8
     pass
 
 
 class flag:
+    bits = 1
     pass
 
 
 class cond:
+    bits = 3
     pass
 
 
 class off8:
+    bits = 8
     pass
 
 
 class imm13:
+    bits = 13
     pass
 
 
@@ -79,38 +87,45 @@ class RR3(instruction):
 
 
 class RR5(instruction):
-    def __init__(self, opcode):
-        self.opcode = opcode
-        self.Rsd = register()
-        self.Ra = register()
-        self.i5 = imm5()
-        self.build = [self.opcode, self.Rsd, self.Ra, self.imm5]
+    def __init__(self, opc,rsd,ra,im):
+        self.opcode = opcode(opc)
+        self.Rsd = register(rsd)
+        self.Ra = register(ra)
+        self.i5 = imm5(im)
+        self.build = [self.opcode, self.Rsd, self.Ra, self.i5]
 
 
 class R8(instruction):
-    def __init__(self, opcode):
+    def __init__(self, opc,rsd,im):
         self.opcode = opcode
-        self.Rsd = register()
-        self.i8 = imm8()
-        self.build = [self.opcode, self.Rsd, self.imm8]
+        self.Rsd = register(rsd)
+        self.i8 = imm8(im)
+        self.build = [self.opcode, self.Rsd, self.i8]
 
 
 class C(instruction):
-    def __init__(self):
-        self.f = flag()
-        self.c = cond()
-        self.off = off8()
+    def __init__(self,opc,f,c,off):
+        self.opcode = op4(opc)
+        self.f = flag(f)
+        self.c = cond(c)
+        self.off = off8(off)
         self.build = [self.opcode, self.f, self.c, self.off]
 
 
 class E(instruction):
-    def __init__(self):
-        pass
+    def __init__(self,opc,im):
+        self.opcode = op3(opc)
+        self.i13 = imm13(im)
+        self.build = [self.opcode,self.i13]
 
 
 class X(instruction):
-    def __init__(self):
-        pass
+    def __init__(self,opc,im):
+        self.opcode = op3(opc)
+        sel.i13 = imm13(im)
+        self.build = [self.opcode,self.i13]
+
+
 
 
 def AND(ra, rb, rd):
