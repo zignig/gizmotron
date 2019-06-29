@@ -4,6 +4,7 @@ OPCODE_BITS = 5
 INSTRUCTION_SIZE = 16
 REGISTERS = 8
 debug = False
+__all__ = ['AND']
 
 # symbol resolving function
 def res(name):
@@ -31,14 +32,12 @@ class op4(grain):
 
 class op3(grain):
     bits = 3
-
         
 class register(grain):
     bits = 3
 
 class _type(grain):
     bits = 2
-
 
 class imm3(grain):
     bits = 3
@@ -47,10 +46,8 @@ class imm3(grain):
 class imm5(grain):
     bits = 5
 
-
 class imm8(grain):
     bits = 8
-
 
 class mode(grain):
     bits = 1
@@ -67,10 +64,42 @@ class off8(grain):
 class imm13(grain):
     bits = 13
 
+    
+
+rev = {} 
+op_ref = {}
+
+def disam(val):
+    opc = val >> 11 
+    print(op_ref,opc)
+    if opc in op_ref:
+        print(opc,op_ref[opc])        
+
+def collect():
+    print("WRAP")
+    def inner(cls,*args):
+        print("INNER")
+        print('|',cls,'|',*args,'|')
+        print(dir(cls))
+    #    print('wrapper-',*args)
+        #t = cls(*args)
+        rev[cls.__qualname__] = cls  
+        if cls.opcode in op_ref:
+            op_ref[cls.opcode].append(cls)
+        else:
+            op_ref[cls.opcode] = [cls]
+        #rint(t)
+        return cls
+    print("OUTER")
+    return inner 
 
 class instruction:
     bits = INSTRUCTION_SIZE
     opcodes = []
+
+    def __init__(self):
+        pass
+
     @property
     def val(self):
         r = self.bits 
@@ -145,8 +174,7 @@ class C(instruction):
 
 
 class E(instruction):
-    def __init__(self,opc,im):
-        self.opcode = op3(opc)
+    def __init__(self,im):
         self.i13 = imm13(im)
         self.build = [self.opcode,self.i13]
 
@@ -160,8 +188,24 @@ class X(instruction):
 
 
 # logic
-def AND(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, OPTYPE2_AND, rd)
-def ANDI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, OPTYPE2_AND, im)
+@collect()
+class AND(RRR):
+    opcode = OPCODE4_LOGIC  << 1
+    type = OPTYPE2_AND
+    def __init__(self,ra,rb,rd):
+       super().__init__(OPCODE4_LOGIC,0,ra,rb,OPTYPE2_AND,rd) 
+    
+#def AND(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, OPTYPE2_AND, rd)
+
+@collect()
+class ANDI(RR3):
+    opcode = (OPCODE4_LOGIC << 1) + 1
+    type = OPTYPE2_AND
+    def __init__(self,ra,rb,rd):
+       super().__init__(OPCODE4_LOGIC,1,ra,rb,OPTYPE2_AND,rd) 
+
+#def ANDI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, OPTYPE2_AND, im)
+
 def OR(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, OPTYPE2_OR, rd)
 def ORI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, OPTYPE2_OR, im)
 def XOR(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, 0b10, rd)
@@ -170,7 +214,14 @@ def CMP(ra, rb, rd): return RRR(OPCODE4_LOGIC,0, ra, rb, 0b11, rd)
 def CMPI(ra, rb, im): return RR3(OPCODE4_LOGIC,1, ra, rb, 0b11, im)
 
 # arith
-def ADD(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b00, rd)
+@collect()
+class ADD(RRR):
+    opcode = OPCODE4_ARITH
+    t = OPTYPE2_ADD
+    def __init__(self,ra,rb,rd):
+        super().__init__(OPCODE4_ARITH,0, ra, rb, 0b00, rd)
+
+#def ADD(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b00, rd)
 def ADDI(ra, rb, im): return RR3(OPCODE4_ARITH,1, ra, rb, 0b00, im)
 def ADC(ra, rb, rd): return RRR(OPCODE4_ARITH,0, ra, rb, 0b01, rd)
 def ADCI(ra, rb, im): return RR3(OPCODE4_ARITH,1, ra, rb, 0b01, im)
@@ -190,6 +241,13 @@ def SRA(ra, rb, rd): return RRR(OPCODE4_SHIFT,0, ra, rb, 0b11, rd)
 def SRAI(ra, rb, im): return RR3(OPCODE4_SHIFT,1, ra, rb, 0b11, im)
 
 # mem
+
+@collect()
+class LD(RR5):
+    opcode = OPCODE5_LD
+    def __init__(self,rsd,ra,im):
+        super().__init__(OPCODE5_ld,rsd,ra,im)
+
 def LD(rsd,ra,im): return RR5(OPCODE5_LD,rsd,ra,im)
 def LDR(rsd,ra,im): return RR5(OPCODE5_LDR,rsd,ra,im)
 def ST(rsd,ra,im): return RR5(OPCODE5_ST,rsd,ra,im)
@@ -243,7 +301,13 @@ def J(off8): return C(OPCODE5_JCC1,0b111,off8)
 def JAL(ra,off8): return R8(OPCODE5_JAL,ra,off8)
 
 # extended
-def EXTI(imm): return E(OPCODE3_EXTI,imm)
+@collect()
+class EXTI(E):
+    opcode = op3(OPCODE3_EXTI)
+    def __init__(self,imm):
+        super().__init__(imm)
+
+#def EXTI(imm): return E(OPCODE3_EXTI,imm)
 
 # custom
 def CUST(imm): return X(OPCODE3_CUST,imm13) 
