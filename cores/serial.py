@@ -18,21 +18,24 @@ class Serial(Gizmo):
         print(serial)
         clock = self.platform.lookup("clk16").clock
         uart = skinnyUART(serial.tx, serial.rx, clock.frequency, self.baud)
+        print(clock.frequency)
+        print(self.baud)
+        print(round(clock.frequency/self.baud))
         self.add_device(uart)
 
-        tx_status = IO(sig_in=uart.tx.ack, sig_out=uart.tx.stb, name="tx_status")
+        tx_status = IO(sig_in=uart.tx_ack, sig_out=uart.tx_rdy, name="tx_status")
         tx_status.add_bit(BIT("ack", 0))
         tx_status.add_bit(BIT("stb", 0))
         self.add_reg(tx_status)
 
-        tx_data = IO(sig_out=uart.tx.data, name="tx_data")
+        tx_data = IO(sig_out=uart.tx_data, name="tx_data")
         self.add_reg(tx_data)
 
-        rx_status = IO(sig_in=uart.rx.stb, name="rx_status")
+        rx_status = IO(sig_in=uart.rx_rdy,sig_out=uart.rx_ack,name="rx_status")
         rx_status.add_bit(BIT("stb", 0))
         self.add_reg(rx_status)
 
-        rx_data = IO(sig_in=uart.rx.data, name="rx_data")
+        rx_data = IO(sig_in=uart.rx_data, name="rx_data")
         self.add_reg(rx_data)
 
 class BSerial(Gizmo):
@@ -53,7 +56,7 @@ class BSerial(Gizmo):
         tx_data = IO(sig_out=uart.tx.data, name="tx_data")
         self.add_reg(tx_data)
 
-        rx_status = IO(sig_in=uart.rx.stb, name="rx_status")
+        rx_status = IO(sig_in=uart.rx.stb,name="rx_status")
         rx_status.add_bit(BIT("stb", 0))
         self.add_reg(rx_status)
 
@@ -61,7 +64,7 @@ class BSerial(Gizmo):
         self.add_reg(rx_data)
 
 
-class CSerial(Gizmo):
+class OSerial(Gizmo):
     " Uart connection in 4 registers"
 
     def build(self):

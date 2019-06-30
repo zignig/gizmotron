@@ -19,10 +19,10 @@ J init ; jump to init
 
 ; creates a string with the word add the address holding the length
 .string test,"this is a longer string to see if this works"
-
+.string cls,"\u001b[38;5;"
 ; create a place to put the incoming characters
 .alloc pad,64
-.alloc bob,1
+.alloc pad_p,1
 
 ; helper functions for call and return
 .macro _call, jump
@@ -121,7 +121,6 @@ _return
 ; main loop
 init:
     MOVI one,1
-    clear_ack 
 loop:
     _call wait_key
     write_leds
