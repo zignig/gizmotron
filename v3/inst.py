@@ -1,6 +1,6 @@
 # instruction format
 from opcode_v3 import *
-
+import opcode_v3
 OPCODE_BITS = 5
 INSTRUCTION_SIZE = 16
 REGISTERS = 8
@@ -211,11 +211,13 @@ class X(instruction):
 # logic
 class logic(RRR):
     op4 = OPCODE4_LOGIC
+    opt = 'OPCODE4_LOGIC'
     mode = 0
 
 
 class logici(RR3):
     op4 = OPCODE4_LOGIC
+    opt = 'OPCODE4_LOGIC'
     mode = 1
 
 
@@ -589,6 +591,40 @@ def RORI(rd, rs, imm3):
     return ROTI(rd, rs, 16 - imm3)
 
 
+def info():
+    print("instructions")
+    l = []
+    for i,j in rev.items():
+        type_list= j.mro()
+        t_v = []
+        for k in type_list[:-2]:
+            t_v.append(k.__qualname__)
+        #t_v.reverse()
+        l.append(t_v)
+    print(l)
+    #reverse them out 
+    a = {}
+    for i in l:
+        head = i.pop(0)
+        a[head] = i
+    for i,j in a.items():
+        print(i,j)
+    
+            
+
+def op():
+    nl = []
+    li = dir(opcode_v3)
+    for i in li:
+        if i.startswith('O'):
+            nl.append(i)
+            print(i.split('_'))
+    print(nl)
+    return nl
+
+info()
+op()
+#info()
 # def ENTR
 # def ROLI
 # def JALR

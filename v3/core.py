@@ -1,7 +1,8 @@
 from nmigen import *
 
 from opcode_v3 import *
-#from .formal import *
+
+# from .formal import *
 from alsru import *
 
 
@@ -9,20 +10,20 @@ class Arbiter:
     MUX_ADDR_REG = 0b0
     MUX_ADDR_PTR = 0b1
 
-    MUX_REG_x    =  0
-    MUX_REG_A    =  0b00
-    MUX_REG_B    =  0b01
-    MUX_REG_SD   =  0b10
+    MUX_REG_x = 0
+    MUX_REG_A = 0b00
+    MUX_REG_B = 0b01
+    MUX_REG_SD = 0b10
 
-    MUX_OP_RD    =    0b0
-    MUX_OP_WR    =    0b1
+    MUX_OP_RD = 0b0
+    MUX_OP_WR = 0b1
 
-    CTRL_SIZE   = 4
+    CTRL_SIZE = 4
 
-    CTRL_LD_PTR = Cat(C(MUX_ADDR_PTR, 1), C(MUX_REG_x,  2), C(MUX_OP_RD, 1))
-    CTRL_ST_PTR = Cat(C(MUX_ADDR_PTR, 1), C(MUX_REG_x,  2), C(MUX_OP_WR, 1))
-    CTRL_LD_RA  = Cat(C(MUX_ADDR_REG, 1), C(MUX_REG_A,  2), C(MUX_OP_RD, 1))
-    CTRL_LD_RB  = Cat(C(MUX_ADDR_REG, 1), C(MUX_REG_B,  2), C(MUX_OP_RD, 1))
+    CTRL_LD_PTR = Cat(C(MUX_ADDR_PTR, 1), C(MUX_REG_x, 2), C(MUX_OP_RD, 1))
+    CTRL_ST_PTR = Cat(C(MUX_ADDR_PTR, 1), C(MUX_REG_x, 2), C(MUX_OP_WR, 1))
+    CTRL_LD_RA = Cat(C(MUX_ADDR_REG, 1), C(MUX_REG_A, 2), C(MUX_OP_RD, 1))
+    CTRL_LD_RB = Cat(C(MUX_ADDR_REG, 1), C(MUX_REG_B, 2), C(MUX_OP_RD, 1))
     CTRL_LD_RSD = Cat(C(MUX_ADDR_REG, 1), C(MUX_REG_SD, 2), C(MUX_OP_RD, 1))
     CTRL_ST_RSD = Cat(C(MUX_ADDR_REG, 1), C(MUX_REG_SD, 2), C(MUX_OP_WR, 1))
 
@@ -30,22 +31,18 @@ class Arbiter:
         self.rdport = rdport
         self.wrport = wrport
 
-        self.i_w    = Signal(13)
-        self.i_ra   = Signal(3)
-        self.i_rb   = Signal(3)
-        self.i_rsd  = Signal(3)
-        self.i_ptr  = Signal(16)
+        self.i_w = Signal(13)
+        self.i_ra = Signal(3)
+        self.i_rb = Signal(3)
+        self.i_rsd = Signal(3)
+        self.i_ptr = Signal(16)
 
         self.i_data = Signal(16)
         self.o_data = Signal(16)
 
         self.s_addr = Signal(16)
 
-        self.ctrl   = Record([
-            ("addr", 1),
-            ("reg",  2),
-            ("op",   1),
-        ])
+        self.ctrl = Record([("addr", 1), ("reg", 2), ("op", 1)])
 
     def get_fragment(self, platform):
         m = Module()
@@ -57,9 +54,9 @@ class Arbiter:
             with m.Case(self.MUX_ADDR_REG):
                 with m.Switch(self.ctrl.reg):
                     with m.Case(self.MUX_REG_A):
-                        m.d.comb += self.s_addr.eq(Cat(self.i_ra,  self.i_w))
+                        m.d.comb += self.s_addr.eq(Cat(self.i_ra, self.i_w))
                     with m.Case(self.MUX_REG_B):
-                        m.d.comb += self.s_addr.eq(Cat(self.i_rb,  self.i_w))
+                        m.d.comb += self.s_addr.eq(Cat(self.i_rb, self.i_w))
                     with m.Case(self.MUX_REG_SD):
                         m.d.comb += self.s_addr.eq(Cat(self.i_rsd, self.i_w))
             with m.Case(self.MUX_ADDR_PTR):
@@ -83,38 +80,36 @@ class Arbiter:
 
 
 class Decoder:
-    IMM3_AL_TABLE = Array([0x0000, 0x0001, 0,      0,
-                           0,      0x00ff, 0xff00, 0xffff])
+    IMM3_AL_TABLE = Array([0x0000, 0x0001, 0, 0, 0, 0x00ff, 0xff00, 0xffff])
     IMM3_SR_TABLE = Array([1, 2, 3, 4, 5, 6, 7, 8])
 
-    CTRL_CI_ZERO  = 0b00
-    CTRL_CI_ONE   = 0b01
-    CTRL_CI_FLAG  = 0b10
+    CTRL_CI_ZERO = 0b00
+    CTRL_CI_ONE = 0b01
+    CTRL_CI_FLAG = 0b10
 
-    CTRL_SI_ZERO  = 0b0
-    CTRL_SI_MSB   = 0b1
+    CTRL_SI_ZERO = 0b0
+    CTRL_SI_MSB = 0b1
 
-    CTRL_OPB_REG  = 0b0
-    CTRL_OPB_IMM  = 0b1
+    CTRL_OPB_REG = 0b0
+    CTRL_OPB_IMM = 0b1
 
-    CTRL_LS_READ  = 0b0
+    CTRL_LS_READ = 0b0
     CTRL_LS_WRITE = 0b1
 
     def __init__(self, alsru_cls):
         self.alsru_cls = alsru_cls
 
-        self.i_insn  = Signal(16)
+        self.i_insn = Signal(16)
 
-        self.o_ra    = Signal(3)
-        self.o_rb    = Signal(3)
-        self.o_rsd   = Signal(3)
-        self.o_imm   = Signal(16)
+        self.o_ra = Signal(3)
+        self.o_rb = Signal(3)
+        self.o_rsd = Signal(3)
+        self.o_imm = Signal(16)
 
-        self.c_alsru = Signal(alsru_cls.CTRL_BITS,
-                              decoder=alsru_cls.ctrl_decoder)
-        self.c_ci    = Signal(2)
-        self.c_si    = Signal(1)
-        self.c_opb   = Signal(1)
+        self.c_alsru = Signal(alsru_cls.CTRL_BITS, decoder=alsru_cls.ctrl_decoder)
+        self.c_ci = Signal(2)
+        self.c_si = Signal(1)
+        self.c_opb = Signal(1)
         self.c_ls_rw = Signal()
         self.c_ls_ra = Signal()
         self.c_ls_pc = Signal()
@@ -130,31 +125,27 @@ class Decoder:
             m.d.comb += d.eq(v)
             return d
 
-        i_insn  = self.i_insn
+        i_insn = self.i_insn
 
         d_code3 = decode(i_insn[13:16])
         d_code4 = decode(i_insn[12:16])
         d_code5 = decode(i_insn[11:16])
-        d_ri    = decode(i_insn[11])
+        d_ri = decode(i_insn[11])
         d_type2 = decode(i_insn[3:5])
 
-        d_imm3  = decode(i_insn[0:3])
-        d_imm5  = decode(i_insn[0:5])
-        d_imm8  = decode(i_insn[0:8])
+        d_imm3 = decode(i_insn[0:3])
+        d_imm5 = decode(i_insn[0:5])
+        d_imm8 = decode(i_insn[0:8])
         d_imm13 = decode(i_insn[0:13])
 
-        d_cond  = decode(i_insn[8:10])
-        d_flag  = decode(i_insn[11])
+        d_cond = decode(i_insn[8:10])
+        d_flag = decode(i_insn[11])
 
-        d_rb    = decode(i_insn[0:3])
-        d_ra    = decode(i_insn[5:8])
-        d_rsd   = decode(i_insn[8:11])
+        d_rb = decode(i_insn[0:3])
+        d_ra = decode(i_insn[5:8])
+        d_rsd = decode(i_insn[8:11])
 
-        m.d.comb += [
-            self.o_ra .eq(d_ra),
-            self.o_rb .eq(d_rb),
-            self.o_rsd.eq(d_rsd),
-        ]
+        m.d.comb += [self.o_ra.eq(d_ra), self.o_rb.eq(d_rb), self.o_rsd.eq(d_rsd)]
 
         r_ext13 = self.r_ext13
         r_ext_v = self.r_ext_v
@@ -167,10 +158,10 @@ class Decoder:
         s_imm_w = Signal(2)
         IMM_W_3_AL = 0b00
         IMM_W_3_SR = 0b01
-        IMM_W_5    = 0b10
-        IMM_W_8    = 0b11
+        IMM_W_5 = 0b10
+        IMM_W_8 = 0b11
 
-        o_imm   = self.o_imm
+        o_imm = self.o_imm
         with m.If(r_ext_v):
             m.d.comb += o_imm.eq(Cat(d_imm3, r_ext13))
         with m.Else():
@@ -182,13 +173,13 @@ class Decoder:
                 with m.Case(IMM_W_5):
                     m.d.comb += o_imm.eq(Cat(d_imm5, Repl(d_imm5[-1], 11)))
                 with m.Case(IMM_W_8):
-                    m.d.comb += o_imm.eq(Cat(d_imm8, Repl(d_imm8[-1],  8)))
+                    m.d.comb += o_imm.eq(Cat(d_imm8, Repl(d_imm8[-1], 8)))
 
         alsru_cls = self.alsru_cls
         c_alsru = self.c_alsru
-        c_opb   = self.c_opb
-        c_ci    = self.c_ci
-        c_si    = self.c_si
+        c_opb = self.c_opb
+        c_ci = self.c_ci
+        c_si = self.c_si
         with m.Switch(d_code4):
             with m.Case(OPCODE4_LOGIC):
                 m.d.comb += c_opb.eq(d_ri)
@@ -237,37 +228,34 @@ class Decoder:
 
 class CoreFSM:
     def __init__(self, mem_rdport, mem_wrport, alsru_cls):
-        #self.formal  = BonelessFormalInterface(mem_wrport=mem_wrport)
-        self.alsru   = alsru_cls(width=16)
+        # self.formal  = BonelessFormalInterface(mem_wrport=mem_wrport)
+        self.alsru = alsru_cls(width=16)
         self.decoder = Decoder(alsru_cls)
         self.arbiter = Arbiter(mem_rdport, mem_wrport)
 
         self.r_pc = Signal(16)
-        self.r_w  = Signal(13)
-        self.r_f  = Record([("z", 1), ("s", 1), ("c", 1), ("v", 1)])
-        self.r_p  = Signal(16)
-        self.r_q  = Signal(16)
-        self.s_r  = Signal(16)
+        self.r_w = Signal(13)
+        self.r_f = Record([("z", 1), ("s", 1), ("c", 1), ("v", 1)])
+        self.r_p = Signal(16)
+        self.r_q = Signal(16)
+        self.s_r = Signal(16)
 
     def get_fragment(self, platform):
         m = Module()
 
-        m.submodules.formal  = formal  = self.formal
+        m.submodules.formal = formal = self.formal
         m.submodules.decoder = decoder = self.decoder
         m.submodules.arbiter = arbiter = self.arbiter
-        m.submodules.alsru   = alsru   = self.alsru
+        m.submodules.alsru = alsru = self.alsru
 
         r_pc = self.r_pc
-        r_w  = self.r_w
-        r_f  = self.r_f
-        r_p  = self.r_p
-        r_q  = self.r_q
-        s_r  = self.s_r
+        r_w = self.r_w
+        r_f = self.r_f
+        r_p = self.r_p
+        r_q = self.r_q
+        s_r = self.s_r
 
-        m.d.comb += [
-            r_w.eq(0), # FIXME
-            formal.flags.eq(r_f),
-        ]
+        m.d.comb += [r_w.eq(0), formal.flags.eq(r_f)]  # FIXME
 
         m.d.comb += [
             arbiter.i_w.eq(r_w),
@@ -327,7 +315,7 @@ class CoreFSM:
 
             with m.State("STORE-R"):
                 m.d.comb += arbiter.ctrl.eq(arbiter.CTRL_ST_RSD)
-                m.d.sync += r_pc.eq(r_pc + 1) # FIXME
+                m.d.sync += r_pc.eq(r_pc + 1)  # FIXME
                 m.d.comb += formal.stb.eq(1)
                 m.next = "FETCH"
 
@@ -349,32 +337,46 @@ if __name__ == "__main__":
 
     if args.type == "arbiter":
         mem = Memory(width=16, depth=256)
-        dut = Arbiter(rdport=mem.read_port(transparent=False),
-                      wrport=mem.write_port())
+        dut = Arbiter(rdport=mem.read_port(transparent=False), wrport=mem.write_port())
         ports = (
-            dut.i_w, dut.i_ra, dut.i_rb, dut.i_rsd, dut.i_ptr, dut.i_data,
+            dut.i_w,
+            dut.i_ra,
+            dut.i_rb,
+            dut.i_rsd,
+            dut.i_ptr,
+            dut.i_data,
             dut.o_data,
-            dut.ctrl.ptr, dut.ctrl.reg, dut.ctrl.op,
+            dut.ctrl.ptr,
+            dut.ctrl.reg,
+            dut.ctrl.op,
         )
 
     if args.type == "decoder":
         dut = Decoder(alsru_cls=ALSRU_4LUT)
         ports = (
             dut.i_insn,
-            dut.o_ra, dut.o_rb, dut.o_rsd, dut.o_imm,
-            dut.c_alsru, dut.c_ci, dut.c_si,
-            dut.r_ext13, dut.r_ext_v,
+            dut.o_ra,
+            dut.o_rb,
+            dut.o_rsd,
+            dut.o_imm,
+            dut.c_alsru,
+            dut.c_ci,
+            dut.c_si,
+            dut.r_ext13,
+            dut.r_ext_v,
         )
 
     if args.type == "core-fsm":
         mem = Memory(width=16, depth=256)
         import random
+
         random.seed(0)
         mem.init = [random.randint(0x0000, 0xffff) for _ in range(256)]
-        dut = CoreFSM(mem_rdport=mem.read_port(transparent=False),
-                      mem_wrport=mem.write_port(),
-                      alsru_cls=ALSRU_4LUT)
+        dut = CoreFSM(
+            mem_rdport=mem.read_port(transparent=False),
+            mem_wrport=mem.write_port(),
+            alsru_cls=ALSRU_4LUT,
+        )
         ports = ()
 
     cli.main_runner(parser, args, dut, ports=ports)
-
