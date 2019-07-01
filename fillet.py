@@ -15,12 +15,12 @@ from construct import CPU
 from plat import BB
 
 bcpu = CPU(BB())
-print(bcpu.b)
 
-def char_dev(end,exit,debug):
+def char_dev():
+    global end 
     char = ord(sys.stdin.read(1))
     if char == 3: # control C
-        exit = True
+        end = True
         print("BREAK")
         return None
     return char
@@ -30,7 +30,7 @@ def io(addr, data=None):
     #print(addr,data)
     if data == None:
         if addr == 3: # rx status 
-            char = char_dev(end,exit,debug)
+            char = char_dev()
             if char is not None:
                 return 1
             else:
@@ -42,12 +42,13 @@ def io(addr, data=None):
         return 0
     else:
         if addr == 0: # userleds 
+            return 
             print("LEDS_"+"{:016b}".format(data))
         if addr == 1:
             return 0 
         if addr == 2:
             #sys.stdout.write(u"\u001b[1000D")
-            print(chr(char),)#,end=" ")
+            print("{:c}".format(char),end="",flush=True)
 
 header = bcpu.b.asm_header()
 cpu = BonelessSimulator(start_pc=0, mem_size=1024)
@@ -80,18 +81,16 @@ def line(asmblr):
     print(pc, "|", code, "|", reg, "|")  # , stack,"|",rstack, "->", label,"|",ref)
 
 tty.setraw(sys.stdin)
-deadline = 5000
+deadline = 500000
 counter = 0
 while not end:
-    while 1:
-        cpu.stepi()
-        if debug:
-            line(asmblr)
-        if exit:
-            exit = False
-            break
-        counter += 1
-        if counter == deadline:
-            end = True
-            break
-    #get_line()
+    cpu.stepi()
+    if debug:
+        line(asmblr)
+    if exit:
+        exit = False
+        break
+    counter += 1
+    if counter == deadline:
+        end = True
+        break
