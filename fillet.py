@@ -1,14 +1,16 @@
 #!/usr/bin/python3
-import sys
 from boneless.simulator import *
 from boneless.arch.instr import *
 from boneless.assembler.asm import Assembler
 from boneless.arch.disasm import disassemble
 
+import tty,sys
+
 end = False
 exit = False
 strin = ""
-debug = True
+debug = False 
+char = ''
 
 from construct import CPU
 from plat import BB
@@ -24,6 +26,9 @@ def io(addr, data=None):
             return 0
         if addr == 1:
             return 0
+        if addr == 3:
+            char = ord(sys.stdin.read(1))
+            return 1
         return 0
     else:
         if addr == 2:
@@ -33,12 +38,14 @@ def io(addr, data=None):
             exit = True
 
 
+header = bcpu.b.asm_header()
 cpu = BonelessSimulator(start_pc=0, mem_size=1024)
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
 else:
-    file_name = "asm/tx.asm"
+    file_name = "asm/echo.asm"
 asmblr = Assembler(debug=False, file_name=file_name)
+asmblr.load_fragment(header)
 asmblr.assemble()
 asmblr.display()
 cpu.load_program(asmblr.code)
@@ -71,6 +78,7 @@ def line(asmblr):
     print(pc, "|", code, "|", reg, "|")  # , stack,"|",rstack, "->", label,"|",ref)
 
 
+tty.setraw(sys.stdin)
 deadline = 5000
 counter = 0
 while not end:
@@ -85,5 +93,4 @@ while not end:
         if counter == deadline:
             end = True
             break
-
-    get_line()
+    #get_line()

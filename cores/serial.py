@@ -83,7 +83,7 @@ class OSerial(Gizmo):
         self.add_reg(tx_data)
 
         rx_status = IO(
-            sig_in=uart.RX.rx_ready, sig_out=uart.RX.rx_ack, name="rx_ status"
+            sig_in=uart.RX.rx_ready, sig_out=uart.RX.rx_ack, name="rx_status"
         )
         self.add_reg(rx_status)
 

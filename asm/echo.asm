@@ -108,7 +108,7 @@ _return
 
 ; send data to the userleds
 .macro write_leds
-        MOVI addr,leds
+        MOVI addr,user_leds
         STX data,addr,0
 .endm
 
