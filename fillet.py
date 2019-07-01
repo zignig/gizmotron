@@ -15,6 +15,10 @@ char = ''
 
 from construct import CPU
 from plat import BB
+# silence warings 
+from nmigen import *
+
+Elaboratable._Elaboratable__silence = True
 
 bcpu = CPU(BB())
 
