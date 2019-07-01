@@ -42,5 +42,6 @@ def command_line():
                 sys.stdout.write(u"\u001b[" + str(index) + "C")
             sys.stdout.flush()
 
+
 command_line()
 
