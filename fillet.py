@@ -8,7 +8,6 @@ import tty,sys
 
 end = False
 exit = False
-strin = ""
 debug = False 
 char = ''
 
@@ -18,25 +17,37 @@ from plat import BB
 bcpu = CPU(BB())
 print(bcpu.b)
 
+def char_dev(end,exit,debug):
+    char = ord(sys.stdin.read(1))
+    if char == 3: # control C
+        exit = True
+        print("BREAK")
+        return None
+    return char
 
 def io(addr, data=None):
-    global strin, exit
+    global exit,char,end,debug
+    #print(addr,data)
     if data == None:
-        if addr == 10:
-            return 0
-        if addr == 1:
-            return 0
-        if addr == 3:
-            char = ord(sys.stdin.read(1))
-            return 1
+        if addr == 3: # rx status 
+            char = char_dev(end,exit,debug)
+            if char is not None:
+                return 1
+            else:
+                return 0
+        if addr == 4: # rx data
+            #print("READ_CHAR "+chr(char))
+            #print("RC")
+            return char
         return 0
     else:
-        if addr == 2:
-            print(chr(data), end="")
+        if addr == 0: # userleds 
+            print("LEDS_"+"{:016b}".format(data))
         if addr == 1:
-            print("")
-            exit = True
-
+            return 0 
+        if addr == 2:
+            #sys.stdout.write(u"\u001b[1000D")
+            print(chr(char),)#,end=" ")
 
 header = bcpu.b.asm_header()
 cpu = BonelessSimulator(start_pc=0, mem_size=1024)
@@ -48,18 +59,9 @@ asmblr = Assembler(debug=False, file_name=file_name)
 asmblr.load_fragment(header)
 asmblr.assemble()
 asmblr.display()
+
 cpu.load_program(asmblr.code)
 cpu.register_io(io)
-
-
-def get_line():
-    global strin, debug
-    strin = input(">")
-    if strin.startswith("\\"):
-        if strin[1:] == "d":
-            debug = not debug
-        strin = ""
-
 
 def line(asmblr):
     pc = str(cpu.pc).ljust(10)
@@ -76,7 +78,6 @@ def line(asmblr):
     else:
         label = ""
     print(pc, "|", code, "|", reg, "|")  # , stack,"|",rstack, "->", label,"|",ref)
-
 
 tty.setraw(sys.stdin)
 deadline = 5000
