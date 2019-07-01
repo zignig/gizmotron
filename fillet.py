@@ -5,6 +5,8 @@ from boneless.assembler.asm import Assembler
 from boneless.arch.disasm import disassemble
 
 import tty,sys
+import termios
+import atexit
 
 end = False
 exit = False
@@ -80,7 +82,10 @@ def line(asmblr):
         label = ""
     print(pc, "|", code, "|", reg, "|")  # , stack,"|",rstack, "->", label,"|",ref)
 
+fd = sys.stdin.fileno()
+oldtty_settings = termios.tcgetattr(fd)
 tty.setraw(sys.stdin)
+
 deadline = 500000
 counter = 0
 while not end:
@@ -94,3 +99,6 @@ while not end:
     if counter == deadline:
         end = True
         break
+
+termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty_settings)
+
