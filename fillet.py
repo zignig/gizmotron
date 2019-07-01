@@ -13,9 +13,8 @@ debug = True
 from construct import CPU
 from plat import BB
 
-cpu = CPU(BB())
-cpu.b.prepare()
-print(cpu.b)
+bcpu = CPU(BB())
+print(bcpu.b)
 
 
 def io(addr, data=None):

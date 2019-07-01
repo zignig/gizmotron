@@ -75,19 +75,19 @@ class OSerial(Gizmo):
         self.add_device(uart)
 
         tx_status = IO(
-            sig_in=uart.TX.tx_ack, sig_out=uart.TX.tx_ready, name="TX status"
+            sig_in=uart.TX.tx_ack, sig_out=uart.TX.tx_ready, name="tx_status"
         )
         self.add_reg(tx_status)
 
-        tx_data = IO(sig_out=uart.TX.tx_data, name="TX data")
+        tx_data = IO(sig_out=uart.TX.tx_data, name="tx_data")
         self.add_reg(tx_data)
 
         rx_status = IO(
-            sig_in=uart.RX.rx_ready, sig_out=uart.RX.rx_ack, name="RX status"
+            sig_in=uart.RX.rx_ready, sig_out=uart.RX.rx_ack, name="rx_ status"
         )
         self.add_reg(rx_status)
 
-        rx_data = IO(sig_in=uart.RX.rx_data, name="RX data")
+        rx_data = IO(sig_in=uart.RX.rx_data, name="rx_data")
         self.add_reg(rx_data)
 
 

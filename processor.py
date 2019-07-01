@@ -19,6 +19,7 @@ class Boneless(Elaboratable):
         self.addr = 0
         self.gizmos = []
         self.g = _GizmoCollection()
+        self.ext_gizmos = []
 
     def add_gizmo(self, giz):
         self.gizmos.append(giz)
@@ -39,6 +40,7 @@ class Boneless(Elaboratable):
             dump += g.dump()
         print("Register Dump")
         print(dump)
+        self.ext_gizmos= dump
         # TODO , map registers bits and code fragments from gizmos
 
         # Code

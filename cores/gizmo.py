@@ -48,6 +48,7 @@ class IO:
         self.sig_out = sig_out
         self.addr = -1
         self.bits = []
+        self.assigned = False
         if name is not None:
             self.name = name
 
@@ -124,8 +125,10 @@ class Gizmo:
             print("----")
         if len(self.registers) > 0:
             for reg in self.registers:
-                reg.set_addr(boneless.addr)
-                boneless.addr += 1
+                if not reg.assigned:
+                    reg.set_addr(boneless.addr)
+                    reg.assigned = True 
+                    boneless.addr += 1
 
     def attach(self, boneless, m, platform):
         " Generate and bind the gateway to the Boneless "
