@@ -14,14 +14,12 @@ from cores.pwm import Pwm
 def Construct(platform, asm_file="asm/tx.asm"):
     b = Boneless(asm_file=asm_file)
 
-    # TODO gizmo needs **Kwargs , to add extra variables to gizmos
-
     l = UserLeds("leds", platform=platform)
     b.add_gizmo(l)
 
     s = OSerial(
         "serial_port", platform=platform, number=0, baud=9600
-    )  # should pass baud
+    )
     b.add_gizmo(s)
 
     # c = Counter("counter1", platform=platform)

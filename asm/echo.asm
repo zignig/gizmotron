@@ -1,12 +1,6 @@
 .include asm/stack.asm
 J init ; jump to init
 
-; some symbolic names 
-.equ leds,0 		; makes a constant symbol
-.equ tx_status,1
-.equ tx_data,2
-.equ rx_status,3
-.equ rx_data,4
 
 .def data , R0		; makes an alias for a register 
 .def addr , R1

@@ -20,6 +20,7 @@ class Boneless(Elaboratable):
         self.gizmos = []
         self.g = _GizmoCollection()
         self.ext_gizmos = []
+        self._prepared = False
 
     def add_gizmo(self, giz):
         self.gizmos.append(giz)
@@ -43,11 +44,25 @@ class Boneless(Elaboratable):
         self.ext_gizmos= dump
         # TODO , map registers bits and code fragments from gizmos
 
+        header = self.asm_header()
+
         # Code
-        code = Assembler(file_name=self.asm_file)
+        code = Assembler()
+        code.load_fragment(header)
+        code.load_file(self.asm_file)
         code.assemble()
         self.memory.init = code.code
         self.devices = []
+        self._prepared = True
+
+    def asm_header(self):
+        print("--------- ASM HEADER ------------")
+        txt = '; automatic gizmo headers\n'
+        for i in self.ext_gizmos:
+            txt += '.equ '+str(i[0])+','+str(i[1])+'\n'
+        print(txt)
+        print("--------- ASM HEADER ------------")
+        return txt
 
     def elaborate(self, platform):
         m = Module()
