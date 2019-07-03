@@ -12,11 +12,11 @@ J init ; jump to init
 .def data , R0		; makes an alias for a register 
 .def addr , R1
 .def char , R2
-.def d2 , R4
+.def status , R4
 .def zero , R6
 .def one, R5
 .def rtn, R7
-.def max,R3
+.def hold,R3
 
 ; helper functions for call and return
 .macro _call, jump
@@ -30,7 +30,7 @@ J init ; jump to init
 ; helper macros for talking to the primary serial port 
 .macro get_rx_status
 	MOVI addr,rx_status
-	LDX d2,addr,0
+	LDX status,addr,0
 .endm
 
 ; copy serial data into data register
@@ -42,8 +42,8 @@ J init ; jump to init
 
 .macro ack_rx_status, value
 	MOVI addr,rx_status
-	MOVI d2,$value
-	STX d2,addr,0	
+	MOVI status,$value
+	STX status,addr,0	
 .endm
 
 .macro set_rx_ack
@@ -57,13 +57,13 @@ J init ; jump to init
 ; ------ TX macros
 .macro get_tx_status
 	MOVI addr,tx_status
-	LDX d2,addr,0
+	LDX status,addr,0
 .endm
 
 .macro ack_tx_status, value
 	MOVI addr,tx_status
-	MOVI d2,$value
-	STX d2,addr,0	
+	MOVI status,$value
+	STX status,addr,0	
 .endm
 
 .macro set_ack
@@ -87,14 +87,14 @@ put_char:
     clear_ack
 wait_up:
     get_tx_status
-    CMP d2,one
+    CMP status,one
     JE wait_up
 _return
 
 ; wait for a key press
 wait_key:
     get_rx_status 
-    CMP d2,zero
+    CMP status,zero
     JNE is_key 
     J wait_key
 is_key:
@@ -111,11 +111,55 @@ _return
         STX data,addr,0
 .endm
 
+.macro shift,reg
+	SLL $reg,$reg,4
+	OR $reg,$reg,char
+.endm
+
+.macro compare,val
+	MOVI char,$val
+	CMP data,char
+.endm 
+
 ; main loop
 init:
     MOVI one,1
 loop:
     _call wait_key
-    _call put_char
+    _call hex_digit
 J loop
 
+
+hex_digit:
+	compare 70 ; F
+	JUGT error ; hex digit is out of range
+	compare 65 ; A
+	JUGE letter
+	compare 57 ; 9
+	JUGT error  ; in the gap between 9 and A ,error	
+	compare 48 ; 0
+	JUGE number
+	J error
+letter:
+	MOV char,data
+	SUBI char,55; subtract to get number
+	shift hold
+_return
+
+number:
+	MOV char,data
+	SUBI char,48
+	shift hold
+_return
+
+error:
+	MOVI char,33
+	MOVI addr,tx_data
+	STX char,addr,0
+	set_ack
+	clear_ack
+wait_up2:
+	get_tx_status
+	CMP status,one
+	JE wait_up2
+J loop 

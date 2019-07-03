@@ -39,6 +39,7 @@ def io(addr, data=None):
             char = char_dev()
             if char is not None:
                 return 1
+                print(char)
             else:
                 return 0
         if addr == 4: # rx data
@@ -54,7 +55,7 @@ def io(addr, data=None):
             return 0 
         if addr == 2:
             #sys.stdout.write(u"\u001b[1000D")
-            print("{:c}".format(char),end="",flush=True)
+            print("{:c}".format(data),end="",flush=True)
 
 header = bcpu.b.asm_header()
 cpu = BonelessSimulator(start_pc=0, mem_size=1024)
