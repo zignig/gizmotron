@@ -51,6 +51,7 @@ class Boneless(Elaboratable):
         code.load_fragment(header)
         code.load_file(self.asm_file)
         code.assemble()
+        self.bin_code = code.code
         self.memory.init = code.code
         self.devices = []
         self._prepared = True

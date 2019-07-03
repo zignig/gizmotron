@@ -6,6 +6,10 @@ from plat import BB
 from nmigen.hdl.ir import Fragment
 from nmigen.back import pysim, rtlil, verilog
 
+from boneless.assembler.asm import Assembler 
+import array
+import intelhex
+
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
     p = argparse.ArgumentParser()
@@ -33,6 +37,13 @@ if __name__ == "__main__":
 
     if args.action == "program":
         print("Program")
+        a = Assembler(debug=False,file_name="asm/bootloader.asm")
+        a.assemble()
+        as_byte = array.array("H",a.code).tobytes()
+        h = intelhex.IntelHex()
+        h.frombytes(as_byte)
+        h.write_hex_file('bootloader.hex')
+        
 
     if args.action == "simulate":
         print("Simulation")
