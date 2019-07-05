@@ -23,6 +23,7 @@ J init ; jump to init
 .alloc start_addr,1
 .alloc data_temp,1
 .alloc checksum,1
+.alloc record_type,1
 
 ; helper functions for call and return
 .macro _call, jump
@@ -175,6 +176,10 @@ colon:
 	MOVI addr,@start_addr
 	ST hold,addr,0
 	; have address count
+	;MOVI hold,0
+	;_call get_count ; record type
+	;MOVI addr,@record_type
+	;ST hold,addr,0
 next_data:
 	MOVI hold,0
 	_call get_address ; this is data this time
