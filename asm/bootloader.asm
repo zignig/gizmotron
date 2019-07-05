@@ -20,15 +20,17 @@ J init ; jump to init
 
 .alloc return_stack,8
 .alloc count,1
+.alloc start_addr,1
+.alloc data_temp,1
 .alloc checksum,1
 
 ; helper functions for call and return
 .macro _call, jump
-    ST rtn,rtn_p,0
     ADDI rtn_p,1
+    ST rtn,rtn_p,0
     JAL rtn,$jump
-    SUBI rtn_p,1
     LD rtn,rtn_p,0
+    SUBI rtn_p,1
 .endm
 
 .macro _return
@@ -109,7 +111,7 @@ J init ; jump to init
 ; main loop
 init:
     NOP
-    MOVI rtn_p,8
+    MOVI rtn_p,@return_stack
 loop:
     _call colon
 J loop
@@ -164,8 +166,32 @@ colon:
 	MOVI hold,0
 	_call get_count
 	; put into count
+	MOVI addr,@count
+	ST hold,addr,0
 	; get address 
+	MOVI hold,0
 	_call get_address
+	; put address into addr
+	MOVI addr,@start_addr
+	ST hold,addr,0
+	; have address count
+next_data:
+	MOVI hold,0
+	_call get_address ; this is data this time
+	MOVI addr,@data_temp
+	ST hold,addr,0
+	; put the data into place
+;	MOVI addr,@data_temp
+;	LD char,addr,0
+;	MOVI addr,@start_addr
+;	ST char,addr,0
+	MOVI addr,@count
+	LD data,addr,0
+	SUBI data,4
+	ST data,addr,0
+	MOVI status,0
+	CMP data,status
+	JNZ next_data
 _return 
 
 hex_digit:
