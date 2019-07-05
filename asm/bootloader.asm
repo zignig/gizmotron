@@ -117,21 +117,21 @@ loop:
     _call colon
 J loop
 
-.macro get_hex_char
+get_hex_char:
 	_call wait_key
 	_call hex_digit
-.endm
+_return
 
 get_count:
-	get_hex_char
-	get_hex_char
+	_call get_hex_char
+	_call get_hex_char
 _return
 
 get_address:
-	get_hex_char
-	get_hex_char
-	get_hex_char
-	get_hex_char
+	_call get_hex_char
+	_call get_hex_char
+	_call get_hex_char
+	_call get_hex_char
 _return 
 
 ; put the data register onto the uart and wait.
@@ -176,20 +176,20 @@ colon:
 	MOVI addr,@start_addr
 	ST hold,addr,0
 	; have address count
-	;MOVI hold,0
-	;_call get_count ; record type
-	;MOVI addr,@record_type
-	;ST hold,addr,0
+	MOVI hold,0
+	_call get_count ; record type
+	MOVI addr,@record_type
+	ST hold,addr,0
 next_data:
 	MOVI hold,0
 	_call get_address ; this is data this time
 	MOVI addr,@data_temp
 	ST hold,addr,0
 	; put the data into place
-;	MOVI addr,@data_temp
-;	LD char,addr,0
-;	MOVI addr,@start_addr
-;	ST char,addr,0
+	MOVI addr,@data_temp
+	LD char,addr,0
+	MOVI addr,@start_addr
+	ST char,addr,0
 	MOVI addr,@count
 	LD data,addr,0
 	SUBI data,4
