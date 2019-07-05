@@ -19,17 +19,19 @@ J init ; jump to init
 .def rtn, R7
 
 .alloc return_stack,8
+.alloc count,1
+.alloc checksum,1
 
 ; helper functions for call and return
 .macro _call, jump
+    ST rtn,rtn_p,0
+    ADDI rtn_p,1
     JAL rtn,$jump
-    LD rtn,rtn_p,0
     SUBI rtn_p,1
+    LD rtn,rtn_p,0
 .endm
 
 .macro _return
-    ST rtn,rtn_p,0
-    ADDI rtn_p,1
     JR rtn,0
 .endm
 
@@ -132,12 +134,25 @@ _return
 ; main loop
 init:
     NOP
-    MOVI rtn_p,9
+    MOVI rtn_p,8
 loop:
-    _call wait_key
-    _call hex_digit
+    _call colon
 J loop
 
+.macro get_hex_char
+	_call wait_key
+	_call hex_digit
+.endm
+
+colon:
+        _call wait_key
+	compare 58
+	JNE error
+	; starts with a colon
+	MOVI hold,0
+	get_hex_char
+	get_hex_char
+_return 
 
 hex_digit:
 	compare 70 ; F
