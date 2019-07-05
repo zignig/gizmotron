@@ -12,18 +12,24 @@ J init ; jump to init
 .def data , R0		; makes an alias for a register 
 .def addr , R1
 .def char , R2
-.def status , R4
-.def zero , R6
-.def one, R5
+.def status , R3
+.def status_c, R4
+.def hold,R5
+.def rtn_p,R6
 .def rtn, R7
-.def hold,R3
+
+.alloc return_stack,8
 
 ; helper functions for call and return
 .macro _call, jump
     JAL rtn,$jump
+    LD rtn,rtn_p,0
+    SUBI rtn_p,1
 .endm
 
 .macro _return
+    ST rtn,rtn_p,0
+    ADDI rtn_p,1
     JR rtn,0
 .endm
 
@@ -87,14 +93,16 @@ put_char:
     clear_ack
 wait_up:
     get_tx_status
-    CMP status,one
+    MOVI status_c,1
+    CMP status,status_c
     JE wait_up
 _return
 
 ; wait for a key press
 wait_key:
     get_rx_status 
-    CMP status,zero
+    MOVI status_c,0
+    CMP status,status_c
     JNE is_key 
     J wait_key
 is_key:
@@ -123,7 +131,8 @@ _return
 
 ; main loop
 init:
-    MOVI one,1
+    NOP
+    MOVI rtn_p,9
 loop:
     _call wait_key
     _call hex_digit
@@ -142,7 +151,7 @@ hex_digit:
 	J error
 letter:
 	MOV char,data
-	SUBI char,55; subtract to get number
+	SUBI char,55 ; subtract to get number
 	shift hold
 _return
 
@@ -153,13 +162,6 @@ number:
 _return
 
 error:
-	MOVI char,33
-	MOVI addr,tx_data
-	STX char,addr,0
-	set_ack
-	clear_ack
-wait_up2:
-	get_tx_status
-	CMP status,one
-	JE wait_up2
-J loop 
+	MOVI data,33
+	_call put_char		
+_return

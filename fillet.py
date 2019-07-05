@@ -10,7 +10,7 @@ import atexit
 
 end = False
 exit = False
-debug = False 
+debug = True 
 char = ''
 
 from construct import CPU
@@ -62,7 +62,7 @@ cpu = BonelessSimulator(start_pc=0, mem_size=1024)
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
 else:
-    file_name = "asm/echo.asm"
+    file_name = "asm/bootloader.asm"
 asmblr = Assembler(debug=False, file_name=file_name)
 asmblr.load_fragment(header)
 asmblr.assemble()
@@ -76,7 +76,6 @@ def line(asmblr):
     code = disassemble(cpu.mem[cpu.pc]).ljust(20)
     reg = cpu.regs()[0:8].tolist()
     stack = cpu.mem[9:15].tolist()
-    rstack = cpu.mem[16:24].tolist()
     if cpu.mem[cpu.pc] in asmblr.rev_labels:
         ref = asmblr.rev_labels[cpu.mem[cpu.pc]]
     else:
@@ -85,7 +84,7 @@ def line(asmblr):
         label = asmblr.rev_labels[cpu.pc]
     else:
         label = ""
-    print(pc, "|", code, "|", reg, "|")  # , stack,"|",rstack, "->", label,"|",ref)
+    print(pc, "|", code, "|", reg, "|" , stack,"->", label,"|",ref,"\r")
 
 fd = sys.stdin.fileno()
 oldtty_settings = termios.tcgetattr(fd)
