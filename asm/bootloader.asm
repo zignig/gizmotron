@@ -224,4 +224,4 @@ _return
 error:
 	MOVI data,33
 	_call put_char		
-_return
+J init
