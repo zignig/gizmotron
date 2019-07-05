@@ -88,31 +88,6 @@ J init ; jump to init
 	STX data,addr,0
 .endm
 
-; put the data register onto the uart and wait.
-put_char:
-    put_tx_data data
-    set_ack
-    clear_ack
-wait_up:
-    get_tx_status
-    MOVI status_c,1
-    CMP status,status_c
-    JE wait_up
-_return
-
-; wait for a key press
-wait_key:
-    get_rx_status 
-    MOVI status_c,0
-    CMP status,status_c
-    JNE is_key 
-    J wait_key
-is_key:
-    get_rx_data
-    set_rx_ack
-    clear_rx_ack
-_return 
-
 ; end serial helpers
 
 ; send data to the userleds
@@ -144,14 +119,53 @@ J loop
 	_call hex_digit
 .endm
 
+get_count:
+	get_hex_char
+	get_hex_char
+_return
+
+get_address:
+	get_hex_char
+	get_hex_char
+	get_hex_char
+	get_hex_char
+_return 
+
+; put the data register onto the uart and wait.
+put_char:
+    put_tx_data data
+    set_ack
+    clear_ack
+wait_up:
+    get_tx_status
+    MOVI status_c,1
+    CMP status,status_c
+    JE wait_up
+_return
+
+; wait for a key press
+wait_key:
+    get_rx_status 
+    MOVI status_c,0
+    CMP status,status_c
+    JNE is_key 
+    J wait_key
+is_key:
+    get_rx_data
+    set_rx_ack
+    clear_rx_ack
+_return 
+
 colon:
         _call wait_key
 	compare 58
 	JNE error
 	; starts with a colon
 	MOVI hold,0
-	get_hex_char
-	get_hex_char
+	_call get_count
+	; put into count
+	; get address 
+	_call get_address
 _return 
 
 hex_digit:
