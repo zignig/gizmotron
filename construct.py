@@ -18,7 +18,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
     b.add_gizmo(l)
 
     s = OSerial(
-        "serial_port", platform=platform, number=0, baud=9600
+        "serial_port", platform=platform, number=0, baud=38400
     )
     b.add_gizmo(s)
 
@@ -40,7 +40,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
 
 # For FPGA
 class CPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/echo.asm"):
+    def __init__(self, platform, asm_file="asm/bootloader.asm"):
         self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
 

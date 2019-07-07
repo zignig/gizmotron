@@ -47,9 +47,8 @@ class Boneless(Elaboratable):
         header = self.asm_header()
 
         # Code
-        code = Assembler()
+        code = Assembler(file_name=self.asm_file)
         code.load_fragment(header)
-        code.load_file(self.asm_file)
         code.assemble()
         self.bin_code = code.code
         self.memory.init = code.code

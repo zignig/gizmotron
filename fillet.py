@@ -75,7 +75,7 @@ def line(asmblr):
     pc = str(cpu.pc).ljust(10)
     code = disassemble(cpu.mem[cpu.pc]).ljust(20)
     reg = cpu.mem[0:8].tolist()
-    stack = cpu.mem[9:20].tolist()
+    stack = cpu.mem[9:25].tolist()
     if cpu.mem[cpu.pc] in asmblr.rev_labels:
         ref = asmblr.rev_labels[cpu.mem[cpu.pc]]
     else:

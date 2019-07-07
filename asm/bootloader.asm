@@ -113,9 +113,10 @@ J init ; jump to init
 init:
     NOP
     MOVI rtn_p,@return_stack
-loop:
+    MOVI data, 62 ; put >
+    _call put_char		
     _call colon
-J loop
+J init 
 
 get_hex_char:
 	_call wait_key
@@ -162,20 +163,15 @@ _return
 colon:
         _call wait_key
 	compare 58
-	JNE error
-	; starts with a colon
+	JNE error ; starts with a colon
 	MOVI hold,0
-	_call get_count
-	; put into count
+	_call get_count ; put into count
 	MOVI addr,@count
-	ST hold,addr,0
-	; get address 
+	ST hold,addr,0 ; get address 
 	MOVI hold,0
-	_call get_address
-	; put address into addr
+	_call get_address ; put address into addr
 	MOVI addr,@start_addr
-	ST hold,addr,0
-	; have address count
+	ST hold,addr,0 ; have address count
 	MOVI hold,0
 	_call get_count ; record type
 	MOVI addr,@record_type
@@ -184,12 +180,7 @@ next_data:
 	MOVI hold,0
 	_call get_address ; this is data this time
 	MOVI addr,@data_temp
-	ST hold,addr,0
-	; put the data into place
-	MOVI addr,@data_temp
-	LD char,addr,0
-	MOVI addr,@start_addr
-	ST char,addr,0
+	ST hold,addr,0 ; put the data into place
 	MOVI addr,@count
 	LD data,addr,0
 	SUBI data,4
@@ -197,6 +188,8 @@ next_data:
 	MOVI status,0
 	CMP data,status
 	JNZ next_data
+	MOVI data, 89 ; put Y
+	_call put_char		
 _return 
 
 hex_digit:
@@ -213,12 +206,16 @@ letter:
 	MOV char,data
 	SUBI char,55 ; subtract to get number
 	shift hold
+	MOVI data, 76 ; put L
+	_call put_char		
 _return
 
 number:
 	MOV char,data
 	SUBI char,48
 	shift hold
+	MOVI data,78 ; put N
+	_call put_char		
 _return
 
 error:
