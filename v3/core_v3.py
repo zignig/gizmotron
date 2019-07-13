@@ -3,6 +3,9 @@ from nmigen import *
 
 from boneless_v3.gateware.alsru import ALSRU_4LUT
 from boneless_v3.gateware.core_v3 import CoreFSM 
+
+from boneless_v3.arch.opcode_v3 import Instr
+
 from nmigen import cli
 
 
@@ -44,10 +47,18 @@ class BB(TinyFPGABXPlatform):
 
 
 class Boneless_v3(Elaboratable):
-    def __init__(self, asm_file="asm/base.asm"):
+    def __init__(self,platform, asm_file="blink.asm"):
         self.memory = Memory(width=16, depth=2048)  # max of  8*1024 on the 8k
 
+        self.platform = platform
         self.asm_file = asm_file
+        self.asm_text  = open(self.asm_file).read()
+        self.prog = Instr.assemble(self.asm_text)
+        print(self.prog)
+        for i,j in enumerate(Instr.disassemble(self.prog)):
+            print('{:04X}'.format(i),j)
+        
+        self.memory.init = self.prog
 
     def elaborate(self, platform):
         m = Module()
