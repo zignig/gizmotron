@@ -1,10 +1,10 @@
 #!/usr/bin/python 
 from nmigen import *
 
-from boneless_v3.gateware.alsru import ALSRU_4LUT
-from boneless_v3.gateware.core_v3 import CoreFSM 
+from boneless.gateware.alsru import ALSRU_4LUT
+from boneless.gateware.core import CoreFSM 
 
-from boneless_v3.arch.opcode_v3 import Instr
+from boneless.arch.opcode import Instr
 
 from nmigen import cli
 
