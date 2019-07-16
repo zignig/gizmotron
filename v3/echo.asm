@@ -1,5 +1,15 @@
 ; basic echo 
 .window 
+.def 	bob,4
+
+.macro bill 
+	LDXA R1,1
+.endm 
+
+.macro gorm 
+	LDXA R1,$gorm
+.endm
+
 J init
 ; R0 = data
 ; R1 = char
@@ -15,7 +25,7 @@ waitrxchar: 		; wait for a char on serial
 txchar:			; transmit a char
 	STXA R1,4	; store the char in the output regiter 
 	MOVI R0,1	; 
-	STXA R0,3
+	STXA R0,bob
 ; Main Loop
 waittxack:
 	LDXA R2,3
