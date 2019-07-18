@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/env python3
 from nmigen import *
 
 from boneless.gateware.alsru import ALSRU_4LUT
