@@ -1,4 +1,12 @@
-.window
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+
 ; comment
 init:                           ; start here 
         MOVI    R0,0            ; move zero into R0
