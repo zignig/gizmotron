@@ -1,8 +1,8 @@
 ; basic echo 
 .window 
-.def 	bob,4
+.equ bob,4
 
-.macro bill 
+.macro BILL, name,number
 	LDXA R1,1
 .endm 
 
@@ -26,6 +26,7 @@ txchar:			; transmit a char
 	STXA R1,4	; store the char in the output regiter 
 	MOVI R0,1	; 
 	STXA R0,bob
+	BILL hello,2	
 ; Main Loop
 waittxack:
 	LDXA R2,3
