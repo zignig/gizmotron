@@ -40,7 +40,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
 
 # For FPGA
 class CPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/bootloader.asm"):
+    def __init__(self, platform, asm_file="asm/blink.asm"):
         self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
 

@@ -5,6 +5,7 @@ from boneless.gateware.alsru import ALSRU_4LUT
 from boneless.gateware.core import CoreFSM 
 
 from boneless.arch.opcode import Instr
+from boneless.arch.asm import Assembler
 
 from nmigen import cli
 
@@ -53,9 +54,11 @@ class Boneless_v3(Elaboratable):
         self.platform = platform
         self.asm_file = asm_file
         self.asm_text  = open(self.asm_file).read()
-        self.prog = Instr.assemble(self.asm_text)
+        self.assem = Assembler()
+        self.assem.parse_text(self.asm_text)
+        self.prog = self.assem.assemble()
         print(self.prog)
-        for i,j in enumerate(Instr.disassemble(self.prog)):
+        for i,j in enumerate(self.assem.disassemble(self.prog)):
             print('{:04X}'.format(i),j)
         
         self.memory.init = self.prog

@@ -136,19 +136,19 @@ class Gizmo:
             print("<< " + self.name + " >>")
         if len(self.registers) > 0:
             for reg in self.registers:
-                with m.If(boneless.ext_port.addr == reg.addr):
+                with m.If(boneless.o_bus_addr== reg.addr):
                     if reg.has_input():
                         if self.debug:
                             print("Binding Input " + str(reg.addr))
                             print(reg.sig_in)
-                        with m.If(boneless.ext_port.r_en):
-                            m.d.sync += boneless.ext_port.r_data.eq(reg.sig_in)
+                        with m.If(boneless.o_ext_re):
+                            m.d.sync += boneless.i_ext_data.eq(reg.sig_in)
                     if reg.has_output():
                         if self.debug:
                             print("Binding Output " + str(reg.addr))
                             print(reg.sig_out)
-                        with m.If(boneless.ext_port.w_en):
-                            m.d.sync += reg.sig_out.eq(boneless.ext_port.w_data)
+                        with m.If(boneless.o_ext_we):
+                            m.d.sync += reg.sig_out.eq(boneless.o_ext_data)
                     if self.debug:
                         print()
                         print(self)

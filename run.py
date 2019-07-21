@@ -6,7 +6,7 @@ from plat import BB
 from nmigen.hdl.ir import Fragment
 from nmigen.back import pysim, rtlil, verilog
 
-from boneless.assembler.asm import Assembler 
+from boneless.arch.asm import Assembler 
 import array
 import intelhex
 

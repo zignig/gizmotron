@@ -1,6 +1,8 @@
 from boneless.arch.instr import *
-from boneless.gateware.core_fsm import BonelessCoreFSM, _ExternalPort
-from boneless.assembler.asm import Assembler
+from boneless.gateware.core import CoreFSM 
+from boneless.gateware.alsru import ALSRU_4LUT
+
+from boneless.arch.asm import Assembler
 
 from nmigen import *
 from nmigen.back import pysim
@@ -10,9 +12,8 @@ from cores.gizmo import Gizmo, _GizmoCollection
 
 
 class Boneless(Elaboratable):
-    def __init__(self, asm_file="asm/base.asm"):
+    def __init__(self, asm_file="asm/blink.asm"):
         self.memory = Memory(width=16, depth=2048)  # max of  8*1024 on the 8k
-        self.ext_port = _ExternalPort()
         self.asm_file = asm_file
 
         # Gizmos
@@ -47,11 +48,13 @@ class Boneless(Elaboratable):
         header = self.asm_header()
 
         # Code
-        code = Assembler(file_name=self.asm_file)
-        code.load_fragment(header)
-        code.assemble()
-        self.bin_code = code.code
-        self.memory.init = code.code
+        asm = Assembler()
+        txt = open(self.asm_file).read()
+        asm.parse_text(txt)
+        #code.load_fragment(header)
+        code = asm.assemble()
+        self.bin_code = code
+        self.memory.init = code
         self.devices = []
         self._prepared = True
 
@@ -67,17 +70,20 @@ class Boneless(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        self.insert_gizmos(m, platform)
-
-        m.submodules.mem_rdport = mem_rdport = self.memory.read_port(transparent=False)
-        m.submodules.mem_wrport = mem_wrport = self.memory.write_port()
-
-        m.submodules.core = BonelessCoreFSM(
-            reset_addr=8,
-            mem_rdport=mem_rdport,
-            mem_wrport=mem_wrport,
-            ext_port=self.ext_port,
+        m.submodules.core = core = CoreFSM(
+            alsru_cls = ALSRU_4LUT,
+            reset_pc=8,
+            memory = self.memory
         )
+        # External port is a better interface
+        self.o_bus_addr = core.o_bus_addr
+        self.o_ext_we = core.o_ext_we
+        self.o_ext_re = core.o_ext_re
+        self.o_ext_data = core.o_ext_data
+        self.i_ext_data = core.i_ext_data
+
+
+        self.insert_gizmos(m, platform)
         return m
 
 
