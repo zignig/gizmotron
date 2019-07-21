@@ -10,6 +10,8 @@ from cores.serial import Serial,OSerial,BSerial
 from cores.counter import Counter
 from cores.pwm import Pwm
 
+Elaboratable._Elaboratable__silence = True 
+
 # The device construct
 def Construct(platform, asm_file="asm/tx.asm"):
     b = Boneless(asm_file=asm_file)

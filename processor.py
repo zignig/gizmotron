@@ -50,9 +50,12 @@ class Boneless(Elaboratable):
         # Code
         asm = Assembler()
         txt = open(self.asm_file).read()
-        asm.parse_text(txt)
+        asm.parse(header)
+        asm.parse(txt)
         #code.load_fragment(header)
         code = asm.assemble()
+        for i,j in enumerate(asm.input):
+            print('{:04X}'.format(i),j)
         self.bin_code = code
         self.memory.init = code
         self.devices = []

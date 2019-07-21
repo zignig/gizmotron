@@ -14,3 +14,9 @@ Edit construct.py to add new gizmos , these will auto bind to the boneless memor
 - rework simulator for new style boneless
 - cleanse Boneless-CPU branch and get it merged upstream
 - write and document some more cores
+
+# TO RUN 
+
+./run info
+./run build  write on FPGA
+./run program , build a hex
