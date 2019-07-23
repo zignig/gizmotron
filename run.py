@@ -37,7 +37,8 @@ if __name__ == "__main__":
 
     if args.action == "program":
         print("Program")
-        a = Assembler(debug=False,file_name="asm/bootloader.asm")
+        a = Assembler()
+        a.parse(open("asm/bootloader.asm").read())
         a.assemble()
         as_byte = array.array("H",a.code).tobytes()
         h = intelhex.IntelHex()

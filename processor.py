@@ -54,7 +54,10 @@ class Boneless(Elaboratable):
         asm.parse(txt)
         #code.load_fragment(header)
         code = asm.assemble()
+        # Object list
         for i,j in enumerate(asm.input):
+            print('{:04X}'.format(i),j)
+        for i,j in enumerate(asm.disassemble(code)):
             print('{:04X}'.format(i),j)
         self.bin_code = code
         self.memory.init = code
