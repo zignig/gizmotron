@@ -19,25 +19,54 @@ from arpeggio import RegExMatch as _
 def comment():          return [_("//.*"), _("/\*.*\*/")]
 def literal():          return _(r'\d*\.\d*|\d+|".*?"')
 def symbol():           return _(r"\w+")
+def asg():              return _(r":=")
+def assign():           return symbol,asg,expression
 def operator():         return _(r"\+|\-|\*|\/|\=\=")
 def operation():        return symbol, operator, [literal, functioncall]
 def expression():       return [literal, operation, functioncall]
 def expressionlist():   return expression, ZeroOrMore(",", expression)
 def returnstatement():  return Kwd("return"), expression
-def ifstatement():      return Kwd("if"), "(", expression, ")", block, Kwd("else"), block
-def statement():        return [ifstatement, returnstatement], ";"
+def ifstatement():      return Kwd("if"), "(", expression, ")", block
+def ifelsestatement():  return Kwd("if"), "(", expression, ")", block, Kwd("else"), block
+def statement():        return [assign,ifelsestatement,ifstatement,returnstatement], ";"
 def block():            return "{", OneOrMore(statement), "}"
 def parameterlist():    return "(", symbol, ZeroOrMore(",", symbol), ")"
 def functioncall():     return symbol, "(", expressionlist, ")"
 def function():         return Kwd("function"), symbol, parameterlist, block
-def simpleLanguage():   return function
+def simpleLanguage():   return OneOrMore(function),EOF
 
+
+class lit:
+    def __init__(self,value):
+        self.value = value
+
+class op:
+    def __init__(self,op):
+        self.op = op
+
+class sym:
+    def __init__(self,symb):
+        self.symbol = symb
 
 class Vis(PTNodeVisitor):
+
+    def visit_assign(self,node,children):
+        print('assignment',node,children)
+
+    def visit_symbol(self,node,children):
+        return sym(node)
+
     def visit_literal(self,node,children):
-        print(node,children)
+        print('lit',node,children)
+        return lit(node)
+
     def visit_operator(self,node,children):
-        print(node,children)
+        return op(node)
+
+    def visit_expression(self,node,children):
+        print('expr', node,children)
+        return children
+
     def visit_functioncall(self,node,children):
         print(node,children)
 

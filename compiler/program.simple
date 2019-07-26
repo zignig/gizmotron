@@ -5,6 +5,9 @@ function test(a,b,c){
         } else {
             return 1;
         };
+  a := 100;
+  b := 50 ;
 }
-
+function bob(a,b,c){
+}
 
