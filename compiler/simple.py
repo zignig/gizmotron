@@ -48,6 +48,16 @@ class sym:
     def __init__(self,symb):
         self.symbol = symb
 
+class param:
+    def __init__(self,l):
+        self.parameters = l
+        
+class fun:
+    def __init__(self,name,params,statements):
+        self.name = name 
+        self.params = params
+        self.statements = statements
+
 class Vis(PTNodeVisitor):
 
     def visit_assign(self,node,children):
@@ -56,9 +66,19 @@ class Vis(PTNodeVisitor):
     def visit_symbol(self,node,children):
         return sym(node)
 
+    def visit_parameterlist(self,node,children):
+        print('param',children)
+        return param(children)
+
     def visit_literal(self,node,children):
         print('lit',node,children)
         return lit(node)
+
+    def visit_block(self,node,children):
+        return children
+
+    def visit_statement(self,node,children):
+        return children
 
     def visit_operator(self,node,children):
         return op(node)
@@ -67,8 +87,15 @@ class Vis(PTNodeVisitor):
         print('expr', node,children)
         return children
 
+    def visit_function(self,node,children):
+        print('fun',children)
+        return fun(children[0],children[1],children[2])
+
     def visit_functioncall(self,node,children):
         print(node,children)
+
+    def visit_simpleLanguage(self,node,children):
+        return children
 
 debug=False
 # Load test program from file
