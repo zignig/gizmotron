@@ -1,0 +1,12 @@
+main->
+    test->
+        a: "this is a test"
+        b: "two"
+        c: "three"
+    ,
+    big->
+        bob: "bob"
+        bill: "bill",@bob
+    config->
+        
+}
