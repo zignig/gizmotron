@@ -1,15 +1,25 @@
 function test(a,b,c,d,e,f){
-     if(a == 1)
-        {
-            return 0;
-        } else {
-            return 1;
-        };
+     if(a == 1) { return 0; } else { return 1; };
   a := 100;
   b := 50 ;
   if (t == 50)
 	{
 	b := 100;
-};
+  };
+  bob(5,a,b,c,d,hello);
+  bill(test);
+  test := 100;
+  test2 := 200;
+  activate(now);
 }
 
+function now(a){ a := 1;}
+
+function asdfasdfasdf(t,r,e){ a := 1 ; return 2 ; }
+function loop(cond){
+	if (cond == 5){
+	print(9);
+	};
+	print(1,1,2,3);
+	testa := 3;
+}
