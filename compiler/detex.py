@@ -24,50 +24,19 @@ def text():             return _(r'((\\")|[^{}])+')
 def block():            return "{", ZeroOrMore([amp,command,text]) , "}"
 def command():          return esc,symbol,ZeroOrMore([block,text])
 
-def comment():          return _(r"\\\\")
+def comment():          return _(r"424323423")
 
-def tex():              return command 
-
-#def operation():        return symbol, operator, [literal, functioncall]
-#def assignment():       return symbol, _(r":\="),expression
-#def expression():       return [literal, operation, functioncall]
-#def expressionlist():   return expression, ZeroOrMore(",", expression)
-#def returnstatement():  return Kwd("return"), expression
-#def ifstatement():      return Kwd("if"), "(", expression, ")", block
-#def ifelsestatement():      return Kwd("if"), "(", expression, ")", block, Kwd("else"), block
-#def statement():        return [ifelsestatement, ifstatement,returnstatement,assignment], ";"
-#def parameterlist():    return "(", symbol, ZeroOrMore(",", symbol), ")"
-#def functioncall():     return symbol, "(", expressionlist, ")"
-#def function():         return Kwd("function"), symbol, parameterlist, block
-#def program():          return Kwd("program"), symbol , ZeroOrMore(function), Kwd("end")
-#def simpleLanguage():   return program 
+def tex():              return command ,EOF
 
 
 class Vis(PTNodeVisitor):
     f = {}
 
-    #def visit_literal(self,node,children): print(node,children)
-    #def visit_operator(self,node,children): print(node,children)
-    #def visit_functioncall(self,node,children): print(node,children)
-    #def visit_expression(self,node,children): print(node,children)
-    #def visit_ifstatement(self,node,children): print(node,children)
-    #def visit_ifelsestatement(self,node,children): print(node,children)
-#    def visit_simpleLanguage(self,node,children):
-#        print("lang->",children)
-#        return children
-#
-#    def visit_block(self,node,children):
-#        return children
-#
-#    def visit_program(self,node,children): 
-#        print("prog->",children)
-#
-#    def visit_function(self,node,children):
-#        name = children[0]
-#        if name not in self.f:
-#            self.f[name] = "FNORD"
-#        print(node,"->",children)
-#        return (children[0])
+    def visit_symbol(self,node,children): print('symbol->',node,children)
+    def visit_amp(self,node,children): print('&->',node,children)
+    def visit_block(self,node,children): print('block->',node,children)
+    def visit_command(self,node,children): print('command->',node,children)
+    def visit_tex(self,node,children): print('tex->',node,children)
 
 debug=False
 # Load test program from file
