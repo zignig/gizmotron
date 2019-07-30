@@ -38,12 +38,12 @@ if __name__ == "__main__":
     if args.action == "program":
         print("Program")
         a = Assembler()
-        a.parse(open("asm/bootloader.asm").read())
+        a.parse(open("asm/blink.asm").read())
         a.assemble()
-        as_byte = array.array("H",a.code).tobytes()
-        h = intelhex.IntelHex()
-        h.frombytes(as_byte)
-        h.write_hex_file('bootloader.hex')
+        #as_byte = array.array("H",a.code).tobytes()
+        #h = intelhex.IntelHex()
+        #h.frombytes(as_byte)
+        #h.write_hex_file('bootloader.hex')
         
 
     if args.action == "simulate":
