@@ -31,7 +31,7 @@ J init ; jump to init
     ST rtn,rtn_p,0
     JAL rtn,$jump
     LD rtn,rtn_p,0
-    SUBI rtn_p,1
+    SUBI rtn_p,rtn_p,1
 .endm
 
 .macro _return

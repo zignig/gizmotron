@@ -38,7 +38,7 @@ if __name__ == "__main__":
     if args.action == "program":
         print("Program")
         a = Assembler()
-        a.parse(open("asm/blink.asm").read())
+        a.parse(open("asm/base.asm").read())
         a.assemble()
         #as_byte = array.array("H",a.code).tobytes()
         #h = intelhex.IntelHex()
