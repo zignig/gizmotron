@@ -9,14 +9,14 @@
 J init ; jump to init
 
 
-.def data , R0		; makes an alias for a register 
-.def addr , R1
-.def char , R2
-.def status , R3
-.def status_c, R4
-.def hold,R5
-.def rtn_p,R6
-.def rtn, R7
+.equ data , R0		; makes an alias for a register 
+.equ addr , R1
+.equ char , R2
+.equ status , R3
+.equ status_c, R4
+.equ hold,R5
+.equ rtn_p,R6
+.equ rtn, R7
 
 .alloc return_stack,8
 .alloc count,1
@@ -27,7 +27,7 @@ J init ; jump to init
 
 ; helper functions for call and return
 .macro _call, jump
-    ADDI rtn_p,1
+    ADDI rtn_p,rtn_p,1
     ST rtn,rtn_p,0
     JAL rtn,$jump
     LD rtn,rtn_p,0
