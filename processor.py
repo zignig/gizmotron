@@ -49,6 +49,7 @@ class Boneless(Elaboratable):
 
         # Code
         asm = Assembler()
+        self.asm = asm
         txt = open(self.asm_file).read()
         asm.parse(header)
         asm.parse(txt)
