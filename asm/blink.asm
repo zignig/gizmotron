@@ -6,7 +6,7 @@ init:                           ; start here
         MOVI    R1,0            ; move zero into R1
 entry:
         ADDI    R0,R0, 1 	; add one to R0 ( increment the leds )
-	STXA	R0, user_leds   ; write to the leds 
+	STXA	R0, blinky ; write to the leds 
 wait:
         ADDI    R1,R1,1         ; add 1 to the counter
         CMPI    R1,timer        ; is the counter equal to timer ?  
