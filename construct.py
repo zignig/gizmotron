@@ -19,7 +19,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
     l = UserLeds("status_leds", platform=platform,source='blinky')
     b.add_gizmo(l)
 
-    l = UserLeds("status", platform=platform,source='user_leds')
+    l = UserLeds("status", platform=platform,source='user_led')
     b.add_gizmo(l)
 
     s = OSerial(
