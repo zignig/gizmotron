@@ -16,10 +16,10 @@ Elaboratable._Elaboratable__silence = True
 def Construct(platform, asm_file="asm/tx.asm"):
     b = Boneless(asm_file=asm_file)
 
-    l = UserLeds("leds", platform=platform,source='blinky')
+    l = UserLeds("status_leds", platform=platform,source='blinky')
     b.add_gizmo(l)
 
-    l = UserLeds("status_leds", platform=platform,source='user_leds')
+    l = UserLeds("status", platform=platform,source='user_leds')
     b.add_gizmo(l)
 
     s = OSerial(

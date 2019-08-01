@@ -14,11 +14,11 @@ class BB(TinyFPGABXPlatform):
             Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
             Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
         ),
-        Resource("blinky", 1, Pins("12", conn=("gpio", 0), dir="o")),
-        Resource("blinky", 2, Pins("13", conn=("gpio", 0), dir="o")),
-        Resource("blinky", 3, Pins("14", conn=("gpio", 0), dir="o")),
-        Resource("blinky", 4, Pins("15", conn=("gpio", 0), dir="o")),
-        Resource("pwm", 0, Pins("5", conn=("gpio", 0), dir="o")),
+        Resource("blinky", 0, Pins("12", conn=("gpio", 0), dir="o")),
+        Resource("blinky", 1, Pins("13", conn=("gpio", 0), dir="o")),
+        Resource("blinky", 2, Pins("14", conn=("gpio", 0), dir="o")),
+        Resource("blinky", 3, Pins("15", conn=("gpio", 0), dir="o")),
+        #Resource("pwm", 0, Pins("5", conn=("gpio", 0), dir="o")),
     ]
 
     clock = "clk16"

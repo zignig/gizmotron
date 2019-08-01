@@ -81,7 +81,7 @@ class IO:
 
 class Gizmo:
     " A gizmo is a wrapper around an Elaboratable module that binds to the external interface of the Boneless-CPU"
-    debug = False
+    debug = True 
 
     def __init__(self, name, platform=None, **kwargs):
         for i, j in kwargs.items():

@@ -12,12 +12,13 @@ class UserLeds(Gizmo):
         leds = []
         if self.source is None:
             self.source = "user_leds"
+        print(self.source)
         for n in itertools.count():
             try:
                 l = self.platform.request(self.source, n)
-                print(l)
                 leds.append(l)
             except ResourceError:
+                print('run out of blinky',n)
                 break
 
         leds_cat = Cat(led.o for led in leds)
