@@ -26,6 +26,9 @@ class _pwm(Elaboratable):
 
 
 class Pwm(Gizmo):
+    code = """
+        ADDI R0,R0,1
+    """
     def build(self, **kwargs):
         pin = self.platform.request("pwm", 0)
         p = _pwm(pin)

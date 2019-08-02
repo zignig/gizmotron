@@ -9,6 +9,7 @@ from cores.user_leds import UserLeds
 from cores.serial import Serial,OSerial,BSerial
 from cores.counter import Counter
 from cores.pwm import Pwm
+from cores.warm import WarmBoot
 
 Elaboratable._Elaboratable__silence = True 
 
@@ -27,14 +28,17 @@ def Construct(platform, asm_file="asm/tx.asm"):
     )
     b.add_gizmo(s)
 
+    wb = WarmBoot("warmboot")
+    b.add_gizmo(wb)
+
     # c = Counter("counter1", platform=platform)
     # b.add_gizmo(c)
 
     # c2 = Counter("counter2", platform=platform)
     # b.add_gizmo(c2)
 
-    # p = Pwm("pwm",platform=platform,pin=12)
-    # b.add_gizmo(p)
+    #p = Pwm("pwm",platform=platform,pin=12)
+    #b.add_gizmo(p)
 
     # Assign addresses , get code etch
     # TODO test and fix

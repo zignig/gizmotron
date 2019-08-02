@@ -18,7 +18,7 @@ class BB(TinyFPGABXPlatform):
         Resource("blinky", 1, Pins("13", conn=("gpio", 0), dir="o")),
         Resource("blinky", 2, Pins("14", conn=("gpio", 0), dir="o")),
         Resource("blinky", 3, Pins("15", conn=("gpio", 0), dir="o")),
-        #Resource("pwm", 0, Pins("5", conn=("gpio", 0), dir="o")),
+        Resource("pwm", 0, Pins("5", conn=("gpio", 0), dir="o")),
     ]
 
     clock = "clk16"
