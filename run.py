@@ -23,12 +23,15 @@ if __name__ == "__main__":
 
     action.add_parser("simulate")
 
+    p.add_argument("-f",action="store",help="asm file to include",default="asm/blink.asm")
+
     args = p.parse_args()
+    print(args)
 
     platform = BB()
     if args.action == "info":
         print("Show info")
-        cpu = construct.CPU(platform)
+        cpu = construct.CPU(platform,asm_file=args.f)
 
     if args.action == "build":
         print("Build")
