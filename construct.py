@@ -24,7 +24,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
     b.add_gizmo(l)
 
     s = OSerial(
-        "serial_port", platform=platform, number=0, baud=38400
+        "serial_port", platform=platform, number=0, baud=57600
     )
     b.add_gizmo(s)
 
