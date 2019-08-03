@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     if args.action == "build":
         print("Build")
-        cpu = construct.CPU(platform)
+        cpu = construct.CPU(platform,asm_file=args.f)
         platform.build(cpu, do_program=True)
 
     if args.action == "program":
