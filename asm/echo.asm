@@ -94,4 +94,4 @@ J run
 
 
     
-.alloc pad,16           ; the pad itself 
+.alloc pad,32 ; the pad itself 
