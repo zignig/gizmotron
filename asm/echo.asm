@@ -1,6 +1,7 @@
 .window
 J init
 .alloc leds,1
+.alloc pad_count,1
 .alloc pad,32
 .equ delay,1
 ; Basic echo construct
@@ -14,6 +15,8 @@ checkrx:                        ; get a char off the serial port
 addtopad:
     LDXA R2,rx_data             ; load the RX data from the serial port
     MOVI R3,1                   ; load 1 into to R3
+    STXA R3,rx_status           ; acknowledge the char in the serial port
+    MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
     STXA R2,blinky              ; write to blinky
 JR R7,0
@@ -45,7 +48,7 @@ init:                           ; initialize the program all the registers.
     MOVI R7,0 ; jump return address
 
 run:                                   ; main loop
-    JAL R7,txchar                      ; write r2 ( holding ) to the serial port 
+    ;JAL R7,txchar                      ; write r2 ( holding ) to the serial port 
     JAL R7,checkrx                      ; get a char from the serial port
     CMPI R2,126                         ; loop through readable chars
     JE resetChar                        ; this is TX testing 
