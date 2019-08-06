@@ -33,19 +33,13 @@ addtopad:
     JR R7,0
 padContinue:
     ; put the incoming char into the pad
-    MOVR R1,leds
-    LD R6,R1,0
-    ADDI R6,R6,1
-    STXA R6,blinky
-    ST R6,R1,0
-    
-;    MOVR R0,padCount            ; load the padcount address
-;    LD R0,R0,0                  ; load the padcount value into R0
-;    ADD R5,R5,R0                ; add the padcount and pad address to get the current pad address 
-;    ST R2,R5,0                  ; store the value into the pad
-;    ADDI R0,R0,1                ; increment the pad value
-;    STR R0,R1,0                  ; put the value back into the pad variable
-;    STXA R0,blinky              ; write to blinky
+    MOVR R1,pad		 ; move pad into the working address
+    LD R0,R1,0		 ; load the length into the working register
+    AND R2,R1,R1	 ; copy the padd address into holding
+    ADD R2,R2,R0	 ; add the current pad length to holding
+    ST R3,R2,0		 ; store the word into to address in holding
+    ADDI R0,R0,1	 ; increment to pad count
+    ST R0,R1,0		 ; store the value back into the start of the pad
 JR R7,0
 
 txchar:                         ; put a char into the serial port 
@@ -68,7 +62,7 @@ JR R7,0
 init:                           ; initialize the program all the registers.
     MOVI R0,0 ; working register        
     MOVI R1,0 ; working address 
-    MOVI R2,32; holding data 
+    MOVI R2,0 ; holding data 
     MOVI R3,0 ; device status
     MOVI R4,0 ; delayer
     MOVR R5,0 ; temp 
@@ -79,27 +73,20 @@ init:                           ; initialize the program all the registers.
     MOVR R1,greet
     JAL R6,writestring 
 run:                                   ; main loop
-    JAL R7,checkrx                      ; get a char from the serial port
-
-    JAL R7,txchar                      ; write r2 ( holding ) to the serial port 
-;    CMPI R2,126                         ; loop through readable chars
-;    JE resetChar                        ; this is TX testing 
-;    ADDI R2,R2,1
-;    J run
-;resetChar:
-;    MOVI R2,32
+    JAL R7,checkrx                     ; get a char from the serial port
+    JAL R7,txchar                      ; write R2 ( holding ) to the serial port 
 J run
 
 writestring:
-    LD R0,R1,0   ; move the length of the string into the working register
-    AND R5,R1,R1  ; copy the address into a temp register
-    ADD R5,R5,R0  ; calculate the end of the string
+    LD   R0,R1,0   ; move the length of the string into the working register
+    AND  R5,R1,R1  ; copy the address into a temp register
+    ADD  R5,R5,R0  ; calculate the end of the string
 nextchar:
     ADDI R1,R1,1 ; increment the pointer
-    LD R2,R1,0   ; load the data at working address into holding
-    JR R7,txchar ; write the char
-    CMP R1,R5    ; compare the current address to the end of the string
-    JNE nextchar ; not there yet, get next char
+    LD   R2,R1,0   ; load the data at working address into holding
+    JR   R7,txchar ; write the char
+    CMP  R1,R5    ; compare the current address to the end of the string
+    JNE  nextchar ; not there yet, get next char
 JR R6,0 ; return with jump2
     
 .alloc pad,32 ; the pad itself 
