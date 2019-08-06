@@ -66,7 +66,7 @@ class CPU(Elaboratable):
 
 # For Simulation
 class simCPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/tx.asm"):
+    def __init__(self, platform, asm_file="asm/blink.asm"):
         self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
         self.first = Signal(10)

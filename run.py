@@ -40,18 +40,16 @@ if __name__ == "__main__":
 
     if args.action == "program":
         print("Program")
-        a = Assembler()
-        a.parse(open("asm/base.asm").read())
-        a.assemble()
-        #as_byte = array.array("H",a.code).tobytes()
-        #h = intelhex.IntelHex()
-        #h.frombytes(as_byte)
-        #h.write_hex_file('bootloader.hex')
+        cpu = construct.CPU(platform,asm_file=args.f)
+        as_byte = array.array("H",cpu.b.code).tobytes()
+        h = intelhex.IntelHex()
+        h.frombytes(as_byte)
+        h.write_hex_file('bootloader.hex')
         
 
     if args.action == "simulate":
         print("Simulation")
-        design = construct.simCPU(platform)
+        design = construct.simCPU(platform,asm_file=args.f)
         fragment = Fragment.get(design, platform)
         f = open("test.vcd", "w")
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
