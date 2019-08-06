@@ -5,7 +5,6 @@ J init
 .alloc padCount,1       ; cursor for the pad
 .alloc padCursor,1       ; current position in the pad 
 ; pad itself is declared at the bottom so it does not overwrite code 
-
 .equ delay,65000        ; constant for delay
 
 ; Basic echo construct
@@ -65,9 +64,6 @@ waitdown:
     JE waitdown
 JR R7,0
 
-; dump the pad to the serial port 
-dumppad:
-JR R7,0
 
 init:                           ; initialize the program all the registers.
     MOVI R0,0 ; working register        
@@ -75,11 +71,13 @@ init:                           ; initialize the program all the registers.
     MOVI R2,32; holding data 
     MOVI R3,0 ; device status
     MOVI R4,0 ; delayer
-    MOVR R5,pad ; pad pointer , 
-    MOVI R6,0 ; temp
+    MOVR R5,0 ; temp 
+    MOVI R6,0 ; jump2 return address
     MOVI R7,0 ; jump return address
 
-    
+    ; write the greet string
+    MOVR R1,greet
+    JAL R6,writestring 
 run:                                   ; main loop
     JAL R7,checkrx                      ; get a char from the serial port
 
@@ -92,6 +90,17 @@ run:                                   ; main loop
 ;    MOVI R2,32
 J run
 
-
+writestring:
+    LD R0,R1,0   ; move the length of the string into the working register
+    AND R5,R1,R1  ; copy the address into a temp register
+    ADD R5,R5,R0  ; calculate the end of the string
+nextchar:
+    ADDI R1,R1,1 ; increment the pointer
+    LD R2,R1,0   ; load the data at working address into holding
+    JR R7,txchar ; write the char
+    CMP R1,R5    ; compare the current address to the end of the string
+    JNE nextchar ; not there yet, get next char
+JR R6,0 ; return with jump2
     
 .alloc pad,32 ; the pad itself 
+.string greet,Boneless-v3-zignig-bootloader
