@@ -95,8 +95,20 @@ init:                           ; initialize the program all the registers.
 run:                                   ; main loop
     JAL R7,checkrx                     ; get a char from the serial port
     JAL R7,txchar                      ; write R2 ( holding ) to the serial port 
+    JAL R7,procpad		       ; check pad active and process
 J run
     
+procpad:
+    MOVR R1,padStatus	; load the pad status address into R1
+    LD R0,R1,0		; load the pad status into R0
+    CMPI R0,1		; is the pad active
+    JE procPadContinue  ; continue
+    JR R7,0 		; return to main
+procPadContinue:
+    ; process the pad here 
+    ; TODO
+JR R7,0
     
+        
 .alloc pad,32 ; the pad itself 
-.string greet,"Boneless-v3-zignig-bootloader\r\n\r\n\r\n>>"
+.string greet,"Boneless-v3-zignig-bootloader"
