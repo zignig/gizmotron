@@ -13,7 +13,7 @@ from cores.gizmo import Gizmo, _GizmoCollection
 
 class Boneless(Elaboratable):
     def __init__(self, asm_file="asm/blink.asm"):
-        self.memory = Memory(width=16, depth=2048)  # max of  8*1024 on the 8k
+        self.memory = Memory(width=16, depth=8*1024)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
 
         # Gizmos

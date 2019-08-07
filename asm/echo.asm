@@ -8,7 +8,7 @@
 ;.equ image,6
 ;.equ boot,7
 
-.window
+.window                 ; todo this macro needs to align to 8 word boundary
 J init
 .alloc leds,1
 .alloc padStatus,1      ; is the pad ready to go ?
@@ -19,6 +19,25 @@ J init
 
 ; Basic echo construct
 ; Need macros and register renames
+init:                           ; initialize the program all the registers.
+    MOVI R0,0 ; working register        
+    MOVI R1,0 ; working address 
+    MOVI R2,0 ; holding data 
+    MOVI R3,0 ; device status
+    MOVI R4,0 ; delayer
+    MOVR R5,0 ; temp 
+    MOVI R6,0 ; jump2 return address
+    MOVI R7,0 ; jump return address
+
+    ; write the greet string
+    MOVR R1,greet
+    JAL R6,nextchar
+run:                                   ; main loop
+    JAL R7,checkrx                     ; get a char from the serial port
+    JAL R7,txchar                      ; write R2 ( holding ) to the serial port 
+    JAL R7,procpad		       ; check pad active and process
+J run
+
 
 checkrx:                        ; get a char off the serial port 
     LDXA R3,rx_status           ; load the RX status from the serial port
@@ -53,6 +72,7 @@ padContinue:
     ST R0,R1,0		 ; store the value back into the start of the pad
 JR R7,0
 
+
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
     MOVI R3,1                   ; set status to one
@@ -79,24 +99,6 @@ nextchar:
     JNE  nextchar     ; not there yet, get next char
 JR R6,0 ; return with jump2
 
-init:                           ; initialize the program all the registers.
-    MOVI R0,0 ; working register        
-    MOVI R1,0 ; working address 
-    MOVI R2,0 ; holding data 
-    MOVI R3,0 ; device status
-    MOVI R4,0 ; delayer
-    MOVR R5,0 ; temp 
-    MOVI R6,0 ; jump2 return address
-    MOVI R7,0 ; jump return address
-
-    ; write the greet string
-    MOVR R1,greet
-    JAL R6,nextchar
-run:                                   ; main loop
-    JAL R7,checkrx                     ; get a char from the serial port
-    JAL R7,txchar                      ; write R2 ( holding ) to the serial port 
-    JAL R7,procpad		       ; check pad active and process
-J run
     
 procpad:
     MOVR R1,padStatus	; load the pad status address into R1
@@ -107,8 +109,12 @@ procpad:
 procPadContinue:
     ; process the pad here 
     ; TODO
+    MOVR R1,padStatus   ; reset pad status 
+    MOVI R0,0
+    ST R0,R1,0
 JR R7,0
     
         
 .alloc pad,32 ; the pad itself 
 .string greet,"Boneless-v3-zignig-bootloader"
+.string pwd,">>"
