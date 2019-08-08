@@ -10,10 +10,10 @@
 
 .window                 ; todo this macro needs to align to 8 word boundary
 J init
-.alloc leds,1
-.alloc padStatus,1      ; is the pad ready to go ?
-.alloc padCount,1       ; cursor for the pad
-.alloc padCursor,1       ; current position in the pad 
+leds: .alloc 1
+padStatus: .alloc 1      ; is the pad ready to go ?
+padCount: .alloc 1       ; cursor for the pad
+padCursor: .alloc 1       ; current position in the pad 
 ; pad itself is declared at the bottom so it does not overwrite code 
 .equ delay,65000        ; constant for delay
 
@@ -115,6 +115,6 @@ procPadContinue:
 JR R7,0
     
         
-.alloc pad,32 ; the pad itself 
-.string greet,"Boneless-v3-zignig-bootloader"
-.string pwd,">>"
+pad: .alloc 32 ; the pad itself 
+greet: .string "Boneless-v3-zignig-bootloader"
+pwd: .string ">>"
