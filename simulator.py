@@ -29,6 +29,9 @@ class SimInstr:
         else:
             self.run()
 
+    def __repr__(self):
+        return self.instr.__repr__()
+
 
 class s_MOVI(SimInstr):
     def run(self):
@@ -94,7 +97,8 @@ class s_EXTI(SimInstr):
 
 class s_MOVR(SimInstr):
     def run(self):
-        val = self.sim.mem[self.sim.pc+self.instr.imm.value]
+        val = self.sim.mem[self.sim.pc+1+self.instr.imm.value]
+        print('movr',self.instr.rsd.value,val)
         self.sim.set_reg(self.instr.rsd.value,val)
 
 sim_map = {
