@@ -114,7 +114,6 @@ procPadContinue:
     ST R0,R1,0
 JR R7,0
     
-        
-pad: .alloc 32 ; the pad itself 
 greet: .string "Boneless-v3-zignig-bootloader"
 pwd: .string ">>"
+pad: .alloc 32 ; the pad itself 
