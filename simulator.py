@@ -22,8 +22,13 @@ class SimInstr:
         self.instr = instr
         self.sim = sim
 
-    def run(self):
-        pass
+    def call(self):
+        if self.sim.has_exti:
+            print("Exetended instruction")
+            self.sim.has_exti = False
+        else:
+            self.run()
+
 
 class s_MOVI(SimInstr):
     def run(self):
@@ -42,19 +47,30 @@ class s_J(SimInstr):
     def run(self):
         self.sim.set_pc_off(self.instr.imm.value)
 
+class s_JAL(SimInstr):
+    def run(self):
+        self.sim.set_reg(self.instr.rsd.value,self.sim.pc)
+        self.sim.set_pc_off(self.instr.imm.value)
+
 class s_STXA(SimInstr):
     def run(self):
         addr = self.instr.rsd.value
         val = self.instr.imm.value
         self.sim.ext[addr] = val
 
+class s_LDXA(SimInstr):
+    def run(self):
+        addr = self.instr.imm.value
+        val = self.sim.ext[addr]
+        self.sim.set_reg(self.instr.rsd.value,val)
+
+
 class s_CMPI(SimInstr):
     def run(self):
         ival = self.instr.imm.value 
         val = self.sim.get_reg(self.instr.ra.value)
-        print(self.instr.operands)
-        print(ival,val,ival-val)
-        out = val-ival
+        out = ival-val
+        print('val',ival,val,out)
         if out == 0:
             self.sim.z = 1
         else:
@@ -63,24 +79,41 @@ class s_CMPI(SimInstr):
 class s_JNZ(SimInstr):
     def run(self):
         if self.sim.z == 0:
-            print("jumping")
-            print(self.sim.pc)
             self.sim.set_pc_off(self.instr.imm.value)
-            print(self.sim.pc)
             
+
+class s_JZ(SimInstr):
+    def run(self):
+        if self.sim.z == 1:
+            self.sim.set_pc_off(self.instr.imm.value)
+
+class s_EXTI(SimInstr):
+    def run(self):
+        print(self.instr.imm.value)
+        self.sim.has_exti = True
+
+class s_MOVR(SimInstr):
+    def run(self):
+        val = self.sim.mem[self.sim.pc+self.instr.imm.value]
+        self.sim.set_reg(self.instr.rsd.value,val)
 
 sim_map = {
         'MOVI':s_MOVI,
         'ADDI':s_ADDI,
         'J':s_J,
+        'JZ':s_JZ,
         'STXA':s_STXA,
         'CMPI':s_CMPI,
         'JNZ':s_JNZ,
+        'EXTI':s_EXTI,
+        'JAL': s_JAL,
+        'MOVR' : s_MOVR,
+        'LDXA' : s_LDXA,
         }
 
 
 class Simulator:
-    def __init__(self,size=512,reset=8,window=0,asm_file="asm/blink.asm"):
+    def __init__(self,size=512,reset=8,window=0,asm_file="asm/echo.asm"):
         self.assembler = Assembler()
         self.asm_file = asm_file
         self.mem = [0  for i in range(size)]
@@ -94,7 +127,7 @@ class Simulator:
         self.s = 0
         self.c = 0 
         self.v = 0
-
+        self.has_exti = False
 
         # assemble the code
         txt = open(self.asm_file).read()
@@ -116,7 +149,6 @@ class Simulator:
         return self.mem[self.window+pos]
 
     def set_reg(self,pos,value):
-        print(pos)
         assert pos >= 0 & pos < 8
         self.mem[self.window+pos] = value
 
@@ -132,14 +164,12 @@ class Simulator:
             else:
                 print(cls_name," does not exist")
         val = self.mem[self.pc]
-        print(val)
+        #print(val)
         if isinstance(val,SimInstr):
-            val.run()
+            val.call()
 
         self.pc += 1
 
 if __name__ == "__main__":
     s = Simulator()
-    for i in range(500):
-        s.step()
     print(s)
