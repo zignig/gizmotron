@@ -17,7 +17,8 @@ headers = """
     .equ image,6
     .equ boot,7
 """
-class SimInstr:
+
+class SimInstr(object):
     def __init__(self,instr,sim):
         self.instr = instr
         self.sim = sim
@@ -26,54 +27,77 @@ class SimInstr:
         if self.sim.has_exti:
             print("Exetended instruction")
             self.sim.has_exti = False
+            #TODO fix this
         else:
             self.run()
 
     def __repr__(self):
         return self.instr.__repr__()
+    
+    # short name access
+    @property
+    def rsd(self):
+        return self.instr.rsd.value
 
+    @property
+    def imm(self):
+        return self.instr.imm.value
 
+    @property
+    def ra(self):
+        return self.instr.ra.value 
+
+    def set_reg(self,reg,val):
+        self.sim.set_reg(reg,val)
+
+    def reg(self,reg):
+        return self.sim.get_reg(reg)
+
+    # simulator function
+    @property
+    def pc(self):
+        return self.sim.pc
+
+    
 class s_MOVI(SimInstr):
     def run(self):
-        reg = self.instr.rsd.value
-        val = self.instr.imm.value
-        self.sim.set_reg(reg,val)
+        self.set_reg(self.rsd,self.imm)
 
 class s_ADDI(SimInstr):
     def run(self):
-        reg = self.instr.rsd.value
-        val = self.instr.imm.value
-        cur = self.sim.get_reg(reg)
-        self.sim.set_reg(reg,val+cur)
+        cur = self.reg(self.ra)
+        self.sim.set_reg(self.rsd,self.imm+cur)
 
 class s_J(SimInstr):
     def run(self):
-        self.sim.set_pc_off(self.instr.imm.value)
+        self.sim.set_pc_off(self.imm)
 
 class s_JAL(SimInstr):
     def run(self):
-        self.sim.set_reg(self.instr.rsd.value,self.sim.pc)
-        self.sim.set_pc_off(self.instr.imm.value)
+        self.set_reg(self.rsd,self.pc)
+        self.sim.set_pc_off(self.imm)
+
+class s_JR(SimInstr):
+    def run(self):
+        self.sim.set_pc_abs(self.reg(self.rsd))
 
 class s_STXA(SimInstr):
     def run(self):
-        addr = self.instr.rsd.value
-        val = self.instr.imm.value
-        self.sim.ext[addr] = val
+        print('-->',self.reg(self.rsd))
+        self.sim.ext[self.imm] =  self.reg(self.rsd)
+
+class s_LD(SimInstr):
+    def run(self):
+        self.set_reg(self.rsd,self.sim.mem[self.reg(self.ra)+self.imm])
 
 class s_LDXA(SimInstr):
     def run(self):
-        addr = self.instr.imm.value
-        val = self.sim.ext[addr]
-        self.sim.set_reg(self.instr.rsd.value,val)
+        self.set_reg(self.rsd,self.sim.ext[self.imm])
 
 
 class s_CMPI(SimInstr):
     def run(self):
-        ival = self.instr.imm.value 
-        val = self.sim.get_reg(self.instr.ra.value)
-        out = ival-val
-        print('val',ival,val,out)
+        out = self.reg(self.ra) - self.imm
         if out == 0:
             self.sim.z = 1
         else:
@@ -82,29 +106,30 @@ class s_CMPI(SimInstr):
 class s_JNZ(SimInstr):
     def run(self):
         if self.sim.z == 0:
-            self.sim.set_pc_off(self.instr.imm.value)
+            self.sim.set_pc_off(self.imm)
             
 
 class s_JZ(SimInstr):
     def run(self):
         if self.sim.z == 1:
-            self.sim.set_pc_off(self.instr.imm.value)
+            self.sim.set_pc_off(self.imm)
 
 class s_EXTI(SimInstr):
     def run(self):
-        print(self.instr.imm.value)
+        print("E",self.instr.imm.value)
         self.sim.has_exti = True
 
 class s_MOVR(SimInstr):
     def run(self):
-        val = self.sim.mem[self.sim.pc+1+self.instr.imm.value]
-        print('movr',self.instr.rsd.value,val)
-        self.sim.set_reg(self.instr.rsd.value,val)
+        val = self.sim.mem[self.sim.pc+self.imm+1]
+        print('movr',self.rsd,val)
+        self.sim.set_reg(self.rsd,val)
 
 sim_map = {
         'MOVI':s_MOVI,
         'ADDI':s_ADDI,
         'J':s_J,
+        'JR':s_JR,
         'JZ':s_JZ,
         'STXA':s_STXA,
         'CMPI':s_CMPI,
@@ -113,14 +138,16 @@ sim_map = {
         'JAL': s_JAL,
         'MOVR' : s_MOVR,
         'LDXA' : s_LDXA,
+        'LD' : s_LD,
         }
 
 
 class Simulator:
-    def __init__(self,size=512,reset=8,window=0,asm_file="asm/echo.asm"):
+    def __init__(self,size=200,reset=8,window=0,asm_file="asm/sim_test.asm"):
         self.assembler = Assembler()
         self.asm_file = asm_file
-        self.mem = [0  for i in range(size)]
+        #self.mem = [0  for i in range(size)]
+        self.mem = []
         self.size = size
         self.reset = reset
         self.window = window
@@ -139,10 +166,14 @@ class Simulator:
         self.assembler.parse(txt)
         self.out = self.assembler.assemble()
         for i,j in enumerate(self.out):
-            self.mem[i] = j
+            self.mem.append(j)
     
+        # current instruction
+        self.current = None
+        self.debug = True
 
     def set_pc_off(self,pos):
+        print('set pc',self.pc,pos)
         self.pc = self.pc + pos
 
     def set_pc_abs(self,pos):
@@ -166,14 +197,30 @@ class Simulator:
                 sim_instr = sim_map[cls_name](instr,self)
                 self.mem[self.pc] = sim_instr
             else:
+                print(self.pc,'|',self.mem[0:8],":",instr,"-",val,"|")
                 print(cls_name," does not exist")
+        
         val = self.mem[self.pc]
-        #print(val)
+        self.current = val
+
         if isinstance(val,SimInstr):
             val.call()
-
+        if self.debug:
+            print(self.pc,self.w,self.current,self.fl)
         self.pc += 1
+
+    @property
+    def w(self):
+        return self.mem[self.window:self.window+8]
+
+    @property
+    def fl(self):
+        return [self.z,self.c]
+
+    def run(self,count=1000):
+        for i in range(count):
+            self.step()
 
 if __name__ == "__main__":
     s = Simulator()
-    print(s)
+    #s.run(40)
