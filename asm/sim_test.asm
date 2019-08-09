@@ -21,13 +21,13 @@ padCursor: .alloc 1       ; current position in the pad
 ; Need macros and register renames
 init:                           ; initialize the program all the registers.
     MOVI R0,0 ; working register        
-    MOVI R1,0 ; working address 
-    MOVI R2,0 ; holding data 
-    MOVI R3,0 ; device status
-    MOVI R4,0 ; delayer
-    MOVI R5,0 ; temp 
-    MOVI R6,0 ; jump2 return address
-    MOVI R7,0 ; jump return address
+    MOVI R1,10 ; working address 
+    MOVI R2,20 ; holding data 
+    MOVI R3,30 ; device status
+    MOVI R4,40 ; delayer
+    MOVI R5,50 ; temp 
+    MOVI R6,60 ; jump2 return address
+    MOVI R7,70 ; jump return address
 
     ; write the greet string
 run:                                   ; main loop
