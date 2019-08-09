@@ -21,19 +21,20 @@ padCursor: .alloc 1       ; current position in the pad
 ; Need macros and register renames
 init:                           ; initialize the program all the registers.
     MOVI R0,0 ; working register        
-    MOVI R1,10 ; working address 
-    MOVI R2,20 ; holding data 
-    MOVI R3,30 ; device status
-    MOVI R4,40 ; delayer
-    MOVI R5,50 ; temp 
-    MOVI R6,60 ; jump2 return address
-    MOVI R7,70 ; jump return address
+    MOVI R1,0 ; working address 
+    MOVI R2,0 ; holding data 
+    MOVI R3,0 ; device status
+    MOVI R4,0 ; delayer
+    MOVI R5,0 ; temp 
+    MOVI R6,0 ; jump2 return address
+    MOVI R7,0 ; jump return address
 
     ; write the greet string
 run:                                   ; main loop
     MOVR R1,greet
     JAL R6,nextchar
-J run
+spin:
+J spin 
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
@@ -41,7 +42,6 @@ JR R7,0
 
 nextchar:
     LD   R2,R1,0        ; load the data at working address into holding
-    STXA R1,blinky
     JAL   R7,txchar      ; write the char
     ADDI R1,R1,1        ; increment the pointer
     CMPI R2,0           ; look for a null (0) 

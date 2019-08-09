@@ -35,7 +35,12 @@ class s_CMP(SimInstr):
 
 class s_CMPI(SimInstr):
    def run(self):
-       raise Missing(self)
+       val = self.reg(self.ra) - self.imm
+       if val == 0:
+           self.sim.z = True
+       else:
+           self.sim.z = False
+       #print(val)
 
 class s_ADD(SimInstr):
    def run(self):
@@ -43,7 +48,8 @@ class s_ADD(SimInstr):
 
 class s_ADDI(SimInstr):
    def run(self):
-       raise Missing(self)
+       val = self.reg(self.ra) + self.imm
+       self.set_reg(self.rsd,val)
 
 class s_ADC(SimInstr):
    def run(self):
@@ -103,8 +109,8 @@ class s_SRAI(SimInstr):
 
 class s_LD(SimInstr):
    def run(self):
-       self
-       raise Missing(self)
+       val = self.sim.mem[self.reg(self.ra)+self.imm]
+       self.set_reg(self.rsd,val)
 
 class s_LDR(SimInstr):
    def run(self):
@@ -132,7 +138,10 @@ class s_STX(SimInstr):
 
 class s_STXA(SimInstr):
    def run(self):
-       raise Missing(self)
+       val = self.reg(self.rsd)
+       #print("external",val,"-->",self.imm)
+       self.sim.ext[self.imm] = val
+       print(chr(val),end="")
 
 class s_MOVI(SimInstr):
    def run(self):
@@ -161,7 +170,7 @@ class s_LDW(SimInstr):
 
 class s_JR(SimInstr):
    def run(self):
-       raise Missing(self)
+       self.sim.pc = self.reg(self.rsd+self.imm)
 
 class s_JRAL(SimInstr):
    def run(self):
@@ -177,12 +186,13 @@ class s_JST(SimInstr):
 
 class s_JAL(SimInstr):
    def run(self):
-       self.set_reg(self.rsd,self.pc+1)
+       self.set_reg(self.rsd,self.pc)
        self.sim.pc = self.pc+ self.imm
 
 class s_JNZ(SimInstr):
    def run(self):
-       raise Missing(self)
+       if self.sim.z == False:
+           self.sim.pc = self.pc+self.imm
 
 class s_JZ(SimInstr):
    def run(self):

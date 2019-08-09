@@ -207,10 +207,10 @@ class Simulator:
         val = self.mem[self.pc]
         self.current = val
 
-        if isinstance(val,SimInstr):
-            val.call()
         if self.debug:
             print(self.pc,self.w,self.current,self.fl)
+        if isinstance(val,SimInstr):
+            val.call()
         self.pc += 1
 
     @property
