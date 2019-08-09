@@ -147,7 +147,7 @@ headers = """
 
 
 class Simulator:
-    def __init__(self,size=200,reset=8,window=0,asm_file="../asm/sim_test.asm"):
+    def __init__(self,size=200,reset=8,window=0,asm_file="../asm/warm.asm"):
         self.assembler = Assembler()
         self.asm_file = asm_file
         #self.mem = [0  for i in range(size)]
@@ -163,6 +163,7 @@ class Simulator:
         self.c = 0 
         self.v = 0
         self.has_exti = False
+        self.exti_val = 0
 
         # assemble the code
         txt = open(self.asm_file).read()

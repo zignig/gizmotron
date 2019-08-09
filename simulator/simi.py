@@ -6,8 +6,11 @@ class SimInstr(object):
 
     def call(self):
         if self.sim.has_exti:
-            print("Exetended instruction")
+            print("Extended instruction")
             self.sim.has_exti = False
+            val = self.sim.exti_val << 3
+            print(val)
+            self.instr.imm.value  = val + self.instr.imm.value
             #TODO fix this
         else:
             self.run()

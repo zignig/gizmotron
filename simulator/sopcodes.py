@@ -272,8 +272,8 @@ class s_JSLE(SimInstr):
 
 class s_EXTI(SimInstr):
    def run(self):
-       raise Missing(self)
-
+       self.sim.has_exti = True
+       self.sim.exti_val = self.imm
 
 sim_dict = {
 	"AND": s_AND,
