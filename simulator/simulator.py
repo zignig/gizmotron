@@ -227,4 +227,4 @@ class Simulator:
 
 if __name__ == "__main__":
     s = Simulator()
-    s.run(40)
+    s.run(1000)
