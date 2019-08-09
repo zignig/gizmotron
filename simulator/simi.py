@@ -3,14 +3,17 @@ class SimInstr(object):
     def __init__(self,instr,sim):
         self.instr = instr
         self.sim = sim
+        self.exti_tmp = 0
+        self.exti = False
 
     def call(self):
         if self.sim.has_exti:
-            print("Extended instruction")
-            self.sim.has_exti = False
             val = self.sim.exti_val << 3
-            print(val)
-            self.instr.imm.value  = val + self.instr.imm.value
+            self.exti_tmp = val + self.instr.imm.value
+            self.exti = True
+            self.run()
+            self.exti = False
+            self.sim.has_exti = False
             #TODO fix this
         else:
             self.run()
@@ -25,7 +28,10 @@ class SimInstr(object):
 
     @property
     def imm(self):
-        return self.instr.imm.value
+        if self.exti:
+            return self.exti_tmp
+        else:
+            return self.instr.imm.value
 
     @property
     def ra(self):
