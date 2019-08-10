@@ -6,7 +6,7 @@ from processor import Boneless
 # Working gizmos
 from cores.gizmo import TestGizmo
 from cores.user_leds import UserLeds
-from cores.serial import Serial,OSerial,BSerial
+from cores.serial import Serial
 from cores.counter import Counter
 from cores.pwm import Pwm
 from cores.warm import WarmBoot
@@ -23,7 +23,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
     l = UserLeds("status", platform=platform,source='user_led')
     b.add_gizmo(l)
 
-    s = OSerial(
+    s = Serial(
         "serial_port", platform=platform, number=0, baud=9600
     )
     b.add_gizmo(s)
