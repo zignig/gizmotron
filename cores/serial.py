@@ -33,6 +33,8 @@ class Serial(Gizmo):
         rx_data = IO(sig_in=uart.RX.rx_data, name="rx_data")
         self.add_reg(rx_data)
 
+    def simulate(self):
+        pass
 
 class SerialLoop(Gizmo):
     " Loopback uart on serial 0 and serial 1"

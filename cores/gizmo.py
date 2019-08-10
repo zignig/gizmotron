@@ -129,6 +129,8 @@ class Gizmo:
                     reg.set_addr(boneless.addr)
                     reg.assigned = True 
                     boneless.addr += 1
+                    if self.name not in self.__dir__():
+                        setattr(self,reg.name,reg)
 
     def attach(self, boneless, m, platform):
         " Generate and bind the gateway to the Boneless "

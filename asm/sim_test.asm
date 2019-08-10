@@ -42,7 +42,23 @@ JR R7,0
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
+    MOVI R3,1                   ; set status to one
+    STXA R3,tx_status           ; write to tx status 
+    MOVI R3,0                   ; set the status to zero
+    STXA R3,tx_status           ; acknowledge the write 
+waitup:                         ; TODO , this should be a fifo in the serial port 
+    LDXA R3,tx_status           ; wait for tx status to go high
+    CMPI R3,1
+    JE waitup
+waitdown:
+    LDXA R3,tx_status           ; wait for the status to go low
+    CMPI R3,0
+    JE waitdown
 JR R7,0
+
+;txchar:                         ; put a char into the serial port 
+;    STXA R2,tx_data             ; put the holding data into the serial port
+;JR R7,0
 
 nextchar:
     LD   R2,R1,0        ; load the data at working address into holding
