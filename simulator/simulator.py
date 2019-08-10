@@ -4,8 +4,8 @@ from boneless.arch.asm import Assembler
 from boneless.arch.opcode import * 
 from boneless.arch.opcode import Instr 
 
-from simi import SimInstr
-import sopcodes
+from .simi import SimInstr
+import .sopcodes
 
 sim_map = sopcodes.sim_dict
 # hard set gateware headers
@@ -61,7 +61,7 @@ class Memory:
         return s
 
 class Simulator:
-    def __init__(self,size=200,reset=8,window=0,asm_file="../asm/sim_test.asm"):
+    def __init__(self,size=200,reset=8,window=0,asm_file="../asm/echo.asm"):
         self.assembler = Assembler()
         self.asm_file = asm_file
         self.size = size

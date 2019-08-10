@@ -64,6 +64,7 @@ class s_ADDI(SimInstr):
 
 class s_ADC(SimInstr):
     def run(self):
+        self.set_reg(self.rsd, self.rav + self.rab)
         raise Missing(self)
 
 
@@ -172,9 +173,7 @@ class s_STX(SimInstr):
 class s_STXA(SimInstr):
     def run(self):
         val = self.reg(self.rsd)
-        # print("external",val,"-->",self.imm)
         self.sim.ext[self.imm] = val
-        #print(chr(val), end="")
 
 
 class s_MOVI(SimInstr):
