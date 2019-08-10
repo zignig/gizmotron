@@ -23,6 +23,7 @@ class Disconnected(BaseException):
     pass
 
 # connect to external simulation objects
+
 class External:
     def __init__(self,size):
         self.mem = []
@@ -58,8 +59,8 @@ class Memory:
         for i,j in enumerate(self.mem):
             if self.sim.pc == i:
                 s += '>'
-            s += '{:04x}'.format(i)+' : '+'{:>13s}'.format(str(j))+' | '
-            if i % 6 == 1:
+            s += '{:04x}'.format(i)+' : '+'{:>15s}'.format(str(j))+' | '
+            if i % 4 == 3:
                 s += '\n'
         return s
 
@@ -85,6 +86,9 @@ class Simulator:
         self.debug = True 
         self.load(asm_file)
 
+        # external interface
+        self.ext = External(20)
+
     def load(self,asm_file=''):
         self.assembler = Assembler()
         if asm_file != '':
@@ -96,7 +100,6 @@ class Simulator:
         self.out = self.assembler.assemble()
         # create memory and load the code
         self.mem = Memory(len(self.out),self) 
-        self.ext = External(20)
         for i,j in enumerate(self.out):
             self.mem[i] = j  
         self.pc = self.pc_reset 

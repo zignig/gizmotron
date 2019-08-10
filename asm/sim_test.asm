@@ -10,26 +10,9 @@
 
 .window                 ; todo this macro needs to align to 8 word boundary
 J init
-leds: .alloc 1
-padStatus: .alloc 1      ; is the pad ready to go ?
-padCount: .alloc 1       ; cursor for the pad
-padCursor: .alloc 1       ; current position in the pad 
-; pad itself is declared at the bottom so it does not overwrite code 
 .equ delay,65000        ; constant for delay
 
-; Basic echo construct
-; Need macros and register renames
 init:                           ; initialize the program all the registers.
-    MOVI R0,0 ; working register        
-    MOVI R1,0 ; working address 
-    MOVI R2,0 ; holding data 
-    MOVI R3,0 ; device status
-    MOVI R4,0 ; delayer
-    MOVI R5,0 ; temp 
-    MOVI R6,0 ; jump2 return address
-    MOVI R7,0 ; jump return address
-
-    ; write the greet string
 run:                                   ; main loop
     MOVR R1,greet
     JAL R6,nextchar
@@ -42,23 +25,7 @@ JR R7,0
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
-    MOVI R3,1                   ; set status to one
-    STXA R3,tx_status           ; write to tx status 
-    MOVI R3,0                   ; set the status to zero
-    STXA R3,tx_status           ; acknowledge the write 
-waitup:                         ; TODO , this should be a fifo in the serial port 
-    LDXA R3,tx_status           ; wait for tx status to go high
-    CMPI R3,1
-    JE waitup
-waitdown:
-    LDXA R3,tx_status           ; wait for the status to go low
-    CMPI R3,0
-    JE waitdown
 JR R7,0
-
-;txchar:                         ; put a char into the serial port 
-;    STXA R2,tx_data             ; put the holding data into the serial port
-;JR R7,0
 
 nextchar:
     LD   R2,R1,0        ; load the data at working address into holding
