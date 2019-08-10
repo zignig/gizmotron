@@ -5,11 +5,9 @@ from boneless.arch.opcode import *
 from boneless.arch.opcode import Instr 
 
 from .simi import SimInstr
-import .sopcodes
+from .sopcodes import sim_dict
 
-sim_map = sopcodes.sim_dict
 # hard set gateware headers
-
 headers = """
     ; automatic gizmo headers
     .equ blinky,0
@@ -118,8 +116,8 @@ class Simulator:
         if isinstance(val,int):
             instr = self.assembler.disassemble([val])[0]
             cls_name = instr.__class__.__name__
-            if cls_name in sim_map:
-                sim_instr = sim_map[cls_name](instr,self)
+            if cls_name in sim_dict:
+                sim_instr = sim_dict[cls_name](instr,self)
                 self.mem[self.pc] = sim_instr
             else:
                 print(self.pc,'|',self.mem[0:8],":",instr,"-",val,"|")

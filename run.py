@@ -6,9 +6,11 @@ from plat import BB
 from nmigen.hdl.ir import Fragment
 from nmigen.back import pysim, rtlil, verilog
 
+
 from boneless.arch.asm import Assembler 
 import array
 import intelhex
+from sim import Simulator
 
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
@@ -22,6 +24,8 @@ if __name__ == "__main__":
     action.add_parser("program")
 
     action.add_parser("simulate")
+
+    action.add_parser("gatesim")
 
     p.add_argument("-f",action="store",help="asm file to include",default="asm/echo.asm")
 
@@ -48,7 +52,12 @@ if __name__ == "__main__":
         
 
     if args.action == "simulate":
-        print("Simulation")
+        print("Simulate")
+        s = Simulator(asm_file=args.f)
+        s.run()
+        
+    if args.action == "gatesim":
+        print("Gateware Simulation")
         design = construct.simCPU(platform,asm_file=args.f)
         fragment = Fragment.get(design, platform)
         f = open("test.vcd", "w")

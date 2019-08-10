@@ -1,5 +1,5 @@
 
-from simi import SimInstr
+from .simi import SimInstr
 
 
 class Missing(BaseException):
