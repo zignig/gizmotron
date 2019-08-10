@@ -40,8 +40,9 @@ class External:
         self.mem[key] = value
 
 class Memory:
-    def __init__(self,size):
+    def __init__(self,size,sim):
         self.mem = []
+        self.sim = sim
         for i in range(size):
            self.mem.append(0)
     
@@ -55,12 +56,15 @@ class Memory:
     def __repr__(self):
         s = ""
         for i,j in enumerate(self.mem):
-            s += '{:04x}'.format(i)+' : '+str(j)+'\n'
+            if self.sim.pc == i:
+                s += '>'
+            s += '{:04x}'.format(i)+' : '+'{:>13s}'.format(str(j))+' | '
+            if i % 6 == 1:
+                s += '\n'
         return s
 
 class Simulator:
     def __init__(self,size=200,reset=8,window=0,asm_file="../asm/echo.asm"):
-        self.assembler = Assembler()
         self.asm_file = asm_file
         self.size = size
         self.pc_reset = reset
@@ -76,20 +80,26 @@ class Simulator:
         self.has_exti = False
         self.exti_val = 0
 
+        # current instruction
+        self.current = None
+        self.debug = True 
+        self.load(asm_file)
+
+    def load(self,asm_file=''):
+        self.assembler = Assembler()
+        if asm_file != '':
+           self.asm_file = asm_file
         # assemble the code
         txt = open(self.asm_file).read()
         self.assembler.parse(headers)
         self.assembler.parse(txt)
         self.out = self.assembler.assemble()
         # create memory and load the code
-        self.mem = Memory(len(self.out)) 
+        self.mem = Memory(len(self.out),self) 
         self.ext = External(20)
         for i,j in enumerate(self.out):
             self.mem[i] = j  
-    
-        # current instruction
-        self.current = None
-        self.debug = True 
+        self.pc = self.pc_reset 
 
     def reset(self):
         self.pc = self.pc_reset
