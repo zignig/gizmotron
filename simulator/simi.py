@@ -37,6 +37,20 @@ class SimInstr(object):
     def ra(self):
         return self.instr.ra.value 
 
+    @property
+    def rb(self):
+        return self.instr.rb.value
+
+    # value of register a
+    @property
+    def rav(self):
+        return self.reg(self.instr.ra.value)
+
+    # value of reginster b
+    @property
+    def rbv(self):
+        return self.reg(self.instr.rb.value)
+
     def set_reg(self,reg,val):
         self.sim.set_reg(reg,val)
 

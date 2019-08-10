@@ -23,7 +23,7 @@ headers = """
 """
 
 class Simulator:
-    def __init__(self,size=200,reset=8,window=0,asm_file="../asm/echo.asm"):
+    def __init__(self,size=200,reset=8,window=0,asm_file="../asm/sim_test.asm"):
         self.assembler = Assembler()
         self.asm_file = asm_file
         #self.mem = [0  for i in range(size)]
@@ -38,6 +38,7 @@ class Simulator:
         self.s = 0
         self.c = 0 
         self.v = 0
+
         self.has_exti = False
         self.exti_val = 0
 
@@ -51,7 +52,7 @@ class Simulator:
     
         # current instruction
         self.current = None
-        self.debug = True
+        self.debug = False 
 
     def set_pc_off(self,pos):
         print('set pc',self.pc,pos)
