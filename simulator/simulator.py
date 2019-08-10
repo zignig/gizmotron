@@ -21,18 +21,54 @@ headers = """
     .equ image,6
     .equ boot,7
 """
+class Disconnected(BaseException):
+    pass
+
+# connect to external simulation objects
+class External:
+    def __init__(self,size):
+        self.mem = []
+        for i in range(size):
+           self.mem.append(0)
+        pass
+
+
+    def __getitem__(self,key):
+        print("external get:=",key)
+        return self.mem[key]
+
+    def __setitem__(self,key,value):
+        print("external set:=",key,',',value)
+        self.mem[key] = value
+
+class Memory:
+    def __init__(self,size):
+        self.mem = []
+        for i in range(size):
+           self.mem.append(0)
+    
+ 
+    def __getitem__(self,key):
+        return self.mem[key]
+
+    def __setitem__(self,key,value):
+        self.mem[key] = value
+
+    def __repr__(self):
+        s = ""
+        for i,j in enumerate(self.mem):
+            s += '{:04x}'.format(i)+' : '+str(j)+'\n'
+        return s
 
 class Simulator:
     def __init__(self,size=200,reset=8,window=0,asm_file="../asm/sim_test.asm"):
         self.assembler = Assembler()
         self.asm_file = asm_file
-        #self.mem = [0  for i in range(size)]
-        self.mem = []
         self.size = size
-        self.reset = reset
+        self.pc_reset = reset
+        self.window_reset = window
         self.window = window
         self.pc = reset 
-        self.ext = [0 for i in range(20)]
         # flags
         self.z = 0
         self.s = 0
@@ -47,12 +83,19 @@ class Simulator:
         self.assembler.parse(headers)
         self.assembler.parse(txt)
         self.out = self.assembler.assemble()
+        # create memory and load the code
+        self.mem = Memory(len(self.out)) 
+        self.ext = External(20)
         for i,j in enumerate(self.out):
-            self.mem.append(j)
+            self.mem[i] = j  
     
         # current instruction
         self.current = None
-        self.debug = False 
+        self.debug = True 
+
+    def reset(self):
+        self.pc = self.pc_reset
+        self.window = self.window_reset
 
     def set_pc_off(self,pos):
         print('set pc',self.pc,pos)
@@ -92,6 +135,10 @@ class Simulator:
         self.pc += 1
 
     @property
+    def R0(self):
+        pass
+
+    @property
     def w(self):
         return self.mem[self.window:self.window+8]
 
@@ -105,4 +152,4 @@ class Simulator:
 
 if __name__ == "__main__":
     s = Simulator()
-    s.run(1000)
+    s.run(50)

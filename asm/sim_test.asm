@@ -33,8 +33,12 @@ init:                           ; initialize the program all the registers.
 run:                                   ; main loop
     MOVR R1,greet
     JAL R6,nextchar
-spin:
-J spin 
+    JAL R7,countup
+J run
+
+countup:
+    ADDI R0,R0,1
+JR R7,0
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
@@ -48,5 +52,4 @@ nextchar:
     JNE  nextchar     ; not there yet, get next char
 JR R6,0 ; return with jump2
 
-greet: .string "Boneless-v3-zignig-bootloader"
-pwd: .string ">>"
+greet: .string "Text thing"

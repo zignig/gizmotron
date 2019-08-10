@@ -44,7 +44,7 @@ class s_CMP(SimInstr):
 
 class s_CMPI(SimInstr):
     def run(self):
-        val = self.reg(self.ra) - self.imm
+        val = self.rav  - self.imm
         if val == 0:
             self.sim.z = True
         else:
@@ -174,7 +174,7 @@ class s_STXA(SimInstr):
         val = self.reg(self.rsd)
         # print("external",val,"-->",self.imm)
         self.sim.ext[self.imm] = val
-        print(chr(val), end="")
+        #print(chr(val), end="")
 
 
 class s_MOVI(SimInstr):
@@ -186,7 +186,6 @@ class s_MOVR(SimInstr):
     def run(self):
         val = self.pc + self.imm + 1
         self.set_reg(self.rsd, val)
-
 
 class s_STW(SimInstr):
     def run(self):
@@ -243,7 +242,7 @@ class s_JNZ(SimInstr):
 class s_JZ(SimInstr):
     def run(self):
         if self.sim.z == True:
-            self.sim.pc = self.pc + self.imm
+            self.sim.pc = self.pc + self.imm 
 
 
 class s_JNS(SimInstr):

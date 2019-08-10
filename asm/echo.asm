@@ -25,7 +25,7 @@ init:                           ; initialize the program all the registers.
     MOVI R2,0 ; holding data 
     MOVI R3,0 ; device status
     MOVI R4,0 ; delayer
-    MOVR R5,0 ; temp 
+    MOVI R5,0 ; temp 
     MOVI R6,0 ; jump2 return address
     MOVI R7,0 ; jump return address
 
@@ -67,7 +67,6 @@ padContinue:
     AND R5,R1,R1	 ; copy the padd address into holding
     ADD R5,R5,R0	 ; add the current pad length to holding
     ST R2,R5,0		 ; store the word into to address in holding
-    STXA R5,blinky
     ADDI R0,R0,1	 ; increment to pad count
     ST R0,R1,0		 ; store the value back into the start of the pad
 JR R7,0
@@ -92,7 +91,6 @@ JR R7,0
 
 nextchar:
     LD   R2,R1,0        ; load the data at working address into holding
-    STXA R1,blinky
     JAL   R7,txchar      ; write the char
     ADDI R1,R1,1        ; increment the pointer
     CMPI R2,0           ; look for a null (0) 
