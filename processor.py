@@ -11,6 +11,9 @@ from nmigen.cli import main
 from cores.gizmo import Gizmo, _GizmoCollection
 
 
+
+#TODO move most of this into the gizmo collection object
+
 class Boneless(Elaboratable):
     def __init__(self, asm_file="asm/blink.asm"):
         self.memory = Memory(width=16, depth=8*1024)  # max of  8*1024 on the 8k
@@ -19,12 +22,13 @@ class Boneless(Elaboratable):
         # Gizmos
         self.addr = 0
         self.gizmos = []
-        self.g = _GizmoCollection()
+        self.gc = _GizmoCollection()
         self.ext_gizmos = []
         self._prepared = False
 
     def add_gizmo(self, giz):
         self.gizmos.append(giz)
+        self.g += giz
 
     def insert_gizmos(self, m, platform):
         print("Insert Gizmos")

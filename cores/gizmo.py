@@ -12,10 +12,17 @@ class _GizmoCollection:
 
     def __init__(self):
         object.__setattr__(self, "_modules", OrderedDict())
+        self.addr = 0  # global address counter
+
+    def __next__(self):
+        print('next')
 
     def __iadd__(self, modules):
-        for module in modules:
-            self._modules[module] = module
+        if type(modules) == type([]):
+            for module in modules:
+                self._modules[modules.name] = modules
+        else:
+            self._modules[modules.name] = modules
         return self
 
     def __setattr__(self, name, submodule):
@@ -23,6 +30,20 @@ class _GizmoCollection:
 
     def __setitem__(self, name, value):
         return self.__setattr__(name, value)
+
+    def __getitem__(self,value):
+        return self._modules[value]
+
+    def map(self):
+        for i in self._modules:
+            print(i)
+
+    def addr(self):
+        m = {} 
+        for i,j in self._modules.items():
+            for k in j.registers:
+                m[k.addr] = (j,k)
+        return m
 
 
 # TODO create asm definitions named correctly

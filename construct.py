@@ -28,8 +28,8 @@ def Construct(platform, asm_file="asm/tx.asm"):
     )
     b.add_gizmo(s)
 
-    #wb = WarmBoot("warmboot")
-    #b.add_gizmo(wb)
+    wb = WarmBoot("warmboot")
+    b.add_gizmo(wb)
 
     #c = Counter("counter1", platform=platform)
     #b.add_gizmo(c)
