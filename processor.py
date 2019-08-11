@@ -15,41 +15,27 @@ from cores.gizmo import Gizmo, _GizmoCollection
 #TODO move most of this into the gizmo collection object
 
 class Boneless(Elaboratable):
+    debug = True
     def __init__(self, asm_file="asm/blink.asm"):
         self.memory = Memory(width=16, depth=8*1024)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
 
         # Gizmos
-        self.addr = 0
-        self.gizmos = []
         self.gc = _GizmoCollection()
-        self.ext_gizmos = []
         self._prepared = False
 
     def add_gizmo(self, giz):
-        self.gizmos.append(giz)
-        self.g += giz
+        self.gc += giz
 
     def insert_gizmos(self, m, platform):
-        print("Insert Gizmos")
-        for g in self.gizmos:
-            g.attach(self, m, platform)
+        self.gc.attach(self,m,platform)
 
     def prepare(self):
-        # Prepare all the gizmos and map their addresses
-        print("Preparing Gizmos")
-        for g in self.gizmos:
-            g.prepare(self)
-        print("Dump gizmo data")
-        dump = []
-        for g in self.gizmos:
-            dump += g.dump()
-        print("Register Dump")
-        print(dump)
-        self.ext_gizmos= dump
         # TODO , map registers bits and code fragments from gizmos
-
-        header = self.asm_header()
+        # Prepare all the gizmos and map their addresses
+        self.gc.prepare(self)
+        # generate asm header address list
+        header = self.gc.asm_header()
 
         # Code
         asm = Assembler()
@@ -61,24 +47,16 @@ class Boneless(Elaboratable):
         code = asm.assemble()
         self.code = code
         # Object list
-        print("len :",len(code))
-        for i,j in enumerate(asm.input):
-            print('{:04X}'.format(i),j)
-        for i,j in enumerate(asm.disassemble(code)):
-            print('{:04X}'.format(i),j)
+        if self.debug:
+            print("len :",len(code))
+            for i,j in enumerate(asm.input):
+                print('{:04X}'.format(i),j)
+            for i,j in enumerate(asm.disassemble(code)):
+                print('{:04X}'.format(i),j)
         self.bin_code = code
         self.memory.init = code
         self.devices = []
         self._prepared = True
-
-    def asm_header(self):
-        print("--------- ASM HEADER ------------")
-        txt = '; automatic gizmo headers\n'
-        for i in self.ext_gizmos:
-            txt += '.equ '+str(i[0])+','+str(i[1])+'\n'
-        print(txt)
-        print("--------- ASM HEADER ------------")
-        return txt
 
     def elaborate(self, platform):
         m = Module()
@@ -94,7 +72,6 @@ class Boneless(Elaboratable):
         self.o_ext_re = core.o_ext_re
         self.o_ext_data = core.o_ext_data
         self.i_ext_data = core.i_ext_data
-
 
         self.insert_gizmos(m, platform)
         return m

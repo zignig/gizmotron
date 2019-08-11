@@ -6,9 +6,12 @@ from collections import OrderedDict
 # that add their names into the assembler setup
 # rework address map so it can pre cacluate
 
+class EpicFail(BaseException):
+    pass
+
 
 class _GizmoCollection:
-    " currently unused "
+    " A collection of gizmos "
 
     def __init__(self):
         object.__setattr__(self, "_modules", OrderedDict())
@@ -17,12 +20,12 @@ class _GizmoCollection:
     def __next__(self):
         print('next')
 
-    def __iadd__(self, modules):
-        if type(modules) == type([]):
-            for module in modules:
-                self._modules[modules.name] = modules
+    def __iadd__(self, mod):
+        if type(mod) == type([]):
+            for m in mod:
+                self._modules[mod.name] = mod
         else:
-            self._modules[modules.name] = modules
+            self._modules[mod.name] = mod
         return self
 
     def __setattr__(self, name, submodule):
@@ -39,12 +42,33 @@ class _GizmoCollection:
             print(i)
 
     def addr(self):
+        " return an address map to (gizmo,register) tuple"
         m = {} 
         for i,j in self._modules.items():
+            print('addrs>',i,j)
             for k in j.registers:
                 m[k.addr] = (j,k)
         return m
 
+    def attach(self,m,platform):
+        " attach all the gizmos to boneless from the platform"
+        for i,j in self._modules.items():
+            j.attach(m,platform)
+
+    def prepare(self,cpu):
+        for i,j in self._modules.items():
+            print(i,j)
+            #j.prepare(cpu)
+
+    def asm_header(self):
+        print(self.addr())
+        print("--------- ASM HEADER ------------")
+        txt = '; automatic gizmo headers\n'
+        for i in self.ext_gizmos:
+            txt += '.equ '+str(i[0])+','+str(i[1])+'\n'
+        print(txt)
+        print("--------- ASM HEADER ------------")
+        return txt
 
 # TODO create asm definitions named correctly
 class BIT:
@@ -97,7 +121,7 @@ class IO:
         return (self.name,self.addr)
 
     def __repr__(self):
-        return str(self.addr) + "--" + str(self.sig_in) + "--" + str(self.sig_out)
+        return str(self.addr) + "\n\t"+ self.name+ "\n\t\tin  : " + str(self.sig_in) + "\n\t\tout : " + str(self.sig_out)
 
 
 class Gizmo:
@@ -123,11 +147,11 @@ class Gizmo:
 
     def build(self):
         " add the modules and IO and BITS to itself"
-        print("OVERRIDE ME!")
+        raise EpicFail(self)
 
     def simulator(self):
         " TODO , create interfaces for the simulator"
-        print("OVERRIDE ME!")
+        raise EpicFail(self)
 
     def add_device(self, dev):
         " add a Module to the gizmo "
@@ -182,7 +206,7 @@ class Gizmo:
 
     def __repr__(self):
         return (
-            "<" + self.name + "|" + str(self.devices) + "|" + str(self.registers) + ">"
+            self.name + str(self.devices) + "|" + str(self.registers)
         )
 
 

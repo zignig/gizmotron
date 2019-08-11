@@ -33,10 +33,12 @@ class External:
 
 
     def __getitem__(self,key):
+        # TODO , bind to simulated registers in gizmo
         print("external get:=",key)
         return self.mem[key]
 
     def __setitem__(self,key,value):
+        # TODO , bind to simulated registers in gizmo
         print("external set:=",key,',',value)
         self.mem[key] = value
 
