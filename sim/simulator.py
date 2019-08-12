@@ -74,6 +74,7 @@ class Simulator:
         self.window_reset = window
         self.window = window
         self.pc = reset 
+        self.counter = 0 
         # flags
         self.z = 0
         self.s = 0
@@ -146,6 +147,7 @@ class Simulator:
         if isinstance(val,SimInstr):
             val.call()
         self.pc += 1
+        self.counter += 1
 
     @property
     def R0(self):
