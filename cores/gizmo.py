@@ -14,8 +14,10 @@ class _GizmoCollection:
     " A collection of gizmos "
 
     def __init__(self):
-        object.__setattr__(self, "_modules", OrderedDict())
+        #object.__setattr__(self, "_modules", OrderedDict())
+        self._modules = OrderedDict()
         self.addr = 0  # global address counter
+        self.name_map  =  {}
 
     def __next__(self):
         print('next')
@@ -28,8 +30,8 @@ class _GizmoCollection:
             self._modules[mod.name] = mod
         return self
 
-    def __setattr__(self, name, submodule):
-        self._modules[name] = submodule
+    #def __setattr__(self, name, submodule):
+    #    self._modules[name] = submodule
 
     def __setitem__(self, name, value):
         return self.__setattr__(name, value)
@@ -41,7 +43,7 @@ class _GizmoCollection:
         for i in self._modules:
             print(i)
 
-    def addr(self):
+    def addr_map(self):
         " return an address map to (gizmo,register) tuple"
         m = {} 
         for i,j in self._modules.items():
@@ -50,24 +52,23 @@ class _GizmoCollection:
                 m[k.addr] = (j,k)
         return m
 
-    def attach(self,m,platform):
+    def attach(self,b,m,platform):
         " attach all the gizmos to boneless from the platform"
         for i,j in self._modules.items():
-            j.attach(m,platform)
+            j.attach(b,m,platform)
 
-    def prepare(self,cpu):
+    def prepare(self):
         for i,j in self._modules.items():
             print(i,j)
-            #j.prepare(cpu)
+            j.prepare(self)
 
     def asm_header(self):
-        print(self.addr())
-        print("--------- ASM HEADER ------------")
         txt = '; automatic gizmo headers\n'
-        for i in self.ext_gizmos:
-            txt += '.equ '+str(i[0])+','+str(i[1])+'\n'
-        print(txt)
-        print("--------- ASM HEADER ------------")
+        m = self.addr_map()
+        for i in m: 
+            reg_id = i
+            reg_name = m[i][1].name
+            txt += '.equ '+reg_name+','+str(reg_id)+'\n'
         return txt
 
 # TODO create asm definitions named correctly
@@ -161,19 +162,19 @@ class Gizmo:
         " add an Autobinding register to the Boneless CPU"
         self.registers.append(reg)
 
-    def prepare(self, boneless):
+    def prepare(self, gizc):
         " Build internal and map external bus addresses "
         if self.debug:
-            print("Preparing " + str(self.name) + " within " + str(boneless))
+            print("Preparing " + str(self.name) + " within " + str(gizc))
             print(self.registers)
             print(self.devices)
             print("----")
         if len(self.registers) > 0:
             for reg in self.registers:
                 if not reg.assigned:
-                    reg.set_addr(boneless.addr)
+                    reg.set_addr(gizc.addr)
                     reg.assigned = True 
-                    boneless.addr += 1
+                    gizc.addr += 1
                     if self.name not in self.__dir__():
                         setattr(self,reg.name,reg)
 

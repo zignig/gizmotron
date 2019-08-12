@@ -62,7 +62,7 @@ class Memory:
             if self.sim.pc == i:
                 s += '>'
             s += '{:04x}'.format(i)+' : '+'{:>15s}'.format(str(j))+' | '
-            if i % 4 == 3:
+            if i % 5 == 4:
                 s += '\n'
         return s
 

@@ -33,7 +33,7 @@ class Boneless(Elaboratable):
     def prepare(self):
         # TODO , map registers bits and code fragments from gizmos
         # Prepare all the gizmos and map their addresses
-        self.gc.prepare(self)
+        self.gc.prepare()
         # generate asm header address list
         header = self.gc.asm_header()
 
