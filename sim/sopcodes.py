@@ -8,7 +8,7 @@ class Missing(BaseException):
 
 class s_AND(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav & self.rab)
+        self.set_reg(self.rsd,self.rav & self.rbv)
 
 
 class s_ANDI(SimInstr):
@@ -18,7 +18,7 @@ class s_ANDI(SimInstr):
 
 class s_OR(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav | self.rab )
+        self.set_reg(self.rsd,self.rav | self.rbv )
 
 
 class s_ORI(SimInstr):

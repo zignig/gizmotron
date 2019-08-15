@@ -10,6 +10,7 @@
 
 .window                 ; todo this macro needs to align to 8 word boundary
 J init
+spacer: .alloc 500
 leds: .alloc 1
 padStatus: .alloc 1      ; is the pad ready to go ?
 padCount: .alloc 1       ; cursor for the pad
