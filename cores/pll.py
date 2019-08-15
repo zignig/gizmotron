@@ -2,17 +2,18 @@ from .gizmo import Gizmo, IO
 from nmigen import *
 
 
-class _warmboot(Elaboratable):
+class pll(Elaboratable):
     def __init__(self):
         self.image = Signal(2)
         self.boot = Signal()
 
     def elaborate(self, platform):
         m = Module()
-        m.submodules.wb = Instance("SB_WARMBOOT",
-                i_S1 = self.image[0],
-                i_S0 = self.image[1],
-                i_BOOT = self.boot
+        m.submodules.wb = Instance("SB_PLL40_CORE",
+                p_FEEDBACK_PATH = "SIMPLE",
+                i_DIVR= Const(0),
+                i_DIVF= Const(0b010111),
+                i_DIVQ= Const(0b001) 
         )
         return m
 
@@ -36,13 +37,4 @@ SB_PLL40_CORE #(
                 .REFERENCECLK(clock_in),
                 .PLLOUTCORE(clock_out)
                 );
-i"""	
-
-class WarmBoot(Gizmo):
-    def build(self, **kwargs):
-        w = _warmboot()
-        self.add_device(w)
-        a = IO(sig_out=w.image, name="image")
-        self.add_reg(a)
-        s = IO(sig_out=w.boot, name="boot")
-        self.add_reg(s)
+"""	

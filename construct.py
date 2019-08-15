@@ -10,6 +10,7 @@ from cores.serial import Serial
 from cores.counter import Counter
 from cores.pwm import Pwm
 from cores.warm import WarmBoot
+from cores.pll import pll
 
 Elaboratable._Elaboratable__silence = True 
 
@@ -56,10 +57,12 @@ class CPU(Elaboratable):
     def elaborate(self, platform):
         clk16 = platform.request("clk16", 0)
 
+        pl = pll()
         m = Module()
         m.domains.sync = ClockDomain()
         m.d.comb += ClockSignal().eq(clk16.i)
 
+        m.submodules.pll = pl
         m.submodules.boneless = self.b
         return m
 
