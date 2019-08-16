@@ -4,16 +4,21 @@ from nmigen import *
 
 class pll(Elaboratable):
     def __init__(self):
-        self.image = Signal(2)
-        self.boot = Signal()
+        self.clock = Signal()
+        self.reset = Signal()
+        self.lock = Signal()
+        self.out = Signal()
 
     def elaborate(self, platform):
         m = Module()
-        m.submodules.wb = Instance("SB_PLL40_CORE",
+        m.submodules.pl = Instance("SB_PLL40_CORE",
                 p_FEEDBACK_PATH = "SIMPLE",
-                i_DIVR= Const(0),
-                i_DIVF= Const(0b010111),
-                i_DIVQ= Const(0b001) 
+                p_DIVR= Const(0),
+                p_DIVF = Const(0b010111),
+                p_DIVQ = Const(0b001),
+                i_REFERENCECLK = self.clock,
+                o_LOCK = self.lock,
+                o_PLLOUTCORE = self.out,
         )
         return m
 
@@ -38,3 +43,16 @@ SB_PLL40_CORE #(
                 .PLLOUTCORE(clock_out)
                 );
 """	
+
+if __name__ == "__main__":
+    print("PLL")
+    import argparse
+    from nmigen import cli
+
+    parser = argparse.ArgumentParser()
+    cli.main_parser(parser)
+    args = parser.parse_args()
+
+    tb = pll()
+    ios = ()
+    cli.main_runner(parser, args, tb, name="pll", ports=ios)

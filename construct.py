@@ -59,8 +59,9 @@ class CPU(Elaboratable):
 
         pl = pll()
         m = Module()
+        m.d.comb += pl.clock.eq(clk16.i)
         m.domains.sync = ClockDomain()
-        m.d.comb += ClockSignal().eq(clk16.i)
+        m.d.comb += ClockSignal().eq(pl.out)
 
         m.submodules.pll = pl
         m.submodules.boneless = self.b
