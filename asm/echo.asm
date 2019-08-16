@@ -31,6 +31,8 @@ init:                           ; initialize the program all the registers.
     MOVI R7,0 ; jump return address
 
     ; write the greet string
+    MOVR R1,nl
+    JAL R6,nextchar
     MOVR R1,greet
     JAL R6,nextchar
     MOVR R1,pwd
@@ -41,6 +43,13 @@ run:                                   ; main loop
     J procpad		       ; check pad active and process
 J run
 
+warmboot:
+    MOVR R1,wb
+    JAL R6,nextchar
+    MOVI R0,1
+    STXA R0,image
+    MOVI R0,1
+    STXA R0,boot
 
 checkrx:                        ; get a char off the serial port 
     LDXA R3,rx_status           ; load the RX status from the serial port
@@ -54,6 +63,11 @@ addtopad:
     STXA R3,rx_status           ; acknowledge the char in the serial port
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
+    CMPI R2,4
+    JE warmboot
+    ; check if it is a ^C
+    CMPI R2,3
+    JE init
     ; check if it is a CR and set the padstatus to 1
     CMPI R2,13                  ; is a CR
     JNE padContinue
@@ -100,6 +114,9 @@ nextchar:
     JNE  nextchar     ; not there yet, get next char
 JR R6,0 ; return with jump2
 
+dumppad: ; just dump the pad to console
+    ; TODO
+JR R6,0
     
 procpad:
     MOVR R1,padStatus	; load the pad status address into R1
@@ -110,11 +127,12 @@ procpad:
 procPadContinue:
     ; process the pad here 
      
-    MOVR R1,nl
-    JAL R6,nextchar
-    MOVR R1,pwd
-    JAL R6,nextchar
     ; TODO write pad
+    JAL R6,dumppad
+    MOVR R1,nl          ; write a newline
+    JAL R6,nextchar     
+    MOVR R1,pwd         ; write the console prompt
+    JAL R6,nextchar
     MOVR R1,padStatus   ; reset pad status 
     MOVI R0,0
     ST R0,R1,0
@@ -122,5 +140,7 @@ J run
     
 greet: .string "Boneless-v3-zignig-bootloader\r\n"
 nl: .string "\r\n"
-pwd: .string "#"
+pwd: .string "$ "
+wb: .string "!warmboot"
+; add strings various here
 pad: .alloc 32 ; the pad itself 
