@@ -14,13 +14,41 @@ class pll(Elaboratable):
         m.submodules.pl = Instance("SB_PLL40_CORE",
                 p_FEEDBACK_PATH = "SIMPLE",
                 p_DIVR= Const(0),
-                p_DIVF = Const(0b010111),
-                p_DIVQ = Const(0b001),
+                p_DIVF = Const(47),
+                p_DIVQ = Const(4),
                 i_REFERENCECLK = self.clock,
                 o_LOCK = self.lock,
                 o_PLLOUTCORE = self.out,
         )
         return m
+
+"""
+FEEDBACK: SIMPLE
+F_PFD:   16.000 MHz
+F_VCO:  768.000 MHz
+
+DIVR:  0 (4'b0000)
+DIVF: 47 (7'b0101111)
+DIVQ:  4 (3'b100)
+
+FILTER_RANGE: 1 (3'b001)
+"""
+
+"""
+F_PLLIN:    16.000 MHz (given)
+F_PLLOUT:   20.000 MHz (requested)
+F_PLLOUT:   20.000 MHz (achieved)
+
+FEEDBACK: SIMPLE
+F_PFD:   16.000 MHz
+F_VCO:  640.000 MHz
+
+DIVR:  0 (4'b0000)
+DIVF: 39 (7'b0100111)
+DIVQ:  5 (3'b101)
+
+FILTER_RANGE: 1 (3'b001)
+"""
 
 """
 module pll(

@@ -33,10 +33,12 @@ init:                           ; initialize the program all the registers.
     ; write the greet string
     MOVR R1,greet
     JAL R6,nextchar
+    MOVR R1,pwd
+    JAL R6,nextchar
 run:                                   ; main loop
     JAL R7,checkrx                     ; get a char from the serial port
     JAL R7,txchar                      ; write R2 ( holding ) to the serial port 
-    JAL R7,procpad		       ; check pad active and process
+    J procpad		       ; check pad active and process
 J run
 
 
@@ -45,7 +47,6 @@ checkrx:                        ; get a char off the serial port
     CMPI R3,1                   ; compare the register to 1
     JE addtopad                 ; if it is equal to one ,  add it to the pad
     J checkrx
-;    JR R7,0                     ; no change in status , jump back to main loop
 addtopad:
     ; get the data and acknowledge
     LDXA R2,rx_data             ; load the RX data from the serial port
@@ -75,6 +76,7 @@ JR R7,0
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
+    STXA R2,blinky
     MOVI R3,1                   ; set status to one
     STXA R3,tx_status           ; write to tx status 
     MOVI R3,0                   ; set the status to zero
@@ -104,15 +106,21 @@ procpad:
     LD R0,R1,0		; load the pad status into R0
     CMPI R0,1		; is the pad active
     JE procPadContinue  ; continue
-    JR R7,0 		; return to main
+    J run
 procPadContinue:
     ; process the pad here 
-    ; TODO
+     
+    MOVR R1,nl
+    JAL R6,nextchar
+    MOVR R1,pwd
+    JAL R6,nextchar
+    ; TODO write pad
     MOVR R1,padStatus   ; reset pad status 
     MOVI R0,0
     ST R0,R1,0
-JR R7,0
+J run
     
-greet: .string "Boneless-v3-zignig-bootloader"
-pwd: .string ">>"
+greet: .string "Boneless-v3-zignig-bootloader\r\n"
+nl: .string "\r\n"
+pwd: .string "#"
 pad: .alloc 32 ; the pad itself 

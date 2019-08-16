@@ -50,6 +50,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
 
 # For FPGA
 class CPU(Elaboratable):
+    has_pll = False 
     def __init__(self, platform, asm_file="asm/blink.asm"):
         self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
@@ -57,13 +58,17 @@ class CPU(Elaboratable):
     def elaborate(self, platform):
         clk16 = platform.request("clk16", 0)
 
-        pl = pll()
         m = Module()
-        m.d.comb += pl.clock.eq(clk16.i)
         m.domains.sync = ClockDomain()
-        m.d.comb += ClockSignal().eq(pl.out)
 
-        m.submodules.pll = pl
+        if self.has_pll:
+            pl = pll()
+            m.d.comb += pl.clock.eq(clk16.i)
+            m.submodules.pll = pl
+            m.d.comb += ClockSignal().eq(pl.out)
+        else:
+            m.d.comb += ClockSignal().eq(clk16.i)
+
         m.submodules.boneless = self.b
         return m
 
