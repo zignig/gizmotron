@@ -36,6 +36,10 @@ init:                           ; initialize the program all the registers.
     MOVR R1,pwd                 ; prompt
     JAL R6,dumpstring
 
+    MOVR R1,pad                 ; load the pad address
+    MOVI R0,0                   ; load a zero
+    ST R0,R1,0                  ; store the zero in the pad length cell
+
 run:                            ; main loop
     JAL R7,checkrx              ; get a char from the serial port
     JAL R7,txchar               ; write R2 ( holding ) to the serial port 
