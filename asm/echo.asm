@@ -10,7 +10,7 @@
 
 .window                 ; todo this macro needs to align to 8 word boundary, need to move window for bootloader
 J init                  ; jump to init
-;spacer: .alloc 500      ; spacer for the new program , asm needs to be able to link to the bottom
+spacer: .alloc 500      ; spacer for the new program , asm needs to be able to link to the bottom
 padStatus: .alloc 1      ; is the pad ready to go ?
 padCursor: .alloc 1       ; current position in the pad 
 ; pad itself is declared at the bottom so it does not overwrite code 

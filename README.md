@@ -5,7 +5,7 @@ Edit the platform in plat.py to alter your hardware setup.
 Edit construct.py to add new gizmos , these will auto bind to the boneless memory map.
 
 # TODO
-- add bound names to the assembler 
+[X] add bound names to the assembler 
 - expose and emulate gizmos in the simulator 
 - get UART working 
 - test echo program
