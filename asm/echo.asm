@@ -27,48 +27,48 @@ init:                           ; initialize the program all the registers.
     MOVI R3,0 ; device status
     MOVI R4,0 ; delayer
     MOVI R5,0 ; temp 
-    MOVI R6,0 ; jump2 return address
+    MOVI R6,0 ; jump2 return address , no return stack , careful with the return registers
     MOVI R7,0 ; jump return address
 
     ; write the greet string
-    MOVR R1,nl
+    MOVR R1,nl                  ; newline
     JAL R6,nextchar
-    MOVR R1,greet
+    MOVR R1,greet               ; greetings string
     JAL R6,nextchar
-    MOVR R1,pwd
+    MOVR R1,pwd                 ; prompt
     JAL R6,nextchar
-run:                                   ; main loop
-    JAL R7,checkrx                     ; get a char from the serial port
-    JAL R7,txchar                      ; write R2 ( holding ) to the serial port 
-    J procpad		       ; check pad active and process
+run:                            ; main loop
+    JAL R7,checkrx              ; get a char from the serial port
+    JAL R7,txchar               ; write R2 ( holding ) to the serial port 
+    J procpad		        ; check pad active and process
 J run
 
 warmboot:
-    MOVR R1,wb
+    MOVR R1,wb                  ; write the warmboot string to the console
     JAL R6,nextchar
-    MOVI R0,1
-    STXA R0,image
-    MOVI R0,1
-    STXA R0,boot
+    MOVI R0,0                   ; set boot image to 0
+    STXA R0,image               ; write to the image external register
+    MOVI R0,1                   ; write one into regiters
+    STXA R0,boot                ; reboot the FPGA into the boot loader
 
 checkrx:                        ; get a char off the serial port 
     LDXA R3,rx_status           ; load the RX status from the serial port
     CMPI R3,1                   ; compare the register to 1
     JE addtopad                 ; if it is equal to one ,  add it to the pad
     J checkrx
-addtopad:
-    ; get the data and acknowledge
+addtopad:                       ; get the data and acknowledge
     LDXA R2,rx_data             ; load the RX data from the serial port
     MOVI R3,1                   ; load 1 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
-    CMPI R2,4
-    JE warmboot
-    ; check if it is a ^C
-    CMPI R2,3
+    CMPI R2,4                   ; check if it is ^D , warmboot
+    JE warmboot                  
+
+    CMPI R2,3                   ; check ^C restart processor
     JE init
     ; check if it is a CR and set the padstatus to 1
+
     CMPI R2,13                  ; is a CR
     JNE padContinue
     ; update the pad status to 1
@@ -78,13 +78,13 @@ addtopad:
     JR R7,0
 padContinue:
     ; put the incoming char into the pad
-    MOVR R1,pad		 ; move pad into the working address
-    LD R0,R1,0		 ; load the length into the working register
-    AND R5,R1,R1	 ; copy the padd address into holding
-    ADD R5,R5,R0	 ; add the current pad length to holding
-    ST R2,R5,0		 ; store the word into to address in holding
-    ADDI R0,R0,1	 ; increment to pad count
-    ST R0,R1,0		 ; store the value back into the start of the pad
+    MOVR R1,pad		        ; move pad into the working address
+    LD R0,R1,0		        ; load the length into the working register
+    AND R5,R1,R1	        ; copy the padd address into holding
+    ADD R5,R5,R0	        ; add the current pad length to holding
+    ST R2,R5,0		        ; store the word into to address in holding
+    ADDI R0,R0,1	        ; increment to pad count
+    ST R0,R1,0		        ; store the value back into the pad counter 
 JR R7,0
 
 
@@ -105,18 +105,22 @@ waitdown:
     JE waitdown
 JR R7,0
 
-
+; strings are null terminated
 nextchar:
-    LD   R2,R1,0        ; load the data at working address into holding
-    JAL   R7,txchar      ; write the char
-    ADDI R1,R1,1        ; increment the pointer
-    CMPI R2,0           ; look for a null (0) 
-    JNE  nextchar     ; not there yet, get next char
-JR R6,0 ; return with jump2
+    LD   R2,R1,0                ; load the data at working address into holding
+    JAL   R7,txchar             ; write the char
+    ADDI R1,R1,1                ; increment the pointer
+    CMPI R2,0                   ; look for a null (0) 
+    JNE  nextchar               ; not there yet, get next char
+JR R6,0                         ; return with jump2
 
-dumppad: ; just dump the pad to console
+;dumppad: ; just dump the pad to console
     ; TODO
-JR R6,0
+    ;MOVR R1,pad		 ; move pad into the working address
+    ;LD R0,R1,0		 ; load the length into the working register
+    ;AND R5,R1,R1	 ; copy the padd address into holding
+    ;ADD R5,R5,R0	 ; add the current pad length to holding
+;JR R6,0
     
 procpad:
     MOVR R1,padStatus	; load the pad status address into R1
@@ -128,12 +132,16 @@ procPadContinue:
     ; process the pad here 
      
     ; TODO write pad
-    JAL R6,dumppad
+    ; JAL R6,dumppad
+
     MOVR R1,nl          ; write a newline
     JAL R6,nextchar     
     MOVR R1,pwd         ; write the console prompt
     JAL R6,nextchar
     MOVR R1,padStatus   ; reset pad status 
+    MOVI R0,0
+    ST R0,R1,0
+    MOVR R1,padCount         ; reset pad counter 
     MOVI R0,0
     ST R0,R1,0
 J run
