@@ -8,15 +8,17 @@
 ;.equ image,6
 ;.equ boot,7
 
-.window                 ; todo this macro needs to align to 8 word boundary, need to move window for bootloader
+.window                 ; todo this macro needs to align to 8 word boundary
 J init                  ; jump to init
-spacer: .alloc 500      ; spacer for the new program , asm needs to be able to link to the bottom
-padStatus: .alloc 1      ; is the pad ready to go ?
+spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
+win: .window            ; named windwo , this is hand aligned to *8
+padStatus: .alloc 1     ; is the pad ready to go ?
+
 ; pad itself is declared at the bottom so it does not overwrite code 
 
 ; Basic echo construct
-; Need macros and register renames
 init:                           ; initialize the program all the registers.
+    LDW  R0,win                 ; set the register window near the bottom
     MOVI R0,0 ; working register        
     MOVI R1,0 ; working address 
     MOVI R2,0 ; holding data 
@@ -37,6 +39,10 @@ init:                           ; initialize the program all the registers.
     MOVR R1,pad                 ; load the pad address
     MOVI R0,0                   ; load a zero
     ST R0,R1,0                  ; store the zero in the pad length cell
+
+    MOVR R1,padStatus           ; reset the pad status  
+    MOVI R0,0 
+    ST R0,R1,0
 
 run:                            ; main loop
     JAL R7,checkrx              ; get a char from the serial port
@@ -63,6 +69,7 @@ addtopad:                       ; get the data and acknowledge
     STXA R3,rx_status           ; acknowledge the char in the serial port
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
+
     CMPI R2,4                   ; check if it is ^D , warmboot
     JE warmboot                  
 
@@ -106,7 +113,7 @@ waitdown:
     JE waitdown
     JR R7,0
 
-; strings are pascal style string first word is the length of the string. 
+; strings are pascal style strings,  first word is the length of the string. 
 dumpstring:
     LD R0,R1,0                  ; load the length of the string into R0 
     CMPI R0,0
@@ -138,9 +145,14 @@ procPadContinue:
     JAL R6,dumpstring
     MOVR R1,pad                 ; write the pad
     JAL R6,dumpstring
+    MOVR R1,pad                 ; load pad address
+
+    ; read HEX number and write to memory
+    J hexread              ; read hex
+    ; next command ...
+nextcommand:
     MOVR R1,nl                  ; write a newline
     JAL R6,dumpstring
-
     MOVR R1,pwd                 ; write the console prompt
     JAL R6,dumpstring
     MOVR R1,padStatus           ; reset pad status 
@@ -151,14 +163,41 @@ procPadContinue:
     ST R0,R1,0
 J run                           ; back to main loop
 
-; TODO what to do with the pad ? 
-; get read hex running
-; convert to number and write to memory
-; jump to start 
 
 greet: .string "Boneless-v3-zignig-bootloader\r\n"
 nl: .string "\r\n"
 pwd: .string ">> "
 wb: .string "!warmboot"
+error: .string "\r\n!Error"
 ; add strings various here
+
+; some variables 
 pad: .alloc 32 ; the pad itself 
+addr: .alloc 1 ; current address of the write bootloader writer
+jump: .alloc 1 ; address to boot into
+length: .alloc 1 ; length of the new firmware 
+sequence: .alloc 1 ; the current mode of the bootloader 
+
+; TODO what to do with the pad ? 
+; get read hex running
+; convert to number and write to memory
+; jump to start 
+
+
+hexread:
+    LD R0,R1,0                  ; load the length of the string into R0 
+    CMPI R0,4                   ; is the length of the pad 4 ?
+    JE hexcont                  ; yes , continue
+    J hexerror                  ; no , write error and reset program
+hexcont:
+    ; read a hex digit
+
+; back to the main loop
+hexit:
+    J nextcommand
+
+hexerror:
+    MOVR R1,error               ; set error
+    JAL R6,dumpstring           ; write the string
+    J init
+    
