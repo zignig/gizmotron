@@ -12,9 +12,7 @@
 J init                  ; jump to init
 spacer: .alloc 500      ; spacer for the new program , asm needs to be able to link to the bottom
 padStatus: .alloc 1      ; is the pad ready to go ?
-padCursor: .alloc 1       ; current position in the pad 
 ; pad itself is declared at the bottom so it does not overwrite code 
-.equ delay,65000        ; constant for delay
 
 ; Basic echo construct
 ; Need macros and register renames
@@ -70,8 +68,8 @@ addtopad:                       ; get the data and acknowledge
 
     CMPI R2,3                   ; check ^C restart processor
     JE init
-    ; check if it is a CR and set the padstatus to 1
 
+    ; check if it is a CR and set the padstatus to 1
     CMPI R2,13                  ; is a CR
     JNE padContinue
     ; update the pad status to 1
@@ -88,7 +86,7 @@ padContinue:
     ADD R5,R5,R0	        ; add the current pad length to holding
     ST R2,R5,0		        ; store the word into to address in holding
     ST R0,R1,0		        ; store the value back into the pad counter 
-JR R7,0
+    JR R7,0
 
 
 txchar:                         ; put a char into the serial port 
@@ -106,7 +104,7 @@ waitdown:
     LDXA R3,tx_status           ; wait for the status to go low
     CMPI R3,0
     JE waitdown
-JR R7,0
+    JR R7,0
 
 ; strings are pascal style string first word is the length of the string. 
 dumpstring:
@@ -124,38 +122,39 @@ nextchar:
     CMP  R1,R5                  ; compare current with end of string
     JULT nextchar               ; not there yet, get next char
 exitdump:
-JR R6,0                         ; return with jump2
+    JR R6,0                     ; return with jump2
     
 ; Process the pad
 procpad:
-    MOVR R1,padStatus	; load the pad status address into R1
-    LD R0,R1,0		; load the pad status into R0
-    CMPI R0,1		; is the pad active
-    JE procPadContinue  ; continue
-    J run               ; return to run
+    MOVR R1,padStatus	        ; load the pad status address into R1
+    LD R0,R1,0		        ; load the pad status into R0
+    CMPI R0,1		        ; is the pad active
+    JE procPadContinue          ; continue
+    J run                       ; return to run
 procPadContinue:
     ; process the pad here 
     ; just dump to console for now 
-    MOVR R1,nl          ; write a newline
+    MOVR R1,nl                  ; write a newline
     JAL R6,dumpstring
-    MOVR R1,pad
-    JAL R6,dumpstring 
-    MOVR R1,nl          ; write a newline
+    MOVR R1,pad                 ; write the pad
+    JAL R6,dumpstring
+    MOVR R1,nl                  ; write a newline
     JAL R6,dumpstring
 
-    MOVR R1,pwd         ; write the console prompt
+    MOVR R1,pwd                 ; write the console prompt
     JAL R6,dumpstring
-    MOVR R1,padStatus   ; reset pad status 
+    MOVR R1,padStatus           ; reset pad status 
     MOVI R0,0
     ST R0,R1,0
-    MOVR R1,pad ; reset pad counter 
+    MOVR R1,pad                 ; reset pad counter 
     MOVI R0,0
     ST R0,R1,0
-J run
+J run                           ; back to main loop
 
 ; TODO what to do with the pad ? 
-;
-;
+; get read hex running
+; convert to number and write to memory
+; jump to start 
 
 greet: .string "Boneless-v3-zignig-bootloader\r\n"
 nl: .string "\r\n"
