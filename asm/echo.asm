@@ -9,6 +9,7 @@
 ;.equ boot,7
 
 .window                 ; todo this macro needs to align to 8 word boundary
+reboot:                ; label for rebooting into
 J init                  ; jump to init
 spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
 win: .window            ; named window , this is hand aligned to *8
@@ -213,16 +214,17 @@ continue:
     J hexnext
 copytomem:
     ; R4 should contain the decoded hex value
-    CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
-    JE 8 
+    ;CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
+    ;JE reboot 
     
     MOVR R1,addr                ; load the working address
     LD R0,R1,0                  ; load the value
     ST R4,R0,0                  ; store the working data into the address
     ADDI R0,R0,1                ; increment the pointer
     ST R0,R1,0                  ; put it back into addr
-    MOVR R1,next
-    JAL R6,dumpstring
+    AND R2,R0,R0 
+    ADDI R2,R2,57
+    JAL R7,txchar    
 J nextcommand
 
 letter:                         ; process a hex letter
