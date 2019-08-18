@@ -45,10 +45,15 @@ if __name__ == "__main__":
     if args.action == "program":
         print("Program")
         cpu = construct.CPU(platform,asm_file=args.f)
-        as_byte = array.array("H",cpu.b.code).tobytes()
-        h = intelhex.IntelHex()
-        h.frombytes(as_byte)
-        h.write_hex_file('bootloader.hex')
+        code = cpu.b.code
+        hex_out = ""
+        for i in code:
+            hex_out += '{:04X}'.format(i)+'\r\n'
+        hex_out += 'FFFF\r\n' # end of the firmware
+        print(hex_out)
+        f = open('utils/yay.hex','w')
+        f.write(hex_out)
+        f.close()
         
 
     if args.action == "simulate":

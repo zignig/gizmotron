@@ -11,7 +11,7 @@
 .window                 ; todo this macro needs to align to 8 word boundary
 J init                  ; jump to init
 spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
-win: .window            ; named windwo , this is hand aligned to *8
+win: .window            ; named window , this is hand aligned to *8
 padStatus: .alloc 1     ; is the pad ready to go ?
 
 ; pad itself is declared at the bottom so it does not overwrite code 
@@ -192,6 +192,7 @@ hexread:
     JE hexcont                  ; yes , continue
     J hexerror                  ; no , write error and reset program
 hexcont:
+    MOVI R4,0                   ; zero out the data
     AND R5,R1,R1                ; copy address into temp
     ADD R5,R5,R0                ; add the length to the address
 hexnext:
@@ -203,7 +204,7 @@ hexnext:
     JUGE letter
     CMPI R0,57               
     JUGT hexerror              ; gap between 9 and A , error
-    CMPI R0,47              ; greater than digit 0
+    CMPI R0,48              ; greater than digit 0
     JUGE number             ; it's a number
     J hexerror                  ; nope , an error
 continue:
@@ -212,19 +213,26 @@ continue:
     J hexnext
 copytomem:
     ; R4 should contain the decoded hex value
+    CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
+    JE 8 
+    
+    MOVR R1,addr                ; load the working address
+    LD R0,R1,0                  ; load the value
+    ST R4,R0,0                  ; store the working data into the address
+    ADDI R0,R0,1                ; increment the pointer
+    ST R0,R1,0                  ; put it back into addr
     MOVR R1,next
     JAL R6,dumpstring
 J nextcommand
 
 letter:                         ; process a hex letter
-    SUBI R0,R0,55           ; subtract to get the ordinal value of the letter
-    J nextnibble            ; get the next char 
+    SUBI R0,R0,55               ; subtract to get the ordinal value of the letter
+    J nextnibble
 number:
     SUBI R0,R0,48           ; subtract 40 to get the ordinal of a number
-    J nextnibble
 nextnibble:
+    SLLI R4,R4,4            ; shift left 4 bits
     OR R4,R4,R0             ; OR the nibble
-    SRLI R4,R2,4            ; shift left 4 bits
 J continue              ; next char
 
 hexerror:

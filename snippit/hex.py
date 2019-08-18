@@ -1,4 +1,4 @@
-# convert chars to hex , in 0-F
+8# convert chars to hex , in 0-F
 
 t = "DEADBEEF"
 a = "0123456789ABCDEF"
