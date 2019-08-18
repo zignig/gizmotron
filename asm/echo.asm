@@ -23,8 +23,8 @@ init:                           ; initialize the program all the registers.
     MOVI R1,0 ; working address 
     MOVI R2,0 ; holding data 
     MOVI R3,0 ; device status
-    MOVI R4,0 ; delayer
-    MOVI R5,0 ; temp 
+    MOVI R4,0 ; current bootloader write data 
+    MOVI R5,0 ; end of string address
     MOVI R6,0 ; jump2 return address , no return stack , careful with the return registers
     MOVI R7,0 ; jump return address
 
@@ -145,10 +145,11 @@ procPadContinue:
     JAL R6,dumpstring
     MOVR R1,pad                 ; write the pad
     JAL R6,dumpstring
-    MOVR R1,pad                 ; load pad address
 
     ; read HEX number and write to memory
+    MOVR R1,pad                 ; load pad address
     J hexread              ; read hex
+
     ; next command ...
 nextcommand:
     MOVR R1,nl                  ; write a newline
@@ -168,6 +169,7 @@ greet: .string "Boneless-v3-zignig-bootloader\r\n"
 nl: .string "\r\n"
 pwd: .string ">> "
 wb: .string "!warmboot"
+next: .string "..."
 error: .string "\r\n!Error"
 ; add strings various here
 
@@ -190,11 +192,40 @@ hexread:
     JE hexcont                  ; yes , continue
     J hexerror                  ; no , write error and reset program
 hexcont:
-    ; read a hex digit
+    AND R5,R1,R1                ; copy address into temp
+    ADD R5,R5,R0                ; add the length to the address
+hexnext:
+    ADDI R1,R1,1	        ; increment the pointer to the next char
+    LD   R0,R1,0                ; load the data at working address into holding
+    CMPI R0,70              ; is it above F , error 
+    JUGT hexerror
+    CMPI R0,65              ; is it above A , must be a letter
+    JUGE letter
+    CMPI R0,57               
+    JUGT hexerror              ; gap between 9 and A , error
+    CMPI R0,47              ; greater than digit 0
+    JUGE number             ; it's a number
+    J hexerror                  ; nope , an error
+continue:
+    CMP  R1,R5                  ; compare current with end of string
+    JE copytomem 
+    J hexnext
+copytomem:
+    ; R4 should contain the decoded hex value
+    MOVR R1,next
+    JAL R6,dumpstring
+J nextcommand
 
-; back to the main loop
-hexit:
-    J nextcommand
+letter:                         ; process a hex letter
+    SUBI R0,R0,55           ; subtract to get the ordinal value of the letter
+    J nextnibble            ; get the next char 
+number:
+    SUBI R0,R0,48           ; subtract 40 to get the ordinal of a number
+    J nextnibble
+nextnibble:
+    OR R4,R4,R0             ; OR the nibble
+    SRLI R4,R2,4            ; shift left 4 bits
+J continue              ; next char
 
 hexerror:
     MOVR R1,error               ; set error
