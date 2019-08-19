@@ -43,9 +43,9 @@ class Boneless(Elaboratable):
         txt = open(self.asm_file).read()
         asm.parse(header)
         asm.parse(txt)
-        #code.load_fragment(header)
         code = asm.assemble()
         self.code = code
+
         # Object list
         if self.debug:
             print("len :",len(code))

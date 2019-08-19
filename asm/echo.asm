@@ -7,7 +7,7 @@
 ;.equ rx_data,5
 ;.equ image,6
 ;.equ boot,7
-
+base:
 .window                 ; todo this macro needs to align to 8 word boundary
 reboot:                ; label for rebooting into
 J init                  ; jump to init
@@ -19,7 +19,8 @@ padStatus: .alloc 1     ; is the pad ready to go ?
 
 ; Basic echo construct
 init:                           ; initialize the program all the registers.
-    LDW  R0,win                 ; set the register window near the bottom
+    MOVI R0,win
+    STW  R0                     ; set the register window at zero 
     MOVI R0,0 ; working register        
     MOVI R1,0 ; working address 
     MOVI R2,0 ; holding data 
@@ -59,6 +60,12 @@ warmboot:
     MOVI R0,1                   ; write one into regiters
     STXA R0,boot                ; reboot the FPGA into the boot loader
 
+warmme:
+    MOVI R0,1                   ; set boot image to 0
+    STXA R0,image               ; write to the image external register
+    MOVI R0,1                   ; write one into regiters
+    STXA R0,boot                ; reboot the FPGA into the boot loader
+
 checkrx:                        ; get a char off the serial port 
     LDXA R3,rx_status           ; load the RX status from the serial port
     CMPI R3,1                   ; compare the register to 1
@@ -75,7 +82,7 @@ addtopad:                       ; get the data and acknowledge
     JE warmboot                  
 
     CMPI R2,3                   ; check ^C restart processor
-    JE init
+    JE warmme 
 
     ; check if it is a CR and set the padstatus to 1
     CMPI R2,13                  ; is a CR
@@ -172,6 +179,7 @@ pwd: .string ">> "
 wb: .string "!warmboot"
 next: .string "..."
 error: .string "\r\n!Error"
+boottext: .string "booting..."
 ; add strings various here
 
 ; some variables 
@@ -214,8 +222,8 @@ continue:
     J hexnext
 copytomem:
     ; R4 should contain the decoded hex value
-    ;CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
-    ;JE reboot 
+    CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
+    JE bootinto 
     
     MOVR R1,addr                ; load the working address
     LD R0,R1,0                  ; load the value
@@ -226,6 +234,13 @@ copytomem:
     ADDI R2,R2,57
     JAL R7,txchar    
 J nextcommand
+
+bootinto:
+    MOVR R1,boottext
+    JAL R6,dumpstring           ; write the string
+    MOVI R0,base
+    STW  R0                     ; set the register window at zero 
+    J  reboot
 
 letter:                         ; process a hex letter
     SUBI R0,R0,55               ; subtract to get the ordinal value of the letter

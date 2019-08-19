@@ -48,8 +48,8 @@ if __name__ == "__main__":
         code = cpu.b.code
         hex_out = ""
         for i in code:
-            hex_out += '{:04X}'.format(i)+'\n'
-        hex_out += 'FFFF\n' # end of the firmware
+            hex_out += '{:04X}\n'.format(i)
+        hex_out += '{:04X}\n'.format(0xFFFF)
         print(hex_out)
         f = open('utils/yay.hex','w')
         f.write(hex_out)
