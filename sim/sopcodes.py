@@ -54,7 +54,7 @@ class s_CMPI(SimInstr):
 
 class s_ADD(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav + self.rab)
+        self.set_reg(self.rsd,self.rav + self.rbv)
 
 
 class s_ADDI(SimInstr):
@@ -64,7 +64,7 @@ class s_ADDI(SimInstr):
 
 class s_ADC(SimInstr):
     def run(self):
-        self.set_reg(self.rsd, self.rav + self.rab)
+        self.set_reg(self.rsd, self.rav + self.rbv)
         raise Missing(self)
 
 
