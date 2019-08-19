@@ -11,6 +11,7 @@ def command_line():
         index = 0
         while True: # loop for each character
             char = ord(sys.stdin.read(1)) # read one char and get char code
+            print(char)
             
             # Manage internal data-model
             if char == 3: # CTRL-C

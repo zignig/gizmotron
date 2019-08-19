@@ -10,8 +10,8 @@ class _warmboot(Elaboratable):
     def elaborate(self, platform):
         m = Module()
         m.submodules.wb = Instance("SB_WARMBOOT",
-                i_S1 = self.image[0],
-                i_S0 = self.image[1],
+                i_S1 = self.image[1],
+                i_S0 = self.image[0],
                 i_BOOT = self.boot
         )
         return m
