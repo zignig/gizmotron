@@ -56,18 +56,18 @@ class CPU(Elaboratable):
         self.platform = platform
 
     def elaborate(self, platform):
-        clk16 = platform.request("clk16", 0)
+        clk = platform.request(platform.default_clk, 0)
 
         m = Module()
         m.domains.sync = ClockDomain()
 
         if self.has_pll:
             pl = pll()
-            m.d.comb += pl.clock.eq(clk16.i)
+            m.d.comb += pl.clock.eq(clk.i)
             m.submodules.pll = pl
             m.d.comb += ClockSignal().eq(pl.out)
         else:
-            m.d.comb += ClockSignal().eq(clk16.i)
+            m.d.comb += ClockSignal().eq(clk.i)
 
         m.submodules.boneless = self.b
         return m

@@ -7,7 +7,7 @@ from .gizmo import Gizmo, IO, BIT
 from nmigen import *
 from .uart import UART, Loopback
 
-class SerialWithReset(Elabloratable):
+class SerialWithReset(Elaboratable):
     pass
 
 class Serial(Gizmo):
