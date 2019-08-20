@@ -1,2 +1,2 @@
-fix up reader to deal with two char character returns
-
+- fix up reader to deal with two char character returns
+- need to add , warmboot and processor init, to the serial port

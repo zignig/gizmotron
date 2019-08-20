@@ -7,6 +7,9 @@ from .gizmo import Gizmo, IO, BIT
 from nmigen import *
 from .uart import UART, Loopback
 
+class SerialWithReset(Elabloratable):
+    pass
+
 class Serial(Gizmo):
     " Uart connection in 4 registers"
 
