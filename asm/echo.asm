@@ -1,3 +1,9 @@
+; Bootloader Console
+; Simon Kirkby
+; 20190822
+; obeygiantrobot@gmail.com
+
+
 ; automatic gizmo headers
 ;.equ blinky,0
 ;.equ user_led,1
@@ -7,14 +13,16 @@
 ;.equ rx_data,5
 ;.equ image,6
 ;.equ boot,7
+
 base: .window                 ; todo this macro needs to align to 8 word boundary
 win: .window            ; named window , this is hand aligned to *8
 J init                  ; jump to init
 reboot:                ; label for rebooting into
 ;spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
 
-
 ; pad itself is declared at the bottom so it does not overwrite code 
+
+; blinky holding program 
 
 .equ timer, 65000 
 blinkInit:                           ; start here 
@@ -29,7 +37,8 @@ blinkWait:
         JNE     blinkWait            ; not there yet jump back
         MOVI    R1,0            ; reset R1 to zero
 	J	blinkEntry           ; start again , increment the leds
-; Basic echo construct
+
+; accumulate and execute a char pad. 
 
 init:                           ; initialize the program all the registers.
     MOVI R0,win
@@ -74,7 +83,7 @@ warmboot:
     STXA R0,boot                ; reboot the FPGA into the boot loader
 
 warmme:
-    MOVI R0,1                   ; set boot image to 0
+    MOVI R0,1                   ; set boot image to 1
     STXA R0,image               ; write to the image external register
     MOVI R0,1                   ; write one into regiters
     STXA R0,boot                ; reboot the FPGA into the boot loader
@@ -110,16 +119,16 @@ padContinue:
     MOVR R1,pad		        ; move pad into the working address
     LD R0,R1,0		        ; load the length into the working register
     ADDI R0,R0,1	        ; increment to pad count
-    AND R5,R1,R1	        ; copy the padd address into holding
+    AND R5,R1,R1	        ; copy the pad address into holding
     ADD R5,R5,R0	        ; add the current pad length to holding
     ST R2,R5,0		        ; store the word into to address in holding
     ST R0,R1,0		        ; store the value back into the pad counter 
-    JR R7,0
+    JR R7,0                     ; jump to main
 
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
-    STXA R2,blinky
+    STXA R2,blinky              ; into blinky
     MOVI R3,1                   ; set status to one
     STXA R3,tx_status           ; write to tx status 
     MOVI R3,0                   ; set the status to zero
@@ -137,7 +146,7 @@ waitdown:
 ; strings are pascal style strings,  first word is the length of the string. 
 dumpstring:
     LD R0,R1,0                  ; load the length of the string into R0 
-    CMPI R0,0
+    CMPI R0,0                   ; empty string , go back
     JE exitdump
     AND R5,R1,R1                ; copy address into temp
     ADD R5,R5,R0                ; add the length to the address
@@ -198,7 +207,7 @@ boottext: .string "\r\nbooting..."
 ; some variables 
 padStatus: .alloc 1     ; is the pad ready to go ?
 pad: .alloc 32 ; the pad itself 
-addr: .alloc 1 ; current address of the write bootloader writer
+addr: .word 16 ; current address of the write bootloader writer
 jump: .alloc 1 ; address to boot into
 length: .alloc 1 ; length of the new firmware 
 sequence: .alloc 1 ; the current mode of the bootloader 
@@ -245,16 +254,11 @@ copytomem:
     ADDI R0,R0,1                ; increment the pointer
     ST R0,R1,0                  ; put it back into addr
     AND R2,R0,R0 
+    ; debug 
     ADDI R2,R2,57
     JAL R7,txchar    
 J nextcommand
 
-bootinto:
-    MOVR R1,boottext
-    JAL R6,dumpstring           ; write the string
-    MOVI R0,base
-    STW  R0                     ; set the register window at zero 
-    J  reboot
 
 letter:                         ; process a hex letter
     SUBI R0,R0,55               ; subtract to get the ordinal value of the letter
@@ -265,6 +269,13 @@ nextnibble:
     SLLI R4,R4,4            ; shift left 4 bits
     OR R4,R4,R0             ; OR the nibble
 J continue              ; next char
+
+bootinto:
+    MOVR R1,boottext
+    JAL R6,dumpstring           ; write the boot string
+    MOVI R0,base
+    STW  R0                     ; set the register window at zero 
+    J  reboot
 
 hexerror:
     MOVR R1,error               ; set error
