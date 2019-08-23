@@ -3,9 +3,12 @@ import serial
 bl = serial.Serial('/dev/ttyUSB0')
 bl.timeout = 0.1
 
-data = open('utils/yay.hex').read()
+lines = open('utils/yay.hex').readlines()
+print(lines)
 def load():
-    for i in data:
-        bl.write(i.encode())
-        print(bl.readall())
+    for i in lines:
+        val = i.strip().encode('ascii')+str('\r').encode('ascii')
+        #print(val)
+        bl.write(val)
+        #print(bl.readall())
 load()
