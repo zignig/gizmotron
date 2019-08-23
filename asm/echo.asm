@@ -18,30 +18,30 @@ base: .window                 ; todo this macro needs to align to 8 word boundar
 win: .window            ; named window , this is hand aligned to *8
 J init                  ; jump to init
 reboot:                ; label for rebooting into
-;spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
 
 ; pad itself is declared at the bottom so it does not overwrite code 
 
 ; blinky holding program 
 
-.equ timer, 65000 
-blinkInit:                           ; start here 
-        MOVI    R0,0            ; move zero into R0
-        MOVI    R1,0            ; move zero into R1
-blinkEntry:
-        ADDI    R0,R0, 1 	; add one to R0 ( increment the leds )
-	STXA	R0, blinky ; write to the leds 
-blinkWait:
-        ADDI    R1,R1,1         ; add 1 to the counter
-        CMPI    R1,timer        ; is the counter equal to timer ?  
-        JNE     blinkWait            ; not there yet jump back
-        MOVI    R1,0            ; reset R1 to zero
-	J	blinkEntry           ; start again , increment the leds
+;.equ timer, 65000 
+;blinkInit:                           ; start here 
+;        MOVI    R0,0            ; move zero into R0
+;        MOVI    R1,0            ; move zero into R1
+;blinkEntry:
+;        ADDI    R0,R0, 1 	; add one to R0 ( increment the leds )
+;	STXA	R0, blinky ; write to the leds 
+;blinkWait:
+;        ADDI    R1,R1,1         ; add 1 to the counter
+;        CMPI    R1,timer        ; is the counter equal to timer ?  
+;        JNE     blinkWait            ; not there yet jump back
+;        MOVI    R1,0            ; reset R1 to zero
+;	J	blinkEntry           ; start again , increment the leds
 
+;spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
 ; accumulate and execute a char pad. 
 
 init:                           ; initialize the program all the registers.
-    MOVI R0,win
+    MOVI R0,base
     STW  R0                     ; set the register window at zero 
     MOVI R0,0 ; working register        
     MOVI R1,0 ; working address 
@@ -206,8 +206,7 @@ boottext: .string "\r\nbooting..."
 
 ; some variables 
 padStatus: .alloc 1     ; is the pad ready to go ?
-pad: .alloc 32 ; the pad itself 
-addr: .word 16 ; current address of the write bootloader writer
+addr: .word 8 ; current address of the write bootloader writer
 jump: .alloc 1 ; address to boot into
 length: .alloc 1 ; length of the new firmware 
 sequence: .alloc 1 ; the current mode of the bootloader 
@@ -273,7 +272,7 @@ J continue              ; next char
 bootinto:
     MOVR R1,boottext
     JAL R6,dumpstring           ; write the boot string
-    MOVI R0,base
+    MOVI R0,win
     STW  R0                     ; set the register window at zero 
     J  reboot
 
@@ -282,3 +281,4 @@ hexerror:
     JAL R6,dumpstring           ; write the string
     J init
     
+pad: .alloc 32 ; the pad itself 
