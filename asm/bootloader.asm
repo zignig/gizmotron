@@ -53,12 +53,12 @@ init:                           ; initialize the program all the registers.
     MOVI R7,0 ; jump return address
 
     ; write the greet string
-    MOVR R1,nl                  ; newline
-    JAL R6,dumpstring
-    MOVR R1,greet               ; greetings string
-    JAL R6,dumpstring
-    MOVR R1,pwd                 ; prompt
-    JAL R6,dumpstring
+    ;MOVR R1,nl                  ; newline
+    ;JAL R6,dumpstring
+    ;MOVR R1,greet               ; greetings string
+    ;JAL R6,dumpstring
+    ;MOVR R1,pwd                 ; prompt
+    ;JAL R6,dumpstring
 
     MOVR R1,pad                 ; load the pad address
     MOVI R0,0                   ; load a zero
@@ -171,8 +171,8 @@ procpad:
 procPadContinue:
     ; process the pad here 
     ; just dump to console for now 
-    MOVR R1,nl                  ; write a newline
-    JAL R6,dumpstring
+    ;MOVR R1,nl                  ; write a newline
+    ;JAL R6,dumpstring
     ;MOVR R1,pad                 ; write the pad
     ;JAL R6,dumpstring
 
@@ -182,10 +182,10 @@ procPadContinue:
 
     ; next command ...
 nextcommand:
-    MOVR R1,nl                  ; write a newline
-    JAL R6,dumpstring
-    MOVR R1,pwd                 ; write the console prompt
-    JAL R6,dumpstring
+    ;MOVR R1,nl                  ; write a newline
+    ;JAL R6,dumpstring
+    ;MOVR R1,pwd                 ; write the console prompt
+    ;JAL R6,dumpstring
     MOVR R1,padStatus           ; reset pad status 
     MOVI R0,0
     ST R0,R1,0
@@ -197,7 +197,7 @@ J run                           ; back to main loop
 
 greet: .string "Boneless-v3-zignig-bootloader\r\n"
 nl: .string "\r\n"
-pwd: .string ">> "
+pwd: .string "$"
 wb: .string "!warmboot"
 next: .string "..."
 error: .string "\r\n!Error"
@@ -252,10 +252,10 @@ copytomem:
     ST R4,R0,0                  ; store the working data into the address
     ADDI R0,R0,1                ; increment the pointer
     ST R0,R1,0                  ; put it back into addr
-    AND R2,R0,R0 
+    ;AND R2,R0,R0 
     ; debug 
-    ADDI R2,R2,57
-    JAL R7,txchar    
+    ;ADDI R2,R2,57
+    ;JAL R7,txchar    
 J nextcommand
 
 
