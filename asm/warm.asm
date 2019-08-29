@@ -17,4 +17,5 @@ wait:
         CMPI    R2,loops
 	JNE	entry           ; start again , increment the leds
         MOVI    R0,1            ; reset R1 to zero
+        STXA    R0,image
         STXA    R0,boot

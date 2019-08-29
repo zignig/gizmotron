@@ -19,6 +19,27 @@ win: .window            ; named window , this is hand aligned to *8
 J init                  ; jump to init
 reboot:                ; label for rebooting into
 
+; pad itself is declared at the bottom so it does not overwrite code 
+
+; blinky holding program 
+
+;.equ timer, 65000 
+;blinkInit:                           ; start here 
+;        MOVI    R0,0            ; move zero into R0
+;        MOVI    R1,0            ; move zero into R1
+;blinkEntry:
+;        ADDI    R0,R0, 1 	; add one to R0 ( increment the leds )
+;	STXA	R0, blinky ; write to the leds 
+;blinkWait:
+;        ADDI    R1,R1,1         ; add 1 to the counter
+;        CMPI    R1,timer        ; is the counter equal to timer ?  
+;        JNE     blinkWait            ; not there yet jump back
+;        MOVI    R1,0            ; reset R1 to zero
+;	J	blinkEntry           ; start again , increment the leds
+
+spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
+; accumulate and execute a char pad. 
+
 init:                           ; initialize the program all the registers.
     MOVI R0,base
     STW  R0                     ; set the register window at zero 
@@ -152,8 +173,13 @@ procPadContinue:
     ; just dump to console for now 
     MOVR R1,nl                  ; write a newline
     JAL R6,dumpstring
-    MOVR R1,pad                 ; write the pad
-    JAL R6,dumpstring
+    ;MOVR R1,pad                 ; write the pad
+    ;JAL R6,dumpstring
+
+    ; read HEX number and write to memory
+    MOVR R1,pad                 ; load pad address
+    J hexread              ; read hex
+
     ; next command ...
 nextcommand:
     MOVR R1,nl                  ; write a newline
@@ -183,11 +209,76 @@ padStatus: .alloc 1     ; is the pad ready to go ?
 addr: .word 8 ; current address of the write bootloader writer
 jump: .alloc 1 ; address to boot into
 length: .alloc 1 ; length of the new firmware 
-sequence: .alloc 1 ; the current mode of the bootloader 
+mode: .word 0 ; the current mode of the bootloader 
 
 ; TODO what to do with the pad ? 
 ; get read hex running
 ; convert to number and write to memory
 ; jump to start 
 
+
+hexread:
+    LD R0,R1,0                  ; load the length of the string into R0 
+    CMPI R0,4                   ; is the length of the pad 4 ?
+    JE hexcont                  ; yes , continue
+    J hexerror                  ; no , write error and reset program
+hexcont:
+    MOVI R4,0                   ; zero out the data
+    AND R5,R1,R1                ; copy address into temp
+    ADD R5,R5,R0                ; add the length to the address
+hexnext:
+    ADDI R1,R1,1	        ; increment the pointer to the next char
+    LD   R0,R1,0                ; load the data at working address into holding
+    CMPI R0,70              ; is it above F , error 
+    JUGT hexerror
+    CMPI R0,65              ; is it above A , must be a letter
+    JUGE letter
+    CMPI R0,57               
+    JUGT hexerror              ; gap between 9 and A , error
+    CMPI R0,48              ; greater than digit 0
+    JUGE number             ; it's a number
+    J hexerror                  ; nope , an error
+continue:
+    CMP  R1,R5                  ; compare current with end of string
+    JE copytomem 
+    J hexnext
+copytomem:
+    ; R4 should contain the decoded hex value
+    CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
+    JE bootinto 
+    
+    MOVR R1,addr                ; load the working address
+    LD R0,R1,0                  ; load the value
+    ST R4,R0,0                  ; store the working data into the address
+    ADDI R0,R0,1                ; increment the pointer
+    ST R0,R1,0                  ; put it back into addr
+    AND R2,R0,R0 
+    ; debug 
+    ADDI R2,R2,57
+    JAL R7,txchar    
+J nextcommand
+
+
+letter:                         ; process a hex letter
+    SUBI R0,R0,55               ; subtract to get the ordinal value of the letter
+    J nextnibble
+number:
+    SUBI R0,R0,48           ; subtract 40 to get the ordinal of a number
+nextnibble:
+    SLLI R4,R4,4            ; shift left 4 bits
+    OR R4,R4,R0             ; OR the nibble
+J continue              ; next char
+
+bootinto:
+    MOVR R1,boottext
+    JAL R6,dumpstring           ; write the boot string
+    MOVI R0,win
+    STW  R0                     ; set the register window at zero 
+    J  reboot
+
+hexerror:
+    MOVR R1,error               ; set error
+    JAL R6,dumpstring           ; write the string
+    J init
+    
 pad: .alloc 32 ; the pad itself 
