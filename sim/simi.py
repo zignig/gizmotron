@@ -49,7 +49,7 @@ class SimInstr(object):
     # value of reginster b
     @property
     def rbv(self):
-        return self.reg(self.ra)
+        return self.reg(self.rb)
 
     def set_reg(self,reg,val):
         self.sim.set_reg(reg,val)

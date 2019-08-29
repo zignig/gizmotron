@@ -188,7 +188,7 @@ class s_MOVR(SimInstr):
 
 class s_STW(SimInstr):
     def run(self):
-        raise Missing(self)
+        self.window = self.rbv
 
 
 class s_XCHW(SimInstr):
