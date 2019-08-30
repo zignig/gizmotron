@@ -16,13 +16,15 @@ J init                  ; jump to init
 reboot:                ; label for rebooting into
 
 spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
+addr: .word 8		; current addresss for the write address 
 
+; MAIN
 init:                           ; initialize the program all the registers.
     MOVI R0,base
     STW  R0                     ; set the register window at zero 
 run:                            ; main loop
-    JAL R7,checkrx              ; get a char from the serial port
-J run
+    J	checkrx ; get a char from the serial port
+; END MAIN
 
 warmme:
     MOVI R0,1                   ; set boot image to 1
@@ -50,10 +52,10 @@ nextchar:
     CMPI R2,48              ; greater than digit 0
     JUGE number             ; it's a number
     J hexerror                  ; nope , an error
-continue:
-    CMP  R1,R5                  ; compare current with end of string
-    JE copytomem 
-    J hexnext
+;continue:
+;    CMP  R1,R5                  ; compare current with end of string
+;    JE copytomem 
+;    J hexnext
 copytomem:
     ; R4 should contain the decoded hex value
     CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
@@ -64,7 +66,7 @@ copytomem:
     ST R4,R0,0                  ; store the working data into the address
     ADDI R0,R0,1                ; increment the pointer
     ST R0,R1,0                  ; put it back into addr
-J nextcommand
+J checkrx 
 
 
 letter:                         ; process a hex letter
@@ -75,18 +77,18 @@ number:
 nextnibble:
     SLLI R4,R4,4            ; shift left 4 bits
     OR R4,R4,R2             ; OR the nibble
-J continue              ; next char
+J checkrx; next char
 
 bootinto:
-    MOVR R1,boottext
-    JAL R6,dumpstring           ; write the boot string
+    MOVI R2,62 			; ! char
+    JAL R7,txchar
     MOVI R0,win
     STW  R0                     ; set the register window at zero 
     J  reboot
 
 hexerror:
     MOVI R2,33 			; ! char
-    JSR txchar,R7
+    JAL R7,txchar
     J init
     
 txchar:                         ; put a char into the serial port 
