@@ -40,7 +40,7 @@ class External:
     def __init__(self,size):
         self.mem = []
         for i in range(size):
-            self.mem.append(zero())
+            self.mem.append(on())
 
     def bind(self,reg):
         self.mem = reg
