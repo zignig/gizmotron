@@ -52,13 +52,13 @@ init:                           ; initialize the program all the registers.
     MOVI R6,0 ; jump2 return address , no return stack , careful with the return registers
     MOVI R7,0 ; jump return address
 
-    ; write the greet string
-    ;MOVR R1,nl                  ; newline
-    ;JAL R6,dumpstring
-    ;MOVR R1,greet               ; greetings string
-    ;JAL R6,dumpstring
-    ;MOVR R1,pwd                 ; prompt
-    ;JAL R6,dumpstring
+    ;write the greet string
+    MOVR R1,nl                  ; newline
+    JAL R6,dumpstring
+    MOVR R1,greet               ; greetings string
+    JAL R6,dumpstring
+    MOVR R1,pwd                 ; prompt
+    JAL R6,dumpstring
 
     MOVR R1,pad                 ; load the pad address
     MOVI R0,0                   ; load a zero

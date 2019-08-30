@@ -15,14 +15,17 @@ win: .window            ; named window , this is hand aligned to *8
 J init                  ; jump to init
 reboot:                ; label for rebooting into
 
-;spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
-addr: .word 8		; current addresss for the write address 
+spacer: .alloc 256 ; spacer for the new program , asm needs to be able to link to the bottom
 
 ; MAIN
 init:                           ; initialize the program all the registers.
     MOVI R0,base
     STW  R0                     ; set the register window at zero 
     ; R5 counter for the char
+    MOVI R2,98                  ; b char
+    JAL R7,txchar
+    MOVI R2,108                 ; ! char
+    JAL R7,txchar
 run:                            ; main loop
     J	checkrx ; get a char from the serial port
 ; END MAIN
@@ -45,6 +48,7 @@ nextchar:
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
    
+
     CMPI R2,3                   ; check ^C restart processor
     JE warmme 
 
@@ -60,11 +64,14 @@ nextchar:
     CMPI R2,48              ; greater than digit 0
     JUGE number             ; it's a number
     J hexerror                  ; nope , an error
+continue:
     ADDI R5,R5,1		; increment the char counter
     CMPI R5,4			; is the counter at 4 , we have a word
     JE copytomem		; copy it into memory
     J checkrx
 copytomem:
+    MOVI R2,95 			; _ char
+    JAL R7,txchar
     CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
     JE bootinto 
     
@@ -84,7 +91,7 @@ number:
 nextnibble:
     SLLI R4,R4,4            ; shift left 4 bits
     OR R4,R4,R2             ; OR the nibble
-J checkrx		    ; next char
+J continue                      ; next char
 
 bootinto:
     MOVI R2,62 			; > char
@@ -114,3 +121,5 @@ waitdown:
     CMPI R3,0
     JE waitdown
     JR R7,0
+
+addr: .word 8 		; current addresss for the write address 
