@@ -104,7 +104,7 @@ addtopad:                       ; get the data and acknowledge
     JE warmboot                  
 
     CMPI R2,3                   ; check ^C restart processor
-    JE warmme 
+    JE init 
 
     ; check if it is a CR and set the padstatus to 1
     CMPI R2,13                  ; is a CR

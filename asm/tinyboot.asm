@@ -10,13 +10,13 @@
 ;.equ image,6
 ;.equ boot,7
 
-base: .window                 ; todo this macro needs to align to 8 word boundary
 win: .window            ; named window , this is hand aligned to *8
 J init                  ; jump to init
 reboot:                ; label for rebooting into
 
 spacer: .alloc 256 ; spacer for the new program , asm needs to be able to link to the bottom
 
+base: .window                 ; todo this macro needs to align to 8 word boundary
 ; MAIN
 init:                           ; initialize the program all the registers.
     MOVI R0,base
