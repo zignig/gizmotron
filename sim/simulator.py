@@ -24,23 +24,38 @@ class Disconnected(BaseException):
 
 # connect to external simulation objects
 
+class zero:
+    def read(self):
+        return 0
+    def write(self,val):
+        return 0
+
+class on:
+    def read(self):
+        return 1
+    def write(self,val):
+        return 1
+
 class External:
     def __init__(self,size):
         self.mem = []
         for i in range(size):
-           self.mem.append(0)
-        pass
+            self.mem.append(zero())
 
+    def bind(self,reg):
+        self.mem = reg
 
     def __getitem__(self,key):
         # TODO , bind to simulated registers in gizmo
         print("external get:=",key)
-        return self.mem[key]
+        print(self.mem[key].read())
+        return self.mem[key].read()
 
     def __setitem__(self,key,value):
         # TODO , bind to simulated registers in gizmo
         print("external set:=",key,',',value)
-        self.mem[key] = value
+        print(self.mem)
+        self.mem[key].write(value)
 
 class Memory:
     def __init__(self,size,sim):
@@ -91,6 +106,8 @@ class Simulator:
 
         # external interface
         self.ext = External(20)
+        # TODO bind gizmos to these values
+        self.ext.mem[2] = on()
 
     def load(self,asm_file=''):
         self.assembler = Assembler()
