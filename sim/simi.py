@@ -44,17 +44,17 @@ class SimInstr(object):
     # value of register a
     @property
     def rav(self):
-        return self.reg(self.ra)
+        return self.get_reg(self.ra)
 
     # value of reginster b
     @property
     def rbv(self):
-        return self.reg(self.rb)
+        return self.get_reg(self.rb)
 
     def set_reg(self,reg,val):
         self.sim.set_reg(reg,val)
 
-    def reg(self,reg):
+    def get_reg(self,reg):
         return self.sim.get_reg(reg)
 
     # simulator function

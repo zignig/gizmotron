@@ -135,7 +135,7 @@ class s_SRAI(SimInstr):
 
 class s_LD(SimInstr):
     def run(self):
-        val = self.sim.mem[self.reg(self.ra) + self.imm]
+        val = self.sim.mem[self.get_reg(self.ra) + self.imm]
         self.set_reg(self.rsd, val)
 
 
@@ -146,7 +146,8 @@ class s_LDR(SimInstr):
 
 class s_ST(SimInstr):
     def run(self):
-        raise Missing(self)
+        val = self.get_reg(self.rsd)
+        self.sim.mem[self.get_reg(self.ra) + self.imm] = val
 
 
 class s_STR(SimInstr):
@@ -172,7 +173,7 @@ class s_STX(SimInstr):
 
 class s_STXA(SimInstr):
     def run(self):
-        val = self.reg(self.rsd)
+        val = self.get_reg(self.rsd)
         self.sim.ext[self.imm] = val
 
 
@@ -208,7 +209,7 @@ class s_LDW(SimInstr):
 
 class s_JR(SimInstr):
     def run(self):
-        self.sim.pc = self.reg(self.rsd + self.imm)
+        self.sim.pc = self.get_reg(self.rsd + self.imm)
 
 
 class s_JRAL(SimInstr):

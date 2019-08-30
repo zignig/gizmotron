@@ -178,7 +178,7 @@ class Simulator:
     def fl(self):
         return [self.z,self.c]
 
-    def run(self,count=1000):
+    def run(self,count=1000000):
         for i in range(count):
             self.step()
 
