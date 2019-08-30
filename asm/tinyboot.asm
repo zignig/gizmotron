@@ -15,13 +15,14 @@ win: .window            ; named window , this is hand aligned to *8
 J init                  ; jump to init
 reboot:                ; label for rebooting into
 
-spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
+;spacer: .alloc 512      ; spacer for the new program , asm needs to be able to link to the bottom
 addr: .word 8		; current addresss for the write address 
 
 ; MAIN
 init:                           ; initialize the program all the registers.
     MOVI R0,base
     STW  R0                     ; set the register window at zero 
+    ; R5 counter for the char
 run:                            ; main loop
     J	checkrx ; get a char from the serial port
 ; END MAIN
@@ -43,6 +44,10 @@ nextchar:
     STXA R3,rx_status           ; acknowledge the char in the serial port
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
+   
+    CMPI R2,13			; new line , just consume
+    JE checkrx
+
     CMPI R2,70              ; is it above F , error 
     JUGT hexerror
     CMPI R2,65              ; is it above A , must be a letter
@@ -52,20 +57,19 @@ nextchar:
     CMPI R2,48              ; greater than digit 0
     JUGE number             ; it's a number
     J hexerror                  ; nope , an error
-;continue:
-;    CMP  R1,R5                  ; compare current with end of string
-;    JE copytomem 
-;    J hexnext
+    ADDI R5,R5,1		; increment the char counter
+    CMPI R5,4			; is the counter at 4 , we have a word
+    JE copytomem		; copy it into memory
+    J checkrx
 copytomem:
-    ; R4 should contain the decoded hex value
     CMPI R4,0xFFFF                   ; if the string is FFFF boot into it
     JE bootinto 
     
     MOVR R1,addr                ; load the working address
     LD R0,R1,0                  ; load the value
     ST R4,R0,0                  ; store the working data into the address
-    ADDI R0,R0,1                ; increment the pointer
     ST R0,R1,0                  ; put it back into addr
+    MOVI R5,0			; reset the char counter
 J checkrx 
 
 
@@ -77,10 +81,10 @@ number:
 nextnibble:
     SLLI R4,R4,4            ; shift left 4 bits
     OR R4,R4,R2             ; OR the nibble
-J checkrx; next char
+J checkrx		    ; next char
 
 bootinto:
-    MOVI R2,62 			; ! char
+    MOVI R2,62 			; > char
     JAL R7,txchar
     MOVI R0,win
     STW  R0                     ; set the register window at zero 
