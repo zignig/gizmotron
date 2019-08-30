@@ -45,6 +45,9 @@ nextchar:
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
    
+    CMPI R2,3                   ; check ^C restart processor
+    JE warmme 
+
     CMPI R2,13			; new line , just consume
     JE checkrx
 
