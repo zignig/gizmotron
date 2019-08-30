@@ -11,6 +11,7 @@ from boneless.arch.asm import Assembler
 import array
 import intelhex
 from sim import Simulator
+from utils.serial_write import writer
 
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
@@ -47,10 +48,14 @@ if __name__ == "__main__":
         cpu = construct.CPU(platform,asm_file=args.f)
         code = cpu.b.code
         hex_out = ""
+        lines = []
         for i in code:
             hex_out += '{:04X}\n'.format(i)
+            lines.append('{:04X}\n'.format(i))
         hex_out += '{:04X}\n'.format(0xFFFF)
-        print(hex_out)
+        lines.append('{:04X}\n'.format(0xFFFF))
+        print(lines)
+        writer(lines,'/dev/ttyUSB0')
         f = open('utils/yay.hex','w')
         f.write(hex_out)
         f.close()

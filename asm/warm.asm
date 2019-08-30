@@ -16,6 +16,8 @@ wait:
         ADDI    R2,R2,1
         CMPI    R2,loops
 	JNE	entry           ; start again , increment the leds
+        MOVI    R0,0            ; clear the blinky
+        STXA    R0,blinky
         MOVI    R0,1            ; reset R1 to zero
         STXA    R0,image
         STXA    R0,boot
