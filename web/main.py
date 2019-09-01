@@ -6,4 +6,8 @@ app = Quart(__name__)
 async def hello():
     return await render_template('index.html')
 
-app.run('0.0.0.0')
+@app.route('/list')
+async def list():
+    return str(['one','two','three'])
+
+app.run('0.0.0.0',5002)
