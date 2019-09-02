@@ -1,4 +1,4 @@
-from quart import Quart, render_template
+from quart import Quart, render_template, jsonify
 
 app = Quart(__name__)
 
@@ -9,5 +9,9 @@ async def hello():
 @app.route('/list')
 async def list():
     return str(['one','two','three'])
+
+@app.route('/widget.js')
+async def widget():
+    return jsonify({'a':'widget'}) 
 
 app.run('0.0.0.0',5002)
