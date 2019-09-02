@@ -1,7 +1,7 @@
 // navfoot
-var widget = Vue.component('widget',
-{ template : '#widget',
- name: 'widget',
+var widget = Vue.component('navblob',
+{ template : '#navblob',
+ name: 'navblob',
     data() {
         return {
             isActive: false
@@ -12,6 +12,4 @@ var widget = Vue.component('widget',
             type: String,
         },
     },
-    methods:{
-    
-}}); 
+}); 

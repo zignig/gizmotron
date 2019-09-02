@@ -24,6 +24,22 @@ Vue.use(Buefy.default);
 // create and event bus
 EventBus = new Vue();
 
+// navfoot
+var widget = Vue.component('navblob',
+{ template : '#navblob',
+ name: 'navblob',
+    data() {
+        return {
+            isActive: false
+        }
+    },
+    props: {
+        issueItem: {
+            type: String,
+        },
+    },
+}); 
+
 vm = new Vue({
     el: '#app',
     data:  {
