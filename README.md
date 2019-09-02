@@ -5,8 +5,8 @@ This is an experimental platform to have console (96008n1) access to FGPA develo
 You will need the following software installed on you machine.
 
 1. Python 3.6+
-2. (nextpnr)[https://github.com/YosysHQ/nextpnr]
-3. (yosys)[https://github.com/YosysHQ/yosys]
+2. [nextpnr](https://github.com/YosysHQ/nextpnr)
+3. [yosys](https://github.com/YosysHQ/yosys)
 
 Edit the platform in plat.py to alter your hardware setup.
 
