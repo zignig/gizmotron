@@ -47,7 +47,7 @@ class _GizmoCollection:
         " return an address map to (gizmo,register) tuple"
         m = {} 
         for i,j in self._modules.items():
-            print('addrs>',i,j)
+            #print('addrs>',i,j)
             for k in j.registers:
                 m[k.addr] = (j,k)
         return m
@@ -59,7 +59,7 @@ class _GizmoCollection:
 
     def prepare(self):
         for i,j in self._modules.items():
-            print(i,j)
+            #print(i,j)
             j.prepare(self)
 
     def asm_header(self):
@@ -127,7 +127,7 @@ class IO:
 
 class Gizmo:
     " A gizmo is a wrapper around an Elaboratable module that binds to the external interface of the Boneless-CPU"
-    debug = True 
+    debug = False 
 
     def __init__(self, name, platform=None, **kwargs):
         for i, j in kwargs.items():

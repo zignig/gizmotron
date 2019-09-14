@@ -24,10 +24,9 @@ Vue.use(Buefy.default);
 // create and event bus
 EventBus = new Vue();
 
-// navfoot
-var widget = Vue.component('navblob',
-{ template : '#navblob',
- name: 'navblob',
+
+Vue.component('nav-blob',
+{ 
     data() {
         return {
             isActive: false
@@ -38,12 +37,15 @@ var widget = Vue.component('navblob',
             type: String,
         },
     },
+    template: '<div><b-button>Click Me</b-button></div>',
 }); 
 
 vm = new Vue({
     el: '#app',
-    data:  {
-        count: 0
+    data()  {
+        return {
+		count: 0,
+	}
     },
     created() {
         this.setup();
@@ -144,3 +146,4 @@ vm = new Vue({
         }
     }
 });
+
