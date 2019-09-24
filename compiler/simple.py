@@ -36,7 +36,11 @@ def function():         return Kwd("function"), symbol, parameterlist, block
 def simpleLanguage():   return OneOrMore(function),EOF
 
 
-class iffer:
+class instr:
+    def __repr__(self):
+        return ""
+
+class iffer(instr):
     def __init__(self,condition,statement,elses=None):
         self.condition = condition
         self.statement = statement
@@ -76,7 +80,7 @@ class fun:
     def eval(self):
         for i in self.statements:
             print(i)
-            i.eval()
+            #i.eval()
 
 class assignc:
     def __init__(self,left,right):

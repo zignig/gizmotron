@@ -16,7 +16,7 @@ def _wire_layout(data_bits):
 
 
 class AsyncSerialRX(Elaboratable):
-    def __init__(self, *, divisor, divisor_bits=None, data_bits=8, pins=None,fifo=None):
+    def __init__(self, *, divisor, divisor_bits=None, data_bits=8, pins=None,depth=0):
         self.divisor = Signal(divisor_bits or bits_for(divisor), reset=divisor)
 
         self.data = Signal(data_bits)
@@ -30,7 +30,7 @@ class AsyncSerialRX(Elaboratable):
         self.i    = Signal()
 
         self._pins = pins
-        self._fifo = fifo
+        self.depth = depth 
 
         
     def elaborate(self, platform):
@@ -40,8 +40,8 @@ class AsyncSerialRX(Elaboratable):
         shreg = Record(_wire_layout(len(self.data)))
         bitno = Signal(max=len(shreg))
 
-        if self._fifo is not None:
-            self._fifo = SyncFifo(len(self.data),self._fifo)
+        if self.depth > 0:
+            self._fifo = SyncFifo(len(self.data),self.depth)
             m.d.submodules += self._fifo
 
         if self._pins is not None:

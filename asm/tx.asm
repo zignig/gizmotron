@@ -8,14 +8,15 @@
 ;.equ image,6
 ;.equ boot,7
 .equ bottom, 32
-.equ top, 128
-.equ counter,7000
+.equ top, 126
+.equ counter,1000
 
 base: .window                 ; todo this macro needs to align to 8 word boundary
 J init
 
 txchar:                         ; put a char into the serial port 
     STXA R2,tx_data             ; put the holding data into the serial port
+    STXA R2,blinky              ; put the holding data into the serial port
     MOVI R3,1                   ; set status to one
     STXA R3,tx_status           ; write to tx status 
     MOVI R3,0                   ; set the status to zero
@@ -31,15 +32,26 @@ waitdown:
     JR R7,0
 
 init:
-    MOVI R2,bottom
-    MOVI R1,0
+    MOVI R4,0
 run:
     ADDI R2,R2,1
     ADDI R1,R1,1
     JAL  R7,txchar
     CMPI R1,counter
-    JE init
+    JE up 
     CMPI R2,top
-    JE run
+    JULE run
     MOVI R2,bottom
 J run        
+up:
+    MOVI R2,bottom
+    MOVI R1,0
+    ADDI R4,R4,1
+    CMPI R4,20
+    JE warmme
+J run
+warmme:
+    MOVI R0,1                   ; set boot image to 1
+    STXA R0,image               ; write to the image external register
+    MOVI R0,1                   ; write one into regiters
+    STXA R0,boot                ; reboot the FPGA into the boot loader
