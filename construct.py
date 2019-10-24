@@ -11,6 +11,7 @@ from cores.counter import Counter
 from cores.pwm import Pwm
 from cores.warm import WarmBoot
 from cores.pll import pll
+from cores.csr_test import csrCounter
 
 Elaboratable._Elaboratable__silence = True 
 
@@ -18,6 +19,7 @@ Elaboratable._Elaboratable__silence = True
 def Construct(platform, asm_file="asm/tx.asm"):
     b = Boneless(asm_file=asm_file)
 
+    c1 = csrCounter(csr=b.csr)
     l = UserLeds("status_leds", platform=platform,source='blinky')
     b.add_gizmo(l)
 
