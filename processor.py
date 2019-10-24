@@ -10,6 +10,7 @@ from nmigen.cli import main
 
 from cores.gizmo import Gizmo, _GizmoCollection
 
+from nmigen_soc.csr.bus import * 
 
 
 #TODO move most of this into the gizmo collection object
@@ -23,12 +24,14 @@ class Boneless(Elaboratable):
         # Gizmos
         self.gc = _GizmoCollection()
         self._prepared = False
+        self.csr = CSRMultiplexer(addr_width=16,data_width=16)
 
     def add_gizmo(self, giz):
         self.gc += giz
 
     def insert_gizmos(self, m, platform):
-        self.gc.attach(self,m,platform)
+        #self.gc.attach(self,m,platform)
+        pass
 
     def prepare(self):
         # TODO , map registers bits and code fragments from gizmos
@@ -66,13 +69,23 @@ class Boneless(Elaboratable):
             reset_pc=8,
             memory = self.memory
         )
-        # External port is a better interface
-        self.o_bus_addr = core.o_bus_addr
-        self.o_ext_we = core.o_ext_we
-        self.o_ext_re = core.o_ext_re
-        self.o_ext_data = core.o_ext_data
-        self.i_ext_data = core.i_ext_data
 
+        m.submodules.csr = csr = self.csr
+
+        # External port is a better interface
+        #self.o_bus_addr = core.o_bus_addr
+        #self.o_ext_we = core.o_ext_we
+        #self.o_ext_re = core.o_ext_re
+        #self.o_ext_data = core.o_ext_data
+        #self.i_ext_data = core.i_ext_data
+
+        m.d.comb += [
+                csr.addr.eq(core.o_bus_addr),
+                csr.r_stb.eq(core.o_ext_re),
+                csr.w_stb.eq(core.o_ext_we),
+                csr.w_data.eq(core.i_ext_data),
+                core.i_ext_data.eq(csr.r_data)
+        ]
         self.insert_gizmos(m, platform)
         return m
 
