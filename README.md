@@ -31,6 +31,7 @@ Edit the platform in plat.py to alter your hardware setup.
 Edit construct.py to add new gizmos , these will auto bind to the boneless memory map.
 
 # TODO
+- convert gizmos to CSR in nmgien_soc
 - expose and emulate gizmos in the simulator 
 - get flash read write working 
 - get monitor working 
