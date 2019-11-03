@@ -3,8 +3,7 @@ from nmigen import *
 
 from processor import Boneless
 
-# Working gizmos
-from cores.gizmo import TestGizmo
+# Working periphs
 from cores.user_leds import UserLeds
 from cores.serial import Serial
 from cores.counter import Counter
@@ -19,33 +18,20 @@ Elaboratable._Elaboratable__silence = True
 def Construct(platform, asm_file="asm/tx.asm"):
     b = Boneless(asm_file=asm_file)
 
-    c1 = csrCounter(csr=b.csr)
     l = UserLeds("status_leds", platform=platform,source='blinky')
-    b.add_gizmo(l)
+    b.add_periph(l)
 
-    l = UserLeds("status", platform=platform,source='user_led')
-    b.add_gizmo(l)
+    #l = UserLeds("status", platform=platform,source='user_led')
+    #b.add_periph(l)
 
     s = Serial(
         "serial_port", platform=platform, number=0, baud=9600
     )
-    b.add_gizmo(s)
+    b.add_periph(s)
 
     wb = WarmBoot("warmboot")
-    b.add_gizmo(wb)
+    b.add_periph(wb)
 
-    #c = Counter("counter1", platform=platform)
-    #b.add_gizmo(c)
-
-    #c2 = Counter("counter2", platform=platform)
-    #b.add_gizmo(c2)
-
-    #p = Pwm("pwm",platform=platform,pin=12)
-    #b.add_gizmo(p)
-
-    # Assign addresses , get code etch
-    # TODO test and fix
-    # TODO integrate assembler
     b.prepare()
     return b
 

@@ -1,4 +1,4 @@
-from .gizmo import Gizmo, IO
+from .peripheral import Periph, IO
 from nmigen import *
 
 
@@ -17,7 +17,7 @@ class _warmboot(Elaboratable):
         return m
 
 
-class WarmBoot(Gizmo):
+class WarmBoot(Periph):
     def build(self, **kwargs):
         w = _warmboot()
         self.add_device(w)

@@ -2,7 +2,7 @@ import itertools
 
 from nmigen.build import Resource, Subsignal, Pins
 from nmigen.build import ResourceError
-from .gizmo import Gizmo, IO, BIT
+from .peripheral import Periph, IO, BIT
 
 from nmigen import *
 from .uart import UART, Loopback
@@ -10,7 +10,7 @@ from .uart import UART, Loopback
 class SerialWithReset(Elaboratable):
     pass
 
-class Serial(Gizmo):
+class Serial(Periph):
     " Uart connection in 4 registers"
 
     def build(self):
@@ -39,22 +39,3 @@ class Serial(Gizmo):
     def simulate(self):
         pass
 
-class SerialLoop(Gizmo):
-    " Loopback uart on serial 0 and serial 1"
-
-    def build(self):
-
-        m = Module()
-        m.domains.sync = ClockDomain()
-        m.d.comb += ClockSignal().eq(clk16.i)
-
-        clock = platform.lookup("clk16").clock
-        serial = platform.request("serial", 0)
-        l = Loopback(serial.tx, serial.rx, clock.frequency, self.baud_rate)
-        m.submodules.loopback = l
-
-        serial2 = platform.request("serial", 1)
-        l2 = Loopback(serial2.tx, serial2.rx, clock.frequency, 9600)
-        m.submodules.loop2 = l2
-
-        return m

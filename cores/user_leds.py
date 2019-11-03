@@ -2,12 +2,12 @@ import itertools
 
 from nmigen.build import Resource, Subsignal, Pins
 from nmigen.build import ResourceError
-from .gizmo import Gizmo, IO, BIT
+from .peripheral import Periph, IO, BIT
 
 from nmigen import *
 
 
-class UserLeds(Gizmo):
+class UserLeds(Periph):
     def build(self):
         leds = []
         if self.source is None:

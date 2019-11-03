@@ -8,12 +8,10 @@ from nmigen import *
 from nmigen.back import pysim
 from nmigen.cli import main
 
-from cores.gizmo import Gizmo, _GizmoCollection
+from cores.peripheral import Periph, PeriphCollection
 
 from nmigen_soc.csr.bus import * 
 
-
-#TODO move most of this into the gizmo collection object
 
 class Boneless(Elaboratable):
     debug = True
@@ -21,43 +19,41 @@ class Boneless(Elaboratable):
         self.memory = Memory(width=16, depth=2*1024)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
 
-        # Gizmos
-        self.gc = _GizmoCollection()
+        # Peripherals
         self._prepared = False
-        self.csr = CSRMultiplexer(addr_width=16,data_width=16)
+        self.periph = PeriphCollection(data_width=16,addr_width=16)
 
-    def add_gizmo(self, giz):
-        self.gc += giz
+    def add_periph(self, p):
+        self.periph += p 
 
-    def insert_gizmos(self, m, platform):
-        #self.gc.attach(self,m,platform)
-        pass
+    def insert_periph(self, m):
+        self.periph.attach(m)
 
     def prepare(self):
         # TODO , map registers bits and code fragments from gizmos
         # Prepare all the gizmos and map their addresses
-        self.gc.prepare()
+        self.periph.prepare()
         # generate asm header address list
-        header = self.gc.asm_header()
+        header = self.periph.asm_header()
 
         # Code
-        asm = Assembler()
-        self.asm = asm
-        txt = open(self.asm_file).read()
-        asm.parse(header)
-        asm.parse(txt)
-        code = asm.assemble()
-        self.code = code
-
-        # Object list
-        if self.debug:
-            print("len :",len(code))
-            for i,j in enumerate(asm.input):
-                print('{:04X}'.format(i),j)
-            for i,j in enumerate(asm.disassemble(code)):
-                print('{:04X}'.format(i),j)
-        self.bin_code = code
-        self.memory.init = code
+        try:
+            asm = Assembler()
+            self.asm = asm
+            txt = open(self.asm_file).read()
+            asm.parse(header)
+            asm.parse(txt)
+            code = asm.assemble()
+            self.code = code
+            # Object list
+            if self.debug:
+                print("len :",len(code))
+                for i,j in enumerate(asm.input):
+                    print('{:04X}'.format(i),j)
+                for i,j in enumerate(asm.disassemble(code)):
+                    print('{:04X}'.format(i),j)
+        except:
+            print("code build failed")
         self.devices = []
         self._prepared = True
 
@@ -70,23 +66,16 @@ class Boneless(Elaboratable):
             memory = self.memory
         )
 
-        m.submodules.csr = csr = self.csr
-
-        # External port is a better interface
-        #self.o_bus_addr = core.o_bus_addr
-        #self.o_ext_we = core.o_ext_we
-        #self.o_ext_re = core.o_ext_re
-        #self.o_ext_data = core.o_ext_data
-        #self.i_ext_data = core.i_ext_data
-
+        # Bind the csr decoder to the external bus
+        m.submodules.csr = csr = self.periph.mplex
         m.d.comb += [
-                csr.addr.eq(core.o_bus_addr),
-                csr.r_stb.eq(core.o_ext_re),
-                csr.w_stb.eq(core.o_ext_we),
-                csr.w_data.eq(core.i_ext_data),
-                core.i_ext_data.eq(csr.r_data)
+                csr.bus.addr.eq(core.o_bus_addr),
+                csr.bus.r_stb.eq(core.o_ext_re),
+                csr.bus.w_stb.eq(core.o_ext_we),
+                csr.bus.w_data.eq(core.i_ext_data),
+                core.i_ext_data.eq(csr.bus.r_data)
         ]
-        self.insert_gizmos(m, platform)
+        self.insert_periph(m)
         return m
 
 

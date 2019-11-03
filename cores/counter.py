@@ -1,4 +1,4 @@
-from .gizmo import Gizmo, IO, BIT
+from .peripheral import Periph, IO, BIT
 from nmigen import *
 
 
@@ -14,7 +14,7 @@ class counter(Elaboratable):
         return m
 
 
-class Counter(Gizmo):
+class Counter(Periph):
     def build(self):
         c = counter()
         self.add_device(c)
