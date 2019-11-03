@@ -35,25 +35,22 @@ class Boneless(Elaboratable):
         self.periph.prepare()
         # generate asm header address list
         header = self.periph.asm_header()
-
+        print(header)
         # Code
-        try:
-            asm = Assembler()
-            self.asm = asm
-            txt = open(self.asm_file).read()
-            asm.parse(header)
-            asm.parse(txt)
-            code = asm.assemble()
-            self.code = code
-            # Object list
-            if self.debug:
-                print("len :",len(code))
-                for i,j in enumerate(asm.input):
-                    print('{:04X}'.format(i),j)
-                for i,j in enumerate(asm.disassemble(code)):
-                    print('{:04X}'.format(i),j)
-        except:
-            print("code build failed")
+        asm = Assembler()
+        self.asm = asm
+        txt = open(self.asm_file).read()
+        asm.parse(header)
+        asm.parse(txt)
+        code = asm.assemble()
+        self.code = code
+        # Object list
+        if self.debug:
+            print("len :",len(code))
+            for i,j in enumerate(asm.input):
+                print('{:04X}'.format(i),j)
+            for i,j in enumerate(asm.disassemble(code)):
+                print('{:04X}'.format(i),j)
         self.devices = []
         self._prepared = True
 

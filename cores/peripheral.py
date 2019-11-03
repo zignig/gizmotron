@@ -41,11 +41,20 @@ class PeriphCollection:
         " return an address map to (periph,register) tuple"
         m = {} 
         for i in self.mplex.bus.memory_map.all_resources():
-            print('>',i)
+            print('>',i[0].name,i)
+            name = i[0].name
+            l = i[1][1] -  i[1][0]
+            start = i[1][0]
+            print('len :',l)
+            if l == 1:
+               m[name] = start
+            else:
+               for j in range(l):
+                    m[name+"_"+str(j)] = start+j
+        return m
 
     def attach(self,m):
         " attach all the periphs to csr bus"
-        m.submodules.mplex = self.mplex
         if not self._prepared:
             self.prepare()
         for i,j in self._name_map.items():
@@ -58,20 +67,18 @@ class PeriphCollection:
         if self._prepared == False:
             print("not prepared")
             for i in self._modules:
-                print(i)
                 self._name_map[i.name] = i
-            return 
-            
+            self._prepared = True
+ 
         for i,j in self._name_map.items():
-            j.prepare(self)
+            j.prepare(self.mplex)
 
     def asm_header(self):
         txt = '; automatic periph headers\n'
-        return txt
         m = self.addr_map()
-        for i in m: 
-            reg_id = i
-            reg_name = m[i][1].name
+        for i,j in m.items(): 
+            reg_name = i 
+            reg_id = j
             txt += '.equ '+reg_name+','+str(reg_id)+'\n'
         return txt
 
@@ -140,7 +147,8 @@ class Periph:
             setattr(self, i, j)
         self.platform = platform
         self.name = name
-        self.registers = [] # a list of elements 
+        self.registers = [] # a list of IO 
+        self.elements = [] # a list of CSR elements
         self.devices = [] # a list of Elboratables to add
         self.code = ""  # assembly code for the periph TODO , auto attach
         self._prepared = False
@@ -169,45 +177,48 @@ class Periph:
         " add an Autobinding register to the Boneless CPU"
         self.registers.append(reg)
 
-    def prepare(self):
+    def prepare(self,mplex):
         if len(self.registers) > 0:
             for reg in self.registers:
                 if not reg._assigned:
-                    
                     reg._assigned = True
                     if self.name not in self.__dir__():
                         setattr(self,reg.name,reg)
+                    # Create the Element
+                    acc = 'r'
+                    if reg.has_output():
+                        acc = 'w'
+                    if reg.has_input():
+                        acc = 'r'
+                    if reg.has_input() and reg.has_output():
+                        acc = 'rw'
+                    el = Element(width=reg.width,name=reg.name,access=acc)
+                    self.elements.append(el)
+                    # add register info to the element
+                    el.sig_out = reg.sig_out
+                    el.sig_in = reg.sig_in
+                    mplex.add(el)
 
     def attach(self,m,mplex):
         " Generate and bind the gateway to the Boneless "
         if not self._prepared:
-            self.prepare()
+            self.prepare(mplex)
         if self.debug:
             print("<< " + self.name + " >>")
-        if len(self.registers) > 0:
-            for reg in self.registers:
-                # Create the Element
-                acc = 'r'
-                if reg.has_output():
-                    acc = 'w'
-                if reg.has_input():
-                    acc = 'r'
-                if reg.has_input() and reg.has_output():
-                    acc = 'rw'
-                el = Element(width=reg.width,name=reg.name,access=acc)
-                mplex.add(el)
-                if reg.has_input():
+        if len(self.elements) > 0:
+            for el in self.elements:
+                if el.access.readable():
                     if self.debug:
                         print("Binding Input ")
-                        print(reg.sig_in)
+                        print(el.sig_in)
                     with m.If(el.r_stb):
-                        m.d.sync += el.r_data.eq(reg.sig_in)
-                if reg.has_output():
+                        m.d.sync += el.r_data.eq(el.sig_in)
+                if el.access.writable():
                     if self.debug:
                         print("Binding Output ")
-                        print(reg.sig_out)
+                        print(el.sig_out)
                     with m.If(el.w_stb):
-                        m.d.sync += reg.sig_out.eq(el.w_data)
+                        m.d.sync += el.sig_out.eq(el.w_data)
         if len(self.devices) > 0:
             for dev in self.devices:
                 m.submodules += dev

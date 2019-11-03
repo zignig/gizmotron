@@ -32,6 +32,9 @@ def Construct(platform, asm_file="asm/tx.asm"):
     wb = WarmBoot("warmboot")
     b.add_periph(wb)
 
+    c = Counter('counter1')
+    b.add_periph(c)
+
     b.prepare()
     return b
 
