@@ -21,8 +21,8 @@ def Construct(platform, asm_file="asm/tx.asm"):
     l = UserLeds("status_leds", platform=platform,source='blinky')
     b.add_periph(l)
 
-    #l = UserLeds("status", platform=platform,source='user_led')
-    #b.add_periph(l)
+    l = UserLeds("status", platform=platform,source='led')
+    b.add_periph(l)
 
     s = Serial(
         "serial_port", platform=platform, number=0, baud=9600
@@ -69,15 +69,10 @@ class simCPU(Elaboratable):
     def __init__(self, platform, asm_file="asm/blink.asm"):
         self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
-        self.first = Signal(10)
-        self.second = Signal(4)
-        self.bip = Signal()
 
     def elaborate(self, platform):
         m = Module()
         m.submodules.boneless = self.b
-        with m.If(self.first == self.second):
-            m.d.sync += self.bip.eq(1)
         return m
 
 

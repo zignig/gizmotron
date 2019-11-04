@@ -51,6 +51,7 @@ class Boneless(Elaboratable):
                 print('{:04X}'.format(i),j)
             for i,j in enumerate(asm.disassemble(code)):
                 print('{:04X}'.format(i),j)
+        self.memory.init = code 
         self.devices = []
         self._prepared = True
 
@@ -69,7 +70,7 @@ class Boneless(Elaboratable):
                 csr.bus.addr.eq(core.o_bus_addr),
                 csr.bus.r_stb.eq(core.o_ext_re),
                 csr.bus.w_stb.eq(core.o_ext_we),
-                csr.bus.w_data.eq(core.i_ext_data),
+                csr.bus.w_data.eq(core.o_ext_data),
                 core.i_ext_data.eq(csr.bus.r_data)
         ]
         self.insert_periph(m)
