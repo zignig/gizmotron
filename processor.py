@@ -66,7 +66,7 @@ class Boneless(Elaboratable):
 
         # Bind the csr decoder to the external bus
         m.submodules.csr = csr = self.periph.mplex
-        m.d.sync += [
+        m.d.comb += [
                 csr.bus.addr.eq(core.o_bus_addr),
                 csr.bus.r_stb.eq(core.o_ext_re),
                 csr.bus.w_stb.eq(core.o_ext_we),
