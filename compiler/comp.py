@@ -21,11 +21,11 @@ def symbol():           return _(r"\w+")
 def literal():          return _(r'\d*\.\d*|\d+|".*?"')
 def subsection():       return "-",symbol
 def ref():              return '@',symbol
-def assign():           return symbol,'->',[symbol,literal]
-def section():          return ":",symbol,OneOrMore([assign,subsection,ref]),';'
-def program():             return ZeroOrMore(section),EOF
-
+def assign():           return symbol,'->',[ref,symbol,literal]
+def section():          return ":",symbol,ZeroOrMore([section,assign,subsection,ref,symbol]),';'
 def comment():          return [_("//.*"), _("/\*.*\*/")]
+
+def program():          return section,EOF
 
 class Fail(BaseException):
     pass
@@ -36,6 +36,7 @@ class Entry:
     def __init__(self,value,children=None):
         self.value = value
         self._more = False
+        self.name = None
         if children is not None:
             self._more = True
         self.children = children
@@ -43,17 +44,23 @@ class Entry:
     def parse(self):
         print('no parse',type(self),self.value)
 
-    def eval(self):
-        #self.parse()
+    def eval(self,depth=0):
+        self.parse()
+        for i in range(depth):
+            print('\t',end='')
+        print(self.name,self.value)
         if self._more:
             for i in self.children:
-                i.eval()
+                i.eval(depth=depth+1)
+
+#    def __repr__(self):
+#       return str(self.name)+"--"+str(type(self))+"\n"
 
 class Symbol(Entry):
     def parse(self):
-        print(type(self.value),self.value)
-        if self.value not in self.symbol_dict:
-            self.symbol_dict[self.value] = 'gotcha'
+        self.name = self.value.value
+        if self.value.value not in self.symbol_dict:
+            self.symbol_dict[self.value.value] = self 
     
 class Subsection(Entry):
     pass 
@@ -63,8 +70,14 @@ class Ref(Entry):
 
 class Section(Entry):
     def parse(self):
-        print(self.value)
- 
+        self.name = self.children[0].value.value
+        if self.name not in self.section_dict:
+            print(len(self.children))
+            if len(self.children) > 2:
+                self.section_dict[self] = self.children[2:]
+            else:
+                self.section_dict[self] = []
+
 class Assign(Entry):
     pass
 
@@ -72,7 +85,6 @@ class Assign(Entry):
 class Vis(PTNodeVisitor):
 
     def visit_symbol(self,node,children):
-        print(self,node,children)
         return Symbol(node) 
  
     def visit_section(self,node,children):
@@ -106,4 +118,4 @@ parse_tree = parser.parse(test_program)
 result = visit_parse_tree(parse_tree,Vis(debug=debug))
 result.eval()
 print(result.symbol_dict)
-
+print(result.section_dict)
