@@ -21,6 +21,10 @@ def symbol():           return _(r"\w+")
 def literal():          return _(r'\d*\.\d*|\d+|".*?"')
 def subsection():       return "-",symbol
 def ref():              return '@',symbol
+def compare():          return [eq,lt,gt]
+def eq():               return '=='
+def lt():               return '>'
+def gt():               return '<'
 def assign():           return symbol,'->',[ref,symbol,literal]
 def section():          return ":",symbol,ZeroOrMore([section,assign,subsection,ref,symbol]),';'
 def comment():          return [_("//.*"), _("/\*.*\*/")]
