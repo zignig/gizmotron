@@ -22,11 +22,12 @@ def literal():          return _(r'\d*\.\d*|\d+|".*?"')
 def subsection():       return "-",symbol
 def ref():              return '@',symbol
 def compare():          return [eq,lt,gt]
+def declare():          return symbol,'as',symbol
 def eq():               return '=='
 def lt():               return '>'
 def gt():               return '<'
-def assign():           return symbol,'->',[ref,symbol,literal]
-def section():          return ":",symbol,ZeroOrMore([section,assign,subsection,ref,symbol]),';'
+def assign():           return symbol,'<-',[ref,symbol,literal]
+def section():          return ":",symbol,ZeroOrMore([section,assign,declare,subsection,ref,symbol]),';'
 def comment():          return [_("//.*"), _("/\*.*\*/")]
 
 def program():          return section,EOF
@@ -46,19 +47,20 @@ class Entry:
         self.children = children
 
     def parse(self):
-        print('no parse',type(self),self.value)
+        pass
+        #print('no parse',type(self),self.value)
 
     def eval(self,depth=0):
         self.parse()
         for i in range(depth):
             print('\t',end='')
-        print(self.name,self.value)
+        print(self.name,type(self),self.value)
         if self._more:
             for i in self.children:
                 i.eval(depth=depth+1)
 
-#    def __repr__(self):
-#       return str(self.name)+"--"+str(type(self))+"\n"
+    def __repr__(self):
+       return str(type(self))+"--"+str(self.name)+"\n"
 
 class Symbol(Entry):
     def parse(self):
@@ -72,11 +74,14 @@ class Subsection(Entry):
 class Ref(Entry):
     pass
 
+class Declare(Entry):
+    pass
+
 class Section(Entry):
     def parse(self):
         self.name = self.children[0].value.value
         if self.name not in self.section_dict:
-            print(len(self.children))
+            #print(len(self.children))
             if len(self.children) > 2:
                 self.section_dict[self] = self.children[2:]
             else:
@@ -108,6 +113,9 @@ class Vis(PTNodeVisitor):
 
     def visit_literal(self,node,children):
         return Literal(node,children=children)
+
+    def visit_declare(self,node,children):
+        return Declare(node,children=children)
 
 debug=False
 # Load test program from file
