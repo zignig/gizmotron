@@ -18,16 +18,16 @@ from arpeggio import RegExMatch as _
 
 # Grammar
 def symbol():           return _(r"\w+")
+def var():              return _(r"\w+")
 def literal():          return _(r'\d*\.\d*|\d+|".*?"')
-def subsection():       return "-",symbol
 def ref():              return '@',symbol
 def compare():          return [eq,lt,gt]
-def declare():          return symbol,'as',symbol
+def declare():          return symbol,'as',var
 def eq():               return '=='
 def lt():               return '>'
 def gt():               return '<'
 def assign():           return symbol,'<-',[ref,symbol,literal]
-def section():          return ":",symbol,ZeroOrMore([section,assign,declare,subsection,ref,symbol]),';'
+def section():          return ":",symbol,ZeroOrMore([section,assign,declare,ref,symbol]),';'
 def comment():          return [_("//.*"), _("/\*.*\*/")]
 
 def program():          return section,EOF
@@ -68,17 +68,18 @@ class Symbol(Entry):
         if self.value.value not in self.symbol_dict:
             self.symbol_dict[self.value.value] = self 
     
-class Subsection(Entry):
-    pass 
-
 class Ref(Entry):
     pass
 
 class Declare(Entry):
     pass
 
+class Var(Entry):
+    pass
+
 class Section(Entry):
     def parse(self):
+        self._called = False
         self.name = self.children[0].value.value
         if self.name not in self.section_dict:
             #print(len(self.children))
@@ -96,11 +97,11 @@ class Vis(PTNodeVisitor):
     def visit_symbol(self,node,children):
         return Symbol(node) 
  
+    def visit_var(self,node,children):
+        return Var(node) 
+
     def visit_section(self,node,children):
         return Section(node,children=children)
-
-    def visit_subsection(self,node,children):
-        return Subsection(node,children)
 
     def visit_ref(self,node,children):
         return Ref(node)
@@ -129,5 +130,7 @@ parser = ParserPython(program, comment, debug=debug)
 parse_tree = parser.parse(test_program)
 result = visit_parse_tree(parse_tree,Vis(debug=debug))
 result.eval()
-print(result.symbol_dict)
-print(result.section_dict)
+print(result.symbol_dict.keys())
+print(result.section_dict.keys())
+for i in result.section_dict.keys():
+    print('create '+i.name)

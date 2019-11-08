@@ -1,19 +1,21 @@
+// comment
 : hello
+
+
+status as bit
+data as word
 
 r <- 2 
 j <- 2 
 : whence ;
-: init @test @gorf ;
+: init on runner off;
 : unit ;
-: num as 16b ; 
 : name test 20  ;
 : meta num num num ;
 
 bob as meta
 
 : test
-	a <- 4
-	b <- 5
 	r <- @test
 ;
 
@@ -35,6 +37,9 @@ bob as meta
 
 ;
 
+: reboot ; 
+: testing; 
+: build a over test ; 
 init
 
 ;
