@@ -9,14 +9,14 @@ from ast import *
 # Grammar
 def symbol():           return _(r"\w+")
 def var():              return _(r"\w+")
-def number():           return _(r"^[-+]?[0-9]+$")
+def number():           return _(r"\d+") 
+def stringer():         return '"', _(r'((\\")|[^"])*'),'"'
 def ref():              return '@',symbol
 def compare():          return [eq,lt,gt]
-def declare():          return symbol,'as',[var,number,stringer]
+def declare():          return symbol,':=',[number,stringer]
 def eq():               return '=='
 def lt():               return '>'
 def gt():               return '<'
-def stringer():         return '"',_(r'(("")|([^"]))+'),'"'
 def assign():           return symbol,'=',[number,ref,symbol,stringer]
 def call():             return symbol,'(',')'
 def section():          return ":",symbol,ZeroOrMore([section,assign,declare,call]),';'
@@ -53,17 +53,15 @@ class Vis(PTNodeVisitor):
         return Declare(node,children=children)
 
     def visit_stringer(self,node,children):
-        return Stringer(node,text=children)
+        return Stringer(node,text=children[0])
 
     def visit_number(self,node,children):
-        return Number(node)
+        return Number(node,children=children)
 
-def parse(file_name):
-    debug=False
+def parse(file_name,debug=False):
     # Load test program from file
     current_dir = os.path.dirname(__file__)
     test_program = open(os.path.join(current_dir, file_name)).read()
-
     # Parser instantiation. simpleLanguage is the definition of the root rule
     # and comment is a grammar rule for comments.
     parser = ParserPython(program, comment, debug=debug)

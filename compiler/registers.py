@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 class Register:
     def __init__(self, name="blank", temp=-1, size=1):
+        self.ref = None
         self.name = name
         self._allocated = False
         self.temperature = temp
@@ -33,9 +34,6 @@ class Window:
     def __init__(self, size=8):
         self.size = size
         self.reg = [Register(None) for reg in range(self.size)]
-
-    def spill(self):
-        print("SPILL")
 
     class Action:
         def __init__(self, reg, source, target):

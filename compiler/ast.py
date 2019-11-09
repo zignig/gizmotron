@@ -36,7 +36,7 @@ class Entry:
         self.value = value
         self._more = False
         self.name = None
-        self.text=text
+        self.text = text
         if children is not None:
             self._more = True
         self.children = children
@@ -64,7 +64,7 @@ class Entry:
     def show(self, depth=0):
         for i in range(depth):
             print("\t", end="")
-        print(self.name, type(self), self.value)
+        print(type(self).__qualname__,self.name,self.value)
         if self._more:
             for i in self.children:
                 i.show(depth=depth + 1)
@@ -83,7 +83,7 @@ class Entry:
 # individual action classes
 class Stringer(Entry):
     def parse(self):
-        self.text = self.text[0]
+        pass 
 
     def make(self):
         l = len(self.text)
@@ -93,8 +93,11 @@ class Stringer(Entry):
         yield [l,t]
 
 class Number(Entry):
-    pass
+    def parse(self):
+        self.value= int(self.value.value)
 
+    def make(self):
+        yield self.value
 
 class Symbol(Entry):
     def parse(self):
@@ -105,7 +108,6 @@ class Symbol(Entry):
 
 class Assign(Entry):
     def parse(self):
-        print(self.children)
         if len(self.children) != 2:
             raise Fail(self)
         self.lhs = self.children[0]
@@ -127,6 +129,9 @@ class Declare(Entry):
             raise Redeclaration(target)
         if self.name not in self.variables:
             self.variables[self.name] = self.target
+
+    def build(self):
+        yield [] 
 
     def make(self):
         yield L(self.name)
@@ -156,6 +161,7 @@ class Section(Entry):
             self.sections[self.name] = self
 
     def build(self):
+        print(self)
         yield L(self.name)
         for i in self.statements:
             # don't build sections , they are written at the top

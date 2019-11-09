@@ -12,9 +12,9 @@ def go(val):
 
 
 class Program:
-    def __init__(self, file_name="test.prg"):
+    def __init__(self, file_name="test.prg",debug=False):
         self.file_name = file_name
-        self.result = parser.parse(self.file_name)
+        self.result = parser.parse(self.file_name,debug=debug)
         self.sections = self.result.sections
         self.declarations = self.result.declarations
         self.variables = self.result.variables
@@ -33,9 +33,9 @@ class Program:
         self.assembler.parse(code)
 
         r = self.assembler.assemble()
-        print(r)
-        print(len(r))
+        #print(r)
+        #print(len(r))
 
 
-p = Program()
+p = Program(debug=False)
 p.build()

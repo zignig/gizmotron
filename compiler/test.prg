@@ -1,9 +1,11 @@
 : program
-    active as bool
-    counter as int
-    delay as int
-    one as "one"
-    fnord as "this is a test now"
+    active := 300 
+    counter := 111 
+    delay := 6500 
+    one := "one"
+    other := "test"
+    fnord := "this is a test now"
+
     : other_code 
         serial_out = alphabet
     ;
@@ -22,4 +24,9 @@
     setup()
     run()
     shutdown()
+    : go
+        setup()
+        setup()
+        run()
+    ;
 ;

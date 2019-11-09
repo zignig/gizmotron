@@ -1,34 +1,30 @@
-// comment
-: hello
-    status as bit
-    data as word
-    test as thing 
-    gord as other
-    r <- 2 
-    j <- 2 
-    status <- @test
-    : whence ;
-    : init on runner off;
-    : unit ;
-    : name test 20  ;
-    : num word ;
-    : meta num num num ;
-    bob as meta
-    : test r <- @test ;
-    : on button1 <- true ;
-    : off button2 <- false ;
-    : runner
-            run <- true
-            @rwr
-            @blag
-            bit
-            evac
-            : one ;
-
+: program
+    active as 300 
+    counter as 111 
+    delay as "testing" 
+    one as "one"
+    fnord as "this is a test now"
+    : other_code 
+        serial_out = alphabet
     ;
-    : reboot ; 
-    : testing; 
-    : build a over test ; 
-    bork as meta
-    init
+    : wait ;
+    : setup
+        counter = 0
+        delay = 65300
+    ;
+    : run
+        blink()
+    ;
+    : blink led = on ; 
+    : shutdown 
+        active = false
+    ;
+    setup()
+    run()
+    shutdown()
+    : go
+        setup()
+        setup()
+        run()
+    ;
 ;
