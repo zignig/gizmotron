@@ -1,20 +1,25 @@
 : program
-    test as _word
-    next <- @test
+    active as bool
+    counter as int
+    delay as int
+    one as "one"
+    fnord as "this is a test now"
+    : other_code 
+        serial_out = alphabet
+    ;
+    : wait ;
     : setup
-        counter as int
-        delay as int
+        counter = 0
+        delay = 65300
     ;
     : run
-        counter <- 2
-        delay <- 100
+        blink()
     ;
+    : blink led = on ; 
     : shutdown 
-        led <- testing
+        active = false
     ;
-    : main 
-        setup
-        run
-        shutdown
-    ;
+    setup()
+    run()
+    shutdown()
 ;

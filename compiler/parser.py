@@ -9,15 +9,17 @@ from ast import *
 # Grammar
 def symbol():           return _(r"\w+")
 def var():              return _(r"\w+")
-def literal():          return _(r'\d*\.\d*|\d+|".*?"')
+def number():           return _(r"^[-+]?[0-9]+$")
 def ref():              return '@',symbol
 def compare():          return [eq,lt,gt]
-def declare():          return symbol,'as',var
+def declare():          return symbol,'as',[var,number,stringer]
 def eq():               return '=='
 def lt():               return '>'
 def gt():               return '<'
-def assign():           return symbol,'<-',[ref,symbol,literal]
-def section():          return ":",symbol,ZeroOrMore([section,assign,declare,ref,symbol]),';'
+def stringer():         return '"',_(r'(("")|([^"]))+'),'"'
+def assign():           return symbol,'=',[number,ref,symbol,stringer]
+def call():             return symbol,'(',')'
+def section():          return ":",symbol,ZeroOrMore([section,assign,declare,call]),';'
 def comment():          return [_("//.*"), _("/\*.*\*/")]
 
 def program():          return section,EOF
@@ -25,6 +27,9 @@ def program():          return section,EOF
 
 
 class Vis(PTNodeVisitor):
+
+    def visit_call(self,node,children):
+        return Call(node,children=children)
 
     def visit_symbol(self,node,children):
         return Symbol(node) 
@@ -44,12 +49,14 @@ class Vis(PTNodeVisitor):
     def visit_assign(self,node,children):
         return Assign(node,children=children)
 
-    def visit_literal(self,node,children):
-        return Literal(node,children=children)
-
     def visit_declare(self,node,children):
         return Declare(node,children=children)
 
+    def visit_stringer(self,node,children):
+        return Stringer(node,text=children)
+
+    def visit_number(self,node,children):
+        return Number(node)
 
 def parse(file_name):
     debug=False
