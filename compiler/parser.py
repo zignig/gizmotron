@@ -25,7 +25,6 @@ def comment():          return [_("//.*"), _("/\*.*\*/")]
 def program():          return section,EOF
 
 
-
 class Vis(PTNodeVisitor):
 
     def visit_call(self,node,children):
@@ -64,7 +63,7 @@ def parse(file_name,debug=False):
     test_program = open(os.path.join(current_dir, file_name)).read()
     # Parser instantiation. simpleLanguage is the definition of the root rule
     # and comment is a grammar rule for comments.
-    parser = ParserPython(program, comment, debug=debug)
+    parser = ParserPython(program, comment,ws='\t\n ',debug=debug)
     parse_tree = parser.parse(test_program)
     result = visit_parse_tree(parse_tree,Vis(debug=debug))
     result.eval()

@@ -49,6 +49,7 @@ class Entry:
 
     def build(self):
         print("no build for", self)
+        print(self.value)
         yield []
 
     def make(self):
@@ -161,7 +162,6 @@ class Section(Entry):
             self.sections[self.name] = self
 
     def build(self):
-        print(self)
         yield L(self.name)
         for i in self.statements:
             # don't build sections , they are written at the top
