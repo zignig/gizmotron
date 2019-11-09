@@ -93,5 +93,5 @@ f = Register('six')
 g = Register('seven')
 h = Register('eight')
 r = [a,b,c,d,e,f,g,h]
-for i in r:
-    w.request(i)
+#for i in r:
+#    w.request(i)

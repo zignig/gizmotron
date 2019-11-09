@@ -3,9 +3,13 @@ __all__ = ['Assign','Entry','Symbol','Ref','Declare','Var','Section']
 class Fail(BaseException):
     pass
 
+class Redeclaration(BaseException):
+    pass
+
 class Entry:
     symbol_dict = {}
     section_dict = {}
+    variables = {}
     def __init__(self,value,children=None):
         self.value = value
         self._more = False
@@ -62,7 +66,12 @@ class Ref(Entry):
 
 class Declare(Entry):
     def parse(self):
-        print("declaration")
+        print("declaration",self.children)
+        target = self.children[0]
+        if target.value.value not in self.variables:
+            self.variables[target.value.value] = self.children[1] 
+        else:
+            raise Redeclaration(target)
     pass
 
 class Var(Entry):

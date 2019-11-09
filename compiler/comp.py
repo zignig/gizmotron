@@ -50,19 +50,17 @@ class Vis(PTNodeVisitor):
     def visit_declare(self,node,children):
         return Declare(node,children=children)
 
-debug=False
-# Load test program from file
-current_dir = os.path.dirname(__file__)
-test_program = open(os.path.join(current_dir, 'test.prg')).read()
 
-# Parser instantiation. simpleLanguage is the definition of the root rule
-# and comment is a grammar rule for comments.
-parser = ParserPython(program, comment, debug=debug)
+def parse(file_name):
+    debug=False
+    # Load test program from file
+    current_dir = os.path.dirname(__file__)
+    test_program = open(os.path.join(current_dir, file_name)).read()
 
-parse_tree = parser.parse(test_program)
-result = visit_parse_tree(parse_tree,Vis(debug=debug))
-result.eval()
-print(result.symbol_dict.keys())
-print(result.section_dict.keys())
-for i in result.section_dict.keys():
-    print('create '+i.name)
+    # Parser instantiation. simpleLanguage is the definition of the root rule
+    # and comment is a grammar rule for comments.
+    parser = ParserPython(program, comment, debug=debug)
+    parse_tree = parser.parse(test_program)
+    result = visit_parse_tree(parse_tree,Vis(debug=debug))
+    result.eval()
+    return result
