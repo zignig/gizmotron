@@ -11,7 +11,16 @@ __all__ = [
     "Call",
     "Stringer",
     "Number",
-]
+    "Function",
+    "Parameters",
+    "Expression",
+    "Literal",
+    "Statement",
+    "Block",
+    "Operator",
+    "Operation",
+    "If",
+]    
 
 
 class Fail(BaseException):
@@ -57,6 +66,7 @@ class Entry:
         yield []
 
     def eval(self):
+        return 
         self.parse()
         if self._more:
             for i in self.children:
@@ -64,11 +74,14 @@ class Entry:
 
     def show(self, depth=0):
         for i in range(depth):
-            print("\t", end="")
-        print(type(self).__qualname__,self.name,self.value)
+            print("  ", end="")
+        print(type(self).__qualname__,self.value)
         if self._more:
             for i in self.children:
-                i.show(depth=depth + 1)
+                if isinstance(i,Entry):
+                    i.show(depth=depth + 1)
+                else:
+                    print("fail on type ",type(i),i)
 
     def sweep(self, fn):
         print(self.__dict__)
@@ -78,10 +91,36 @@ class Entry:
                 yield from i.sweep(fn)
 
     def __repr__(self):
-        return str(type(self)) + "--" + str(self.name) + "\n"
+        return str(type(self)) + "--" + str(self.name)
 
 
 # individual action classes
+
+class If(Entry):
+    pass
+
+class Operator(Entry):
+    pass
+
+class Operation(Entry):
+    pass
+
+class Block(Entry):
+    pass
+
+class Expression(Entry):
+    pass
+
+class Function(Entry):
+    pass
+
+class Literal(Entry):
+    pass
+
+
+class Statement(Entry):
+    pass
+
 class Stringer(Entry):
     def parse(self):
         pass 
@@ -114,6 +153,8 @@ class Assign(Entry):
         self.lhs = self.children[0]
         self.rhs = self.children[1]
 
+class Parameters(Entry):
+    pass
 
 class Ref(Entry):
     pass

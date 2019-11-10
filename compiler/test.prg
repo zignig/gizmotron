@@ -1,34 +1,13 @@
-: program
-    led := 1
-    active := 300 
-    counter := 111 
-    delay := 6500 
-    one := "one"
-    other := "test"
-    fnord := "this is a test now"
+def blah(){ 
+    //a := r + 1;
+   // print();
+    //list();
+    run(a,b,c);
+    //if(a==0){
+    //    a := test +1;
+    //};
+    if(active== 100){
+        activate(one,two);
+    };
+}
 
-    alphabet := "abcdefghijklmnopqrstuvwxyz"
-    : other_code 
-        serial_out = alphabet
-    ;
-    : wait ;
-    : setup
-        counter = 0
-        delay = 65300
-    ;
-    : run
-        blink()
-    ;
-    : blink led = on ; 
-    : shutdown 
-        active = false
-    ;
-    setup()
-    run()
-    shutdown()
-    : go
-        setup()
-        setup()
-        run()
-    ;
-;

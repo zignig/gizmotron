@@ -15,12 +15,17 @@ class Program:
     def __init__(self, file_name="test.prg",debug=False):
         self.file_name = file_name
         self.result = parser.parse(self.file_name,debug=debug)
+        return
         self.sections = self.result.sections
         self.declarations = self.result.declarations
         self.variables = self.result.variables
         self.assembler = Assembler()
 
     def build(self):
+        print(type(self.result))
+        print(self.result)
+        return
+        self.result.show()
         code = []
         for i in p.sections:
             code.append(list(p.sections[i].build()))
@@ -37,5 +42,5 @@ class Program:
         #print(len(r))
 
 
-p = Program(debug=False)
-p.build()
+p = Program(debug=True)
+#p.build()
