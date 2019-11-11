@@ -42,5 +42,5 @@ class Program:
         #print(len(r))
 
 
-p = Program(debug=True)
-#p.build()
+p = Program(debug=False)
+p.build()

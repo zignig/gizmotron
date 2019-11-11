@@ -49,6 +49,9 @@ def program():          return OneOrMore(function),EOF
 
 class Vis(PTNodeVisitor):
 
+    def visit_program(self,node,children):
+        return Program(node,children=children)
+
     def visit_function(self,node,children):
         print("\tfunction",node,children)
         return Function(node,children=children)
@@ -140,7 +143,5 @@ def parse(file_name,debug=False):
     # and comment is a grammar rule for comments.
     parser = ParserPython(program, comment,debug=debug,reduce_tree=True)
     parse_tree = parser.parse(test_program)
-    print(parse_tree)
     result = visit_parse_tree(parse_tree,Vis(debug=debug))
-    print(result,type(result))
     return result

@@ -20,6 +20,7 @@ __all__ = [
     "Operator",
     "Operation",
     "If",
+    "Program",
 ]    
 
 
@@ -95,6 +96,9 @@ class Entry:
 
 
 # individual action classes
+
+class Program(Entry):
+    pass 
 
 class If(Entry):
     pass
