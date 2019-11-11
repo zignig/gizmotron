@@ -7,7 +7,6 @@ __all__ = [
     "Ref",
     "Declare",
     "Var",
-    "Section",
     "Call",
     "Stringer",
     "Number",
@@ -67,7 +66,6 @@ class Entry:
         yield []
 
     def eval(self):
-        return 
         self.parse()
         if self._more:
             for i in self.children:
@@ -113,9 +111,6 @@ class Block(Entry):
     pass
 
 class Expression(Entry):
-    pass
-
-class Function(Entry):
     pass
 
 class Literal(Entry):
@@ -197,7 +192,7 @@ class Call(Entry):
         yield JAL(R7, str(self.name))
 
 
-class Section(Entry):
+class Function(Entry):
     def parse(self):
         self._called = False
         self.statements = []
