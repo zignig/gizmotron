@@ -13,7 +13,6 @@ def blah(){
     };
 }
 
-
 def test(){
 	print();
 }

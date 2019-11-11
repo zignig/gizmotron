@@ -87,7 +87,7 @@ class Entry(metaclass=MetaEntry):
     def show(self, depth=0):
         for i in range(depth):
             print("  ", end="")
-        print(type(self).__qualname__,self.value)
+        print(type(self).__qualname__,self.value.value.ljust(40-2*depth))
         if self._more:
             for i in self.children:
                 if isinstance(i,Entry):
@@ -128,7 +128,7 @@ class Block(Entry):
     def build(self):
         for i in self.statements:
             print('build -->',i)
-            yield from i
+        yield []
 
 class Expression(Entry):
     pass
