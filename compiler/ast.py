@@ -35,7 +35,20 @@ class NoBuild(BaseException):
     pass
 
 
-class Entry:
+class MetaEntry(type):
+    overview = {}
+
+    def __new__(cls, clsname, bases, attrs):
+        newclass = super(MetaEntry, cls).__new__(cls, clsname, bases, attrs)
+        cls.register(newclass)  # here is your register function
+        return newclass
+    
+    def register(cls):
+        if cls not in MetaEntry.overview:
+            MetaEntry.overview[cls] = 0
+
+
+class Entry(metaclass=MetaEntry):
     symbol_dict = {}
     sections = {}
     declarations = {}
@@ -108,7 +121,14 @@ class Operation(Entry):
     pass
 
 class Block(Entry):
-    pass
+    def parse(self):
+        self.statements = self.children
+
+    
+    def build(self):
+        for i in self.statements:
+            print('build -->',i)
+            yield from i
 
 class Expression(Entry):
     pass
@@ -205,6 +225,6 @@ class Function(Entry):
         yield L(self.name)
         for i in self.statements:
             # don't build sections , they are written at the top
-            if type(i) is not Section:
+            if type(i) is not Function:
                 yield from i.build()
         yield JR(R7, 0)

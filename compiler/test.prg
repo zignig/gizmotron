@@ -25,3 +25,15 @@ def blink(val){
 		count := 0;
 	};
 }
+
+def start(){
+}
+
+def run(){}
+def shutdown(){
+	active := 0;
+	if ( running == 0){
+		print(b);
+	};
+
+}
