@@ -20,6 +20,7 @@ __all__ = [
     "Operation",
     "If",
     "Program",
+    "While",
 ]    
 
 
@@ -87,7 +88,7 @@ class Entry(metaclass=MetaEntry):
     def show(self, depth=0):
         for i in range(depth):
             print("  ", end="")
-        print(type(self).__qualname__,self.value.value.ljust(40-2*depth))
+        print(type(self).__qualname__,self.name)#,self.value.value.ljust(40-2*depth))
         if self._more:
             for i in self.children:
                 if isinstance(i,Entry):
@@ -107,6 +108,9 @@ class Entry(metaclass=MetaEntry):
 
 
 # individual action classes
+
+class While(Entry):
+    pass
 
 class Program(Entry):
     pass 
@@ -162,7 +166,7 @@ class Symbol(Entry):
     def parse(self):
         self.name = self.value.value
         if self.value.value not in self.symbol_dict:
-            self.symbol_dict[self] = self.text
+            self.symbol_dict[self.name] = self 
 
 
 class Assign(Entry):

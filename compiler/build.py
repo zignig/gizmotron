@@ -20,9 +20,13 @@ class Program:
         self.variables = self.result.variables
         self.assembler = Assembler()
 
+    def show(self):
+        self.result.show()
+
     def build(self):
         self.result.eval()
-        self.result.show()
+        self.show()
+        return
         code = []
         for i in p.sections:
             code.append(list(p.sections[i].build()))
@@ -31,7 +35,6 @@ class Program:
         for i in code:
             print(i)
         
-        return
         self.code = code
         self.assembler.parse(code)
 

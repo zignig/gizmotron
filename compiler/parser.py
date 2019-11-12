@@ -16,10 +16,11 @@ def operation():        return symbol, operator, [literal, functioncall]
 def expression():       return [literal, operation, functioncall]
 def expressionlist():   return expression, ZeroOrMore(",", expression)
 def returnstatement():  return Kwd("return"), expression
+def whilestatement():   return Kwd("while"), "(", expression, ")", block
 def ifstatement():      return Kwd("if"), "(", expression, ")", block
 def ifelsestatement():  return Kwd("if"), "(", expression, ")", block, Kwd("else"), block
 def functioncall():     return symbol,parameterlist
-def statement():        return [assign,ifelsestatement,ifstatement,functioncall,returnstatement],semi
+def statement():        return [assign,whilestatement,ifelsestatement,ifstatement,functioncall,returnstatement],semi
 def block():            return "{",ZeroOrMore(statement), "}"
 def semi():             return Kwd(';')
 def comma():            return ","
@@ -50,56 +51,63 @@ def program():          return OneOrMore(function),EOF
 class Vis(PTNodeVisitor):
 
     def visit_program(self,node,children):
+        #print("\tfunction",node,children)
         return Program(node,children=children)
 
     def visit_function(self,node,children):
-        print("\tfunction",node,children)
+        #print("\tfunction",node,children)
         return Function(node,children=children)
 
     def visit_block(self,node,children):
-        print('\tblock',node,children)
-        return Block(node,children=children)
+        #print('\tblock',node,children)
+        b = Block(node,children=children)
+        b.statments = children
+        return b
 
     def visit_expression(self,node,children):
-        print('\texpression',node,children)
+        #print('\texpression',node,children)
         return Expression(node,children=children)
 
     def visit_literal(self,node,children):
-        print('\tliteral',node,children)
+        #print('\tliteral',node,children)
         return Literal(node,children=children)
 
     def visit_symbol(self,node,children):
-        print('\tsymbol',node,children)
+        #print('\tsymbol',node,children)
         return Symbol(node,children=children) 
 
+    def visit_whilestatement(self,node,children):
+        #print('\twhile',node,children)
+        return While(node,children=children) 
+
     def visit_ifstatement(self,node,children):
-        print('\tif',node,children)
+        #print('\tif',node,children)
         return If(node,children=children) 
     
     def visit_functioncall(self,node,children):
-        print('\tfunction call',node,children)
+        #print('\tfunction call',node,children)
         c = Call(node,children=children)
         c.name = children[0]
         return c
 
     def visit_parameterlist(self,node,children):
-        print('\tparameter list ',node,children)
+        #print('\tparameter list ',node,children)
         return Parameters(node,children=children)
     
     def visit_assign(self,node,children):
-        print('\tassign',node,children)
+        #print('\tassign',node,children)
         return Assign(node,children=children)
 
     def visit_statement(self,node,children):
-        print('\tstatement ',node,children)
+        #print('\tstatement ',node,children)
         return Statement(node,children=children)
     
     def visit_operation(self,node,children):
-        print('\tOperation',node,children)
+        #print('\tOperation',node,children)
         return Operation(node,children=children)
 
     def visit_operator(self,node,children):
-        print('\tOperator',node,children)
+        #print('\tOperator',node,children)
         return Operator(node,children=children)
 
     def visit_comma(self,node,children):
