@@ -21,7 +21,7 @@ __all__ = [
     "If",
     "Program",
     "While",
-]    
+]
 
 
 class Fail(BaseException):
@@ -43,7 +43,7 @@ class MetaEntry(type):
         newclass = super(MetaEntry, cls).__new__(cls, clsname, bases, attrs)
         cls.register(newclass)  # here is your register function
         return newclass
-    
+
     def register(cls):
         if cls not in MetaEntry.overview:
             MetaEntry.overview[cls] = 0
@@ -55,7 +55,7 @@ class Entry(metaclass=MetaEntry):
     declarations = {}
     variables = {}
 
-    def __init__(self, value, children=None,text=None):
+    def __init__(self, value, children=None, text=None):
         self.value = value
         self._more = False
         self.name = None
@@ -76,7 +76,7 @@ class Entry(metaclass=MetaEntry):
         yield []
 
     def make(self):
-        print("no make for",self)
+        print("no make for", self)
         yield []
 
     def eval(self):
@@ -88,13 +88,15 @@ class Entry(metaclass=MetaEntry):
     def show(self, depth=0):
         for i in range(depth):
             print("  ", end="")
-        print(type(self).__qualname__,self.name)#,self.value.value.ljust(40-2*depth))
+        print(
+            type(self).__qualname__, self.name
+        )  # ,self.value.value.ljust(40-2*depth))
         if self._more:
             for i in self.children:
-                if isinstance(i,Entry):
+                if isinstance(i, Entry):
                     i.show(depth=depth + 1)
                 else:
-                    print("fail on type ",type(i),i)
+                    print("fail on type ", type(i), i)
 
     def sweep(self, fn):
         print(self.__dict__)
@@ -109,33 +111,40 @@ class Entry(metaclass=MetaEntry):
 
 # individual action classes
 
+
 class While(Entry):
     pass
 
+
 class Program(Entry):
-    pass 
+    pass
+
 
 class If(Entry):
     pass
 
+
 class Operator(Entry):
     pass
 
+
 class Operation(Entry):
     pass
+
 
 class Block(Entry):
     def parse(self):
         self.statements = self.children
 
-    
     def build(self):
         for i in self.statements:
-            print('build -->',i)
+            print("build -->", i)
         yield []
+
 
 class Expression(Entry):
     pass
+
 
 class Literal(Entry):
     pass
@@ -144,29 +153,32 @@ class Literal(Entry):
 class Statement(Entry):
     pass
 
+
 class Stringer(Entry):
     def parse(self):
-        pass 
+        pass
 
     def make(self):
         l = len(self.text)
-        t = [] 
+        t = []
         for i in self.text:
-            t.append(ord(i)) 
-        yield [l,t]
+            t.append(ord(i))
+        yield [l, t]
+
 
 class Number(Entry):
     def parse(self):
-        self.value= int(self.value.value)
+        self.value = int(self.value.value)
 
     def make(self):
         yield self.value
+
 
 class Symbol(Entry):
     def parse(self):
         self.name = self.value.value
         if self.value.value not in self.symbol_dict:
-            self.symbol_dict[self.name] = self 
+            self.symbol_dict[self.name] = self
 
 
 class Assign(Entry):
@@ -176,8 +188,10 @@ class Assign(Entry):
         self.lhs = self.children[0]
         self.rhs = self.children[1]
 
+
 class Parameters(Entry):
     pass
+
 
 class Ref(Entry):
     pass
@@ -187,16 +201,16 @@ class Declare(Entry):
     def parse(self):
         target = self.children[0]
         self.name = target.value.value
-        self.target = self.children[1] 
+        self.target = self.children[1]
         if self.name not in self.declarations:
-            self.declarations[self.name] = self 
+            self.declarations[self.name] = self
         else:
             raise Redeclaration(target)
         if self.name not in self.variables:
             self.variables[self.name] = self.target
 
     def build(self):
-        yield [] 
+        yield []
 
     def make(self):
         yield L(self.name)
