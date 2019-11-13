@@ -1,6 +1,26 @@
 # attempt at a register allocator
 from collections import OrderedDict
 
+"
+ideas
+
+allocate variables into a register bank, break it into windows 
+limit the total number of windows and spill into ram if needed
+
+work out how to make sure that the variables are in the correct window
+for actions 
+
+minimise the amount of spill an copying from one window to the other
+
+? contiguous windows
+? linked list of windows
+? dynamic window allocation
+
+multi register allocations ? 
+pointer deferencing ? 
+
+
+"
 
 class Register:
     def __init__(self, name="blank", temp=-1, size=1):
