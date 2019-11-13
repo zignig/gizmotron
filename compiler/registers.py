@@ -1,7 +1,7 @@
 # attempt at a register allocator
 from collections import OrderedDict
 
-"
+"""
 ideas
 
 allocate variables into a register bank, break it into windows 
@@ -20,7 +20,7 @@ multi register allocations ?
 pointer deferencing ? 
 
 
-"
+"""
 
 class Register:
     def __init__(self, name="blank", temp=-1, size=1):

@@ -188,6 +188,15 @@ class Assign(Entry):
         self.lhs = self.children[0]
         self.rhs = self.children[1]
 
+        target = self.children[0]
+        self.name = target.value.value
+        self.target = self.children[1]
+        if self.name not in self.declarations:
+            self.declarations[self.name] = self
+        else:
+            raise Redeclaration(target)
+        if self.name not in self.variables:
+            self.variables[self.name] = self.target
 
 class Parameters(Entry):
     pass

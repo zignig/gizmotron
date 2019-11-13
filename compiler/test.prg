@@ -1,4 +1,6 @@
 def main(){
+    counter := 1 ;
+    delay := 12345;
     start();
     run();
     shutdown();
