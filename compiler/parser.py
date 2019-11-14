@@ -133,7 +133,7 @@ class Vis(PTNodeVisitor):
         return Task(node,children=children)
 
     def visit_const(self,node,children):
-        return Const(node,children=chidren)
+        return Const(node,children=children)
 
     def visit_var(self,node,children):
         return Var(node,children=children)

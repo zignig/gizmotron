@@ -1,4 +1,14 @@
 
+
+def setup(){
+	var test bob;
+	const test basd;
+	test := 1;
+	test := test + 1;
+	if ( debug == 1 ){
+	  print(debug);
+	};
+}
 def main(){
     counter := 1 ;
     delay := 12345;
@@ -27,3 +37,6 @@ def shutdown(){
 task testing {}
 task blinker {}
 task console {}
+
+def blerg(){}
+

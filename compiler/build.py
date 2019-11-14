@@ -6,6 +6,9 @@ from boneless.arch.asm import Assembler
 from boneless.arch.opcode import *
 
 
+from ast import *
+from ast import MetaEntry
+
 def go(val):
     print(val)
     return val
