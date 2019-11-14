@@ -1,30 +1,46 @@
-: program
-    active as 300 
-    counter as 111 
-    delay as "testing" 
-    one as "one"
-    fnord as "this is a test now"
-    : other_code 
-        serial_out = alphabet
-    ;
-    : wait ;
-    : setup
-        counter = 0
-        delay = 65300
-    ;
-    : run
-        blink()
-    ;
-    : blink led = on ; 
-    : shutdown 
-        active = false
-    ;
-    setup()
-    run()
-    shutdown()
-    : go
-        setup()
-        setup()
-        run()
-    ;
-;
+
+
+def setup(){
+	var test bob;
+	const test basd;
+	test := 1;
+	test := test + 1;
+	if ( debug == 1 ){
+	  print(debug);
+	};
+}
+def main(){
+    counter := 1 ;
+    delay := 12345;
+    start();
+    run();
+    shutdown();
+}
+
+def start(){
+}
+
+def run(){
+    while(runnin == 1){
+        go();
+    };
+}
+
+def shutdown(){
+	active := 0;
+	if ( running == 0){
+		print(b);
+	};
+
+}
+
+task testing {}
+task blinker {}
+task console {}
+
+def blerg(){}
+
+task stringtest{
+        var thing stuff;
+        thing := "this is a test";
+}

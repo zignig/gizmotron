@@ -45,16 +45,16 @@ class MetaEntry(type):
     def __new__(cls, clsname, bases, attrs):
         newclass = super(MetaEntry, cls).__new__(cls, clsname, bases, attrs)
         cls.register(newclass)  # here is your register function
-        print("Meta",newclass)
+        print("Meta", newclass)
         return newclass
 
     def register(cls):
         if cls not in MetaEntry.overview:
             MetaEntry.overview[cls] = 0
 
-    def __call__(self,*args,**kwargs):
+    def __call__(self, *args, **kwargs):
         # count the usage of the entries
-        cls = super(MetaEntry,self).__call__(*args,**kwargs)
+        cls = super(MetaEntry, self).__call__(*args, **kwargs)
         if self in MetaEntry.overview:
             MetaEntry.overview[self] += 1
         return cls
@@ -64,7 +64,7 @@ class MetaEntry(type):
         for i in o:
             name = i.__qualname__
             count = o[i]
-            print(name,count)
+            print(name, count)
 
 
 class Entry(metaclass=MetaEntry):
@@ -131,13 +131,16 @@ class Entry(metaclass=MetaEntry):
 
 
 class Task(Entry):
-    pass 
+    pass
+
 
 class Const(Entry):
     pass
 
+
 class Var(Entry):
     pass
+
     def parse(self):
         target = self.children[0]
         self.name = target.value.value
@@ -148,6 +151,7 @@ class Var(Entry):
             raise Redeclaration(target)
         if self.name not in self.variables:
             self.variables[self.name] = self.target
+
 
 class While(Entry):
     pass

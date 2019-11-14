@@ -32,12 +32,19 @@ def operator():
     return _(r"\+|\-|\*|\/|\=\=")
 
 
+def quote():
+    return '"'
+
+def stringer():
+    return '"', _(r'((\\")|[^"])*'), '"'
+
+
 def operation():
     return symbol, operator, [literal, functioncall]
 
 
 def expression():
-    return [literal, operation, functioncall]
+    return [operation, functioncall, stringer,symbol,literal]
 
 
 def expressionlist():
@@ -63,8 +70,14 @@ def ifelsestatement():
 def functioncall():
     return symbol, parameterlist
 
-def const() : return Kwd("const"),symbol,symbol
-def var() : return Kwd("var"),symbol,symbol
+
+def const():
+    return Kwd("const"), symbol, symbol
+
+
+def var():
+    return Kwd("var"), symbol, symbol
+
 
 def statement():
     return (
@@ -101,11 +114,13 @@ def parameterlist():
 def function():
     return Kwd("def"), symbol, parameterlist, block
 
+
 def task():
-    return Kwd("task"),symbol,block
+    return Kwd("task"), symbol, block
+
 
 def program():
-    return OneOrMore([function,task]), EOF
+    return OneOrMore([function, task]), EOF
 
 
 # Grammar
@@ -113,7 +128,6 @@ def program():
 # def symbol():           return _(r"\w+")
 # def var():              return _(r"\w+")
 # def number():           return _(r"\d+")
-# def stringer():         return '"', _(r'((\\")|[^"])*'),'"'
 # def ref():              return '@',symbol
 # def compare():          return [eq,lt,gt]
 # def declare():          return symbol,':=',[number,stringer]
@@ -129,14 +143,14 @@ def program():
 
 
 class Vis(PTNodeVisitor):
-    def visit_task(self,node,children):
-        return Task(node,children=children)
+    def visit_task(self, node, children):
+        return Task(node, children=children)
 
-    def visit_const(self,node,children):
-        return Const(node,children=children)
+    def visit_const(self, node, children):
+        return Const(node, children=children)
 
-    def visit_var(self,node,children):
-        return Var(node,children=children)
+    def visit_var(self, node, children):
+        return Var(node, children=children)
 
     def visit_program(self, node, children):
         # print("\tfunction",node,children)
@@ -151,6 +165,9 @@ class Vis(PTNodeVisitor):
         b = Block(node, children=children)
         b.statments = children
         return b
+
+    def visit_stringer(self, node, children):
+        return Stringer(node, children=children)
 
     def visit_expression(self, node, children):
         # print('\texpression',node,children)
@@ -200,7 +217,9 @@ class Vis(PTNodeVisitor):
 
     def visit_comma(self, node, children):
         pass
-
+    
+    def visit_quote(self, node, children):
+        pass
 
 """
     def visit_call(self,node,children):

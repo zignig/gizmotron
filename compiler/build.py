@@ -9,6 +9,7 @@ from boneless.arch.opcode import *
 from ast import *
 from ast import MetaEntry
 
+
 def go(val):
     print(val)
     return val
@@ -46,5 +47,5 @@ class Program:
         # print(len(r))
 
 
-p = Program(debug=False)
+p = Program(debug=True)
 p.build()
