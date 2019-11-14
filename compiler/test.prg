@@ -1,3 +1,4 @@
+
 def main(){
     counter := 1 ;
     delay := 12345;
@@ -22,3 +23,7 @@ def shutdown(){
 	};
 
 }
+
+task testing {}
+task blinker {}
+task console {}

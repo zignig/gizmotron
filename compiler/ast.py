@@ -21,6 +21,9 @@ __all__ = [
     "If",
     "Program",
     "While",
+    "Task",
+    "Const",
+    "Var",
 ]
 
 
@@ -111,6 +114,15 @@ class Entry(metaclass=MetaEntry):
 
 # individual action classes
 
+
+class Task(Entry):
+    pass 
+
+class Const(Entry):
+    pass
+
+class Var(Entry):
+    pass
 
 class While(Entry):
     pass

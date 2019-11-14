@@ -63,10 +63,14 @@ def ifelsestatement():
 def functioncall():
     return symbol, parameterlist
 
+def const() : return Kwd("const"),symbol,symbol
+def var() : return Kwd("var"),symbol,symbol
 
 def statement():
     return (
         [
+            const,
+            var,
             assign,
             whilestatement,
             ifelsestatement,
@@ -97,9 +101,11 @@ def parameterlist():
 def function():
     return Kwd("def"), symbol, parameterlist, block
 
+def task():
+    return Kwd("task"),symbol,block
 
 def program():
-    return OneOrMore(function), EOF
+    return OneOrMore([function,task]), EOF
 
 
 # Grammar
@@ -123,6 +129,15 @@ def program():
 
 
 class Vis(PTNodeVisitor):
+    def visit_task(self,node,children):
+        return Task(node,children=children)
+
+    def visit_const(self,node,children):
+        return Const(node,children=chidren)
+
+    def visit_var(self,node,children):
+        return Var(node,children=children)
+
     def visit_program(self, node, children):
         # print("\tfunction",node,children)
         return Program(node, children=children)
