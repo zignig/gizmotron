@@ -11,9 +11,11 @@ print(r)
 
 
 class sweep(ast.NodeVisitor):
+    data = []
     def generic_visit(self,node):
         print(node,type(node).__qualname__)
         ast.NodeVisitor.generic_visit(self,node)
+        self.data.append(node)
     
 #    def visit_FunctionDef(self,node):
 #        print(node.body)

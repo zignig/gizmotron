@@ -68,103 +68,106 @@ and tada, it runs and puts variables back into the current frame.
 
 Kind of nifty.
 
+rehack of https://github.com/tpwrules/ice_panel/blob/master/bonetools.py
+
 """
 
+from boneless.arch.opcode import *
+
+class RegError(Exception):
+    pass 
+
+class NameCollision(RegError):
+    pass
+
+class WindowFull(RegError):
+    pass
 
 class Register:
-    def __init__(self, name="blank", temp=-1, size=1):
-        self.ref = None
+    def __init__(self,name,reg):
         self.name = name
-        self._allocated = False
-        self.temperature = temp
-        self.size = size  # for multiword variables
+        self.r = reg
 
-    def __repr__(self):
-        txt = str(self.name) + " ["
-        if self._allocated:
-            txt += "X"
-        else:
-            txt += " "
-        txt += "] (" + str(self.temperature) + ")"
-        return txt
-
-
-class Holding:
-    # Holds all the variables in the program
-    def __init__(self):
-        self.count = 0
-        self.reg = OrderedDict()
-
-    def insert(self, target):
-        r = Register(target)
-
-
+    def __call__(self):
+        return self.r
+        
+    
 class Window:
-    def __init__(self, size=8):
-        self.size = size
-        self.reg = [Register(None) for reg in range(self.size)]
+    _REGS = [R0,R1,R2,R3,R4,R5,R6,R7]
+    _size = 8
+    def __init__(self):
+        self._allocated = [False] * 8
+        self._name = ['']*8
 
-    class Action:
-        def __init__(self, reg, source, target):
-            self.reg = reg
-            self.source = source
-            self.target = target
+    def req(self,name):
+        for i in range(self._size):
+            if self._allocated[i] == False:
+                # free register
+                self._allocated[i] = True
+                self._name[i] = name
+                if name not in dir(self):
+                    reg = Register(name,self._REGS[i])
+                    setattr(self,name,reg())
+                else:
+                    raise NameCollision(self)
+                return reg()
+        # no free registers
+        # fail for now
+        raise WindowFull(self)
+                    
+    def __getattr__(self,name):
+        return self.req(name)
+        
+        
+class MetaCall(type):
+    pass
+       
+class Call:
+    def __init__(self,name,*vars):
+        self.name = name 
+        self.w = Window()
+        self.inreg = vars
+        print("--",name,"--")
+        for i in enumerate(vars):
+            print(i)
 
-        def __repr__(self):
-            return (
-                str(type(self).__qualname__)
-                + " : "
-                + str(self.source)
-                + "--"
-                + str(self.target)
-            )
+    def instr(self):
+        print("OVERRIDE_ME")
+        return []
 
-    class Spill(Action):
+    def loader(self):
+        # grabs code from the register above
+        loads = []
+        for i in  self.inreg:
+            print(i)
+            loads.append(LD(self.w.test,self.w.fp,i.value))
+        return loads
+            
+        
+    def code(self):
+        prelude = [L(self.name)]
+        prelude += [LDW(self.w.fp,-8)] # window shift up
+        prelude += self.loader()
+        prelude += self.instr()
+        prelude += [ADJW(8),JR(R7,0)] 
+        return prelude
+
+            
+
+class FrameStack:
+    def __init__(self):
+        self.windows = [Window()]
+        self.pointer = 0 # pointer to the currenet window
+
+    def fetch(self,name):
+        # search through the windows and find the name
+        # produce LD(target_reg,frame_pointer,< offset >
+        # this gets a bit hairy over multiple frames
         pass
 
-    class Use(Action):
-        pass
-
-    class LoadFrom(Action):
-        pass
-
-    def request(self, target):
-        # ask for a specific var
-        for pos, reg in enumerate(self.reg):
-            if target == reg:
-                reg.temperature += 1
-                return self.Use(pos, reg, None)
-        # not available load
-        for pos, reg in enumerate(self.reg):
-            if reg._allocated == False:
-                self.reg[pos] = target
-                target._allocated = True
-                return self.LoadFrom(pos, target, reg)
-        # uh oh, no emptys
-        # spill the lowest temperature register
-        temperature = 1e6
-        ret_reg = None
-        ret_pos = 0
-        for pos, reg in enumerate(self.reg):
-            if reg.temperature < temperature:
-                temperature = reg.temperature
-                ret_reg = reg
-                ret_pos = pos
-        self.reg[ret_pos] = target
-        target.temperature += 1
-        target._allocated = True
-        return self.Spill(ret_pos, target, ret_reg)
-
+    
 
 w = Window()
-a = Register("one")
-b = Register("two")
-c = Register("three")
-d = Register("four")
-e = Register("five")
-f = Register("six")
-g = Register("seven")
-h = Register("eight")
-r = [a, b, c, d, e, f, g, h]
-# for i in r:
-#    w.request(i)
+w.test
+w.fnord
+w.gorf

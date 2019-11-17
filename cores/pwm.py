@@ -1,5 +1,5 @@
-from .gizmo import Gizmo, IO
 from nmigen import *
+from .peripheral import Periph, IO, BIT
 
 
 class _pwm(Elaboratable):
@@ -25,10 +25,7 @@ class _pwm(Elaboratable):
         return m
 
 
-class Pwm(Gizmo):
-    code = """
-        ADDI R0,R0,1
-    """
+class Pwm(Periph):
     def build(self, **kwargs):
         pin = self.platform.request("pwm", 0)
         p = _pwm(pin)

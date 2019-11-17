@@ -268,6 +268,7 @@ class Call(Entry):
         self.name = self.children[0].value
 
     def build(self):
+        
         yield JAL(R7, str(self.name))
 
 
@@ -286,4 +287,4 @@ class Function(Entry):
             # don't build sections , they are written at the top
             if type(i) is not Function:
                 yield from i.build()
-        yield JR(R7, 0)
+        yield [ADJW(8),JR(R7, 0)]

@@ -11,6 +11,8 @@ def run(){
 }
 
 task go {
+    var running int;
+    runnint := 1;
     startup();
     while( True ){
         run();

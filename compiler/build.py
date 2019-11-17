@@ -30,7 +30,6 @@ class Program:
     def build(self):
         self.result.eval()
         self.show()
-        return
         code = []
         for i in p.sections:
             code.append(list(p.sections[i].build()))
@@ -43,7 +42,7 @@ class Program:
         self.assembler.parse(code)
 
         r = self.assembler.assemble()
-        # print(r)
+        print(r)
         # print(len(r))
 
 
