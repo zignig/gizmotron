@@ -83,77 +83,135 @@ class NameCollision(RegError):
 class WindowFull(RegError):
     pass
 
-class Register:
-    def __init__(self,name,reg):
-        self.name = name
-        self.r = reg
+class BadParamCount(RegError):
+    pass
 
-    def __call__(self):
-        return self.r
-        
-    
+
 class Window:
     _REGS = [R0,R1,R2,R3,R4,R5,R6,R7]
     _size = 8
-    def __init__(self):
-        self._allocated = [False] * 8
+    def __init__(self,jumper=True):
+        self._allocated = [False] * 8 
         self._name = ['']*8
+        if jumper:
+            # frame for subroutine calls R6 is fp , R7 is return
+            self._allocated[6] = True
+            self._name[6] = 'fp'
+            setattr(self,'fp',self._REGS[6])
+
+            self._allocated[7] = True
+            self._name[7] = 'ret'
+            setattr(self,'ret',self._REGS[7])
 
     def req(self,name):
+        if type(name) == type(''):
+            self._single(name)
+        if type(name) == type([]):
+            for i in name:
+                self._single(i)
+
+    def _single(self,name):
         for i in range(self._size):
             if self._allocated[i] == False:
                 # free register
                 self._allocated[i] = True
                 self._name[i] = name
-                if name not in dir(self):
-                    reg = Register(name,self._REGS[i])
-                    setattr(self,name,reg())
+                if name not in self.__dict__:
+                    setattr(self,name,self._REGS[i])
+                    return
                 else:
                     raise NameCollision(self)
-                return reg()
         # no free registers
         # fail for now
         raise WindowFull(self)
                     
-    def __getattr__(self,name):
-        return self.req(name)
+    def __getitem__(self,key):
+        if hasattr(self,key):
+            return self.__dict__[key]
         
-        
-class MetaCall(type):
-    pass
-       
-class Call:
-    def __init__(self,name,*vars):
-        self.name = name 
+class MetaSub(type):
+    subroutines = []
+    def __new__(cls, clsname, bases, attrs):
+        newclass = super(MetaSub, cls).__new__(cls, clsname, bases, attrs)
+        cls.register(newclass)  # here is your register function
+        return newclass
+
+    def register(cls):
+        d = MetaSub.subroutines 
+        if cls.__qualname__ == 'SubR':
+            # Don't add root subclass
+            return
+        if cls not in d:
+            d.append(cls())
+
+    @classmethod
+    def code(cls):
+        li = MetaSub.subroutines
+        c = []
+        for i in li:
+            if i._called:
+                c.append(i.code())
+        return c
+
+
+class SubR(metaclass=MetaSub):
+    """
+    Calling Standard
+    R7 = return address (used by the child frame)
+    R6 = frame pointer
+
+    
+    """ 
+    _called = False
+
+    
+    def __init__(self):
         self.w = Window()
-        self.inreg = vars
-        print("--",name,"--")
-        for i in enumerate(vars):
-            print(i)
+        self.setup()
+        if not hasattr(self,'name'):
+            self.name = type(self).__qualname__
+        if hasattr(self,'params'):
+            self.length = len(self.params)
+            for i in self.params:
+                self.w.req(i)
+        else:
+            self.length = 0 
+    
+    @classmethod
+    def mark(cls):
+        " include code if the subroutine has been called "
+        cls._called = True 
+    
+    def setup(self):
+        pass
+
+    def __call__(self,*args):
+        if len(args) != self.length:
+            raise ValueError("Parameter count is should be '{}'".format(self.length))
+        # load the parameters into the next frame
+        instr = []
+        for i,j in enumerate(args):
+            source = j
+            target = self.w[self.params[i]].value
+            instr += [LD(source,self.w.fp,-8+target)]
+        instr += [JAL(self.w.ret,self.name)]
+        self.mark()
+        return instr
+            
 
     def instr(self):
-        print("OVERRIDE_ME")
+        " empty code "
         return []
 
-    def loader(self):
-        # grabs code from the register above
-        loads = []
-        for i in  self.inreg:
-            print(i)
-            loads.append(LD(self.w.test,self.w.fp,i.value))
-        return loads
-            
-        
     def code(self):
         prelude = [L(self.name)]
         prelude += [LDW(self.w.fp,-8)] # window shift up
-        prelude += self.loader()
         prelude += self.instr()
         prelude += [ADJW(8),JR(R7,0)] 
         return prelude
 
             
-
+# TODO  , does this make any sense ? 
 class FrameStack:
     def __init__(self):
         self.windows = [Window()]
@@ -167,7 +225,34 @@ class FrameStack:
 
     
 
+
+# Test Objects
+
+class Printer(SubR):
+    def setup(self):
+        self.params = ['addr','data']
+        
+    def instr(self):
+        w = self.w
+        return [
+            STX(w.addr,w.data,0)
+        ]
+
+
+class Degenerate(SubR):
+    pass
+
+class Reboot(SubR):
+    def instr(self):
+        return [ANDI(R0,R0,0)]
+        
 w = Window()
-w.test
-w.fnord
-w.gorf
+w.req('addr')
+w.req('counter')
+w.req('data')
+print(w._name)
+p = Printer()
+print("call code")
+print(p(w.addr,w.data))
+print("subroutine code")
+print(p.code())
