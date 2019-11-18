@@ -1,5 +1,6 @@
 # attempt at a register allocator
 from collections import OrderedDict
+import random
 
 """
 ideas
@@ -74,71 +75,88 @@ rehack of https://github.com/tpwrules/ice_panel/blob/master/bonetools.py
 
 from boneless.arch.opcode import *
 
+
 class RegError(Exception):
-    pass 
+    pass
+
 
 class NameCollision(RegError):
     pass
 
+
 class WindowFull(RegError):
     pass
+
 
 class BadParamCount(RegError):
     pass
 
 
+class LocalLabels:
+    " Local random labels for inside subr"
+
+    def __init__(self):
+        self.prefix = "_{}_".format(random.randrange(2 ** 32))
+
+    def __call__(self, name):
+        return L(self.prefix + name)
+
+
 class Window:
-    _REGS = [R0,R1,R2,R3,R4,R5,R6,R7]
+    _REGS = [R0, R1, R2, R3, R4, R5, R6, R7]
     _size = 8
-    def __init__(self,jumper=True):
-        self._allocated = [False] * 8 
-        self._name = ['']*8
+
+    def __init__(self, jumper=True):
+        self._allocated = [False] * 8
+        self._name = [""] * 8
         if jumper:
             # frame for subroutine calls R6 is fp , R7 is return
             self._allocated[6] = True
-            self._name[6] = 'fp'
-            setattr(self,'fp',self._REGS[6])
+            self._name[6] = "fp"
+            setattr(self, "fp", self._REGS[6])
 
             self._allocated[7] = True
-            self._name[7] = 'ret'
-            setattr(self,'ret',self._REGS[7])
+            self._name[7] = "ret"
+            setattr(self, "ret", self._REGS[7])
 
-    def req(self,name):
-        if type(name) == type(''):
+    def req(self, name):
+        if type(name) == type(""):
             self._single(name)
         if type(name) == type([]):
             for i in name:
                 self._single(i)
 
-    def _single(self,name):
+    def _single(self, name):
         for i in range(self._size):
             if self._allocated[i] == False:
                 # free register
                 self._allocated[i] = True
                 self._name[i] = name
                 if name not in self.__dict__:
-                    setattr(self,name,self._REGS[i])
+                    setattr(self, name, self._REGS[i])
                     return
                 else:
                     raise NameCollision(self)
         # no free registers
         # fail for now
         raise WindowFull(self)
-                    
-    def __getitem__(self,key):
-        if hasattr(self,key):
+
+    def __getitem__(self, key):
+        if hasattr(self, key):
             return self.__dict__[key]
-        
+
+
 class MetaSub(type):
     subroutines = []
+
     def __new__(cls, clsname, bases, attrs):
         newclass = super(MetaSub, cls).__new__(cls, clsname, bases, attrs)
         cls.register(newclass)  # here is your register function
         return newclass
 
     def register(cls):
-        d = MetaSub.subroutines 
-        if cls.__qualname__ == 'SubR':
+        d = MetaSub.subroutines
+        if cls.__qualname__ == "SubR":
             # Don't add root subclass
             return
         if cls not in d:
@@ -161,43 +179,42 @@ class SubR(metaclass=MetaSub):
     R6 = frame pointer
 
     
-    """ 
+    """
+
     _called = False
 
-    
     def __init__(self):
         self.w = Window()
         self.setup()
-        if not hasattr(self,'name'):
+        if not hasattr(self, "name"):
             self.name = type(self).__qualname__
-        if hasattr(self,'params'):
+        if hasattr(self, "params"):
             self.length = len(self.params)
             for i in self.params:
                 self.w.req(i)
         else:
-            self.length = 0 
-    
+            self.length = 0
+
     @classmethod
     def mark(cls):
         " include code if the subroutine has been called "
-        cls._called = True 
-    
+        cls._called = True
+
     def setup(self):
         pass
 
-    def __call__(self,*args):
+    def __call__(self, *args):
         if len(args) != self.length:
             raise ValueError("Parameter count is should be '{}'".format(self.length))
         # load the parameters into the next frame
         instr = []
-        for i,j in enumerate(args):
+        for i, j in enumerate(args):
             source = j
             target = self.w[self.params[i]].value
-            instr += [LD(source,self.w.fp,-8+target)]
-        instr += [JAL(self.w.ret,self.name)]
+            instr += [LD(source, self.w.fp, -8 + target)]
+        instr += [JAL(self.w.ret, self.name)]
         self.mark()
         return instr
-            
 
     def instr(self):
         " empty code "
@@ -205,54 +222,53 @@ class SubR(metaclass=MetaSub):
 
     def code(self):
         prelude = [L(self.name)]
-        prelude += [LDW(self.w.fp,-8)] # window shift up
+        prelude += [LDW(self.w.fp, -8)]  # window shift up
         prelude += self.instr()
-        prelude += [ADJW(8),JR(R7,0)] 
+        prelude += [ADJW(8), JR(R7, 0)]
         return prelude
 
-            
-# TODO  , does this make any sense ? 
+
+# TODO  , does this make any sense ?
 class FrameStack:
     def __init__(self):
         self.windows = [Window()]
-        self.pointer = 0 # pointer to the currenet window
+        self.pointer = 0  # pointer to the currenet window
 
-    def fetch(self,name):
+    def fetch(self, name):
         # search through the windows and find the name
         # produce LD(target_reg,frame_pointer,< offset >
         # this gets a bit hairy over multiple frames
         pass
 
-    
-
 
 # Test Objects
 
+
 class Printer(SubR):
     def setup(self):
-        self.params = ['addr','data']
-        
+        self.params = ["addr", "data"]
+
     def instr(self):
         w = self.w
-        return [
-            STX(w.addr,w.data,0)
-        ]
+        return [STX(w.addr, w.data, 0)]
 
 
 class Degenerate(SubR):
     pass
 
+
 class Reboot(SubR):
     def instr(self):
-        return [ANDI(R0,R0,0)]
-        
+        return [ANDI(R0, R0, 0)]
+
+
 w = Window()
-w.req('addr')
-w.req('counter')
-w.req('data')
+w.req("addr")
+w.req("counter")
+w.req("data")
 print(w._name)
 p = Printer()
 print("call code")
-print(p(w.addr,w.data))
+print(p(w.addr, w.data))
 print("subroutine code")
 print(p.code())
