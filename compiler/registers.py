@@ -278,6 +278,19 @@ class Reboot(SubR):
         return [ANDI(R0, R0, 0),ll('test'),ADDI(w.counter,w.switch,1),JZ(ll.test)]
 
 
+class Composite(SubR):
+    def setup(self):
+        self.params = ['addr']
+        self.w.req('counter')
+        self.w.req('delay')
+        self.r = Reboot()
+        self.p = Printer()
+
+    def instr(self):
+        ll = LocalLabels()
+        w = self.w
+        return [self.r(),self.p(self.w.addr,self.w.counter)]
+
 w = Window()
 w.req("addr")
 w.req("counter")
