@@ -93,14 +93,24 @@ class BadParamCount(RegError):
 
 
 class LocalLabels:
-    " Local random labels for inside subr"
+    """ Local random labels for inside subr
+        create a local labeler
+        ll = LocalLabels()
+        make a label - ll('test')
+        reference the label - ll.test
+    """
 
     def __init__(self):
-        self.prefix = "_{}_".format(random.randrange(2 ** 32))
+        self._prefix = "_{}_".format(random.randrange(2 ** 32))
+        self._names = {}
 
     def __call__(self, name):
-        return L(self.prefix + name)
+        self._names[name] = self._prefix + name
+        setattr(self,name,self._prefix + name)
+        return L(self._prefix + name)
 
+    def __getattr__(self,key):
+        return self._names[key]
 
 class Window:
     _REGS = [R0, R1, R2, R3, R4, R5, R6, R7]
@@ -258,8 +268,14 @@ class Degenerate(SubR):
 
 
 class Reboot(SubR):
+    def setup(self):
+        self.w.req('counter')
+        self.w.req('switch')
+
     def instr(self):
-        return [ANDI(R0, R0, 0)]
+        ll = LocalLabels()
+        w = self.w
+        return [ANDI(R0, R0, 0),ll('test'),ADDI(w.counter,w.switch,1),JZ(ll.test)]
 
 
 w = Window()
