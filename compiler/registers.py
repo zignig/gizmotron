@@ -291,13 +291,13 @@ class Composite(SubR):
         w = self.w
         return [self.r(),self.p(self.w.addr,self.w.counter)]
 
+
+class Outer:
+    reboot = Reboot()
+    printer = Printer()
+    comp = Composite()
+
 w = Window()
 w.req("addr")
 w.req("counter")
 w.req("data")
-print(w._name)
-p = Printer()
-print("call code")
-print(p(w.addr, w.data))
-print("subroutine code")
-print(p.code())
