@@ -2,7 +2,7 @@
 from collections import OrderedDict
 import random
 
-__all__ = ['LocalLabels','SubR','Window','MetaSub']
+__all__ = ['LocalLabels','SubR','Window','MetaSub','Firmware']
 """
 ideas
 
@@ -111,6 +111,11 @@ class LocalLabels:
         return L(self._prefix + name)
 
     def __getattr__(self,key):
+        if key in self._names:
+            return self._names[key]
+        # for forward declarations
+        self._names[key] = self._prefix + key 
+        setattr(self,key,self._prefix + key)
         return self._names[key]
 
 class Window:
@@ -205,6 +210,9 @@ class SubR(metaclass=MetaSub):
                 self.w.req(i)
         else:
             self.length = 0
+        if hasattr(self,'locals'):
+            for i in self.locals:
+                self.w.req(i)
 
     @classmethod
     def mark(cls):
@@ -239,18 +247,26 @@ class SubR(metaclass=MetaSub):
         return prelude
 
 
-# TODO  , does this make any sense ?
-class FrameStack:
-    def __init__(self):
-        self.windows = [Window()]
-        self.pointer = 0  # pointer to the currenet window
+class Firmware:
 
-    def fetch(self, name):
-        # search through the windows and find the name
-        # produce LD(target_reg,frame_pointer,< offset >
-        # this gets a bit hairy over multiple frames
-        pass
+    def __init__(self,start_window=0x1000):
+        self.w = Window()
+        self.sw = start_window
+        
+    def instr(self):
+        return []
 
+    def code(self):
+        fw = [
+            MOVI(w.fp,self.sw),
+            L('main'),
+            self.instr(),
+            J('main'),
+            L('ExtraCode'),
+            MetaSub.code(),
+        ]
+        return fw
+            
 
 # Test Objects
 
