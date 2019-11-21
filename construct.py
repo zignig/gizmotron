@@ -11,6 +11,7 @@ from cores.pwm import Pwm
 from cores.warm import WarmBoot
 from cores.pll import pll
 from cores.csr_test import csrCounter
+from cores.multiply import Multiply
 
 Elaboratable._Elaboratable__silence = True 
 
@@ -35,6 +36,8 @@ def Construct(platform, asm_file="asm/tx.asm"):
     c = Counter('counter1')
     b.add_periph(c)
 
+    m = Multiply('multiply')
+    b.add_periph(m)
     b.prepare()
     return b
 
