@@ -3,6 +3,7 @@ from collections import OrderedDict
 import random
 
 __all__ = ['LocalLabels','SubR','Window','MetaSub','Firmware']
+
 """
 ideas
 
@@ -23,16 +24,15 @@ pointer deferencing ?
 
 ###
 
-from conversations with tpw_rules and looking at his programming style.
+from conversations with tpwrules and looking at his programming style.
 The use of a frame stack where each subroutine call moves the register window 
 up 8 register.
 
 - Loads the needed registers from the preceeding frame
 - Allocates local variables 
 - Runs the subroutine code
-- Copies return variable down 
-- Shifts the window back down 
 - And then return jumps from the parent frame.
+- The parent routine can then pluck register values out of the child frame.
 
 This is quite elegant. A subroutine becomes.
 
@@ -40,18 +40,19 @@ assuming R6 is the Frame pointer (fp)
 
 If you need to pass variables up and down
 
-    LDW(fp,-8) # put the previous window address into R6
     LD(var1,fp,1) # load the first register of the prevuis frame into var1 
     LD(var2,fp,2) # second register
+    LDW(fp,-8) # put the previous window address into R6
 
     # other code
     # blah blah blah
 
-    ST(return_val,fp,3) # put the value it register 3 in the frame above
 
     Then return up
     ADJW(8) # move the window to the previous frame address
     JR(R7,0) # the return jump is in the parent frame
+
+    ST(return_val,fp,-3) # put the value it register 3 in the frame above
 
 If nothing needs to be passed up or down
 
@@ -66,7 +67,7 @@ When you want to call a subroutine , it's just
 
     JAL(R7,'subroutine')
 
-and tada, it runs and puts variables back into the current frame.
+and tada, it runs and makes the registers available to the above frame.
 
 Kind of nifty.
 
@@ -160,10 +161,18 @@ class Window:
     def __getitem__(self, key):
         if hasattr(self, key):
             return self.__dict__[key]
+    
+    # TODO spill and reuse registers 
+
 
 
 class MetaSub(type):
     subroutines = []
+    """
+    Meta Sub is a class for collecting all the routines together
+    It also expands the useds subroutines for adding in the epilogue of the
+    program
+    """
 
     def __new__(cls, clsname, bases, attrs):
         newclass = super(MetaSub, cls).__new__(cls, clsname, bases, attrs)
@@ -181,10 +190,16 @@ class MetaSub(type):
     @classmethod
     def code(cls):
         li = MetaSub.subroutines
+        # loop through and add sub-subroutines to the list
         c = []
-        for i in li:
-            if i._called:
-                c.append(i.code())
+        while True:
+            old_c = c 
+            c = []
+            for i in li:
+                if i._called:
+                    c.append(i.code())
+            if len(old_c) == len(c):
+                break
         return c
 
 
@@ -241,9 +256,11 @@ class SubR(metaclass=MetaSub):
 
     def code(self):
         prelude = [L(self.name)]
-        prelude += [LDW(self.w.fp, -8)]  # window shift up
-        prelude += self.instr()
-        prelude += [ADJW(8), JR(R7, 0)]
+        data = []
+        data += [LDW(self.w.fp, -8)]  # window shift up
+        data += self.instr()
+        data += [ADJW(8), JR(R7, 0)]
+        prelude += [data]
         return prelude
 
 
