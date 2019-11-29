@@ -2,7 +2,7 @@
 from collections import OrderedDict
 import random
 
-__all__ = ['LocalLabels','SubR','Window','MetaSub','Firmware']
+__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware"]
 
 """
 ideas
@@ -108,16 +108,17 @@ class LocalLabels:
 
     def __call__(self, name):
         self._names[name] = self._prefix + name
-        setattr(self,name,self._prefix + name)
+        setattr(self, name, self._prefix + name)
         return L(self._prefix + name)
 
-    def __getattr__(self,key):
+    def __getattr__(self, key):
         if key in self._names:
             return self._names[key]
         # for forward declarations
-        self._names[key] = self._prefix + key 
-        setattr(self,key,self._prefix + key)
+        self._names[key] = self._prefix + key
+        setattr(self, key, self._prefix + key)
         return self._names[key]
+
 
 class Window:
     _REGS = [R0, R1, R2, R3, R4, R5, R6, R7]
@@ -161,9 +162,8 @@ class Window:
     def __getitem__(self, key):
         if hasattr(self, key):
             return self.__dict__[key]
-    
-    # TODO spill and reuse registers 
 
+    # TODO spill and reuse registers
 
 
 class MetaSub(type):
@@ -193,7 +193,7 @@ class MetaSub(type):
         # loop through and add sub-subroutines to the list
         c = []
         while True:
-            old_c = c 
+            old_c = c
             c = []
             for i in li:
                 if i._called:
@@ -225,7 +225,7 @@ class SubR(metaclass=MetaSub):
                 self.w.req(i)
         else:
             self.length = 0
-        if hasattr(self,'locals'):
+        if hasattr(self, "locals"):
             for i in self.locals:
                 self.w.req(i)
 
@@ -265,26 +265,25 @@ class SubR(metaclass=MetaSub):
 
 
 class Firmware:
-
-    def __init__(self,start_window=0x1000):
+    def __init__(self, start_window=0x1000):
         self.w = Window()
         self.sw = start_window
-        
+
     def instr(self):
         return []
 
     def code(self):
         fw = [
-            MOVI(w.fp,self.sw),
+            MOVI(w.fp, self.sw),
             STW(w.fp),
-            L('main'),
+            L("main"),
             self.instr(),
-            J('main'),
-            L('ExtraCode'),
+            J("main"),
+            L("ExtraCode"),
             MetaSub.code(),
         ]
         return fw
-            
+
 
 # Test Objects
 
@@ -304,33 +303,34 @@ class Degenerate(SubR):
 
 class Reboot(SubR):
     def setup(self):
-        self.w.req('counter')
-        self.w.req('switch')
+        self.w.req("counter")
+        self.w.req("switch")
 
     def instr(self):
         ll = LocalLabels()
         w = self.w
-        return [ANDI(R0, R0, 0),ll('test'),ADDI(w.counter,w.switch,1),JZ(ll.test)]
+        return [ANDI(R0, R0, 0), ll("test"), ADDI(w.counter, w.switch, 1), JZ(ll.test)]
 
 
 class Composite(SubR):
     def setup(self):
-        self.params = ['addr']
-        self.w.req('counter')
-        self.w.req('delay')
+        self.params = ["addr"]
+        self.w.req("counter")
+        self.w.req("delay")
         self.r = Reboot()
         self.p = Printer()
 
     def instr(self):
         ll = LocalLabels()
         w = self.w
-        return [self.r(),self.p(self.w.addr,self.w.counter)]
+        return [self.r(), self.p(self.w.addr, self.w.counter)]
 
 
 class Outer:
     reboot = Reboot()
     printer = Printer()
     comp = Composite()
+
 
 w = Window()
 w.req("addr")
