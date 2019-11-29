@@ -276,6 +276,7 @@ class Firmware:
     def code(self):
         fw = [
             MOVI(w.fp,self.sw),
+            STW(w.fp),
             L('main'),
             self.instr(),
             J('main'),
