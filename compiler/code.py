@@ -39,7 +39,7 @@ class Writer(SubR):
                 STXA(w.val,w.target),
                 ADDI(w.pos,w.pos,1),
                 CMP(w.pos,w.finish),
-                BZ('exit'),
+                BZ(ll.exit),
                 J(ll.again),
                 ll('exit'),
         ]
