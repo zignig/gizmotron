@@ -82,6 +82,7 @@ class PeriphCollection:
             txt += '.equ '+reg_name+','+str(reg_id)+'\n'
         return txt
 
+
 # TODO create asm definitions named correctly
 class BIT:
     " create a named bit register"
@@ -200,7 +201,7 @@ class Periph:
                     mplex.add(el)
 
     def attach(self,m,mplex):
-        " Generate and bind the gateway to the Boneless "
+        " Generate and bind the gateware to the Boneless "
         if not self._prepared:
             self.prepare(mplex)
         if self.debug:

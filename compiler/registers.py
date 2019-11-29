@@ -102,20 +102,20 @@ class LocalLabels:
     """
 
     def __init__(self):
-        self._prefix = "_{}_".format(random.randrange(2 ** 32))
+        self._postfix = "_{}".format(random.randrange(2 ** 32))
         self._names = {}
 
     def __call__(self, name):
-        self._names[name] = self._prefix + name
-        setattr(self,name,self._prefix + name)
-        return L(self._prefix + name)
+        self._names[name] = self._postfix + name
+        setattr(self,name,name  +  self._postfix )
+        return L(name + self._postfix )
 
     def __getattr__(self,key):
         if key in self._names:
             return self._names[key]
         # for forward declarations
-        self._names[key] = self._prefix + key 
-        setattr(self,key,self._prefix + key)
+        self._names[key] = key + self._postfix
+        setattr(self,key,key + self._postfix )
         return self._names[key]
 
 class Window:
