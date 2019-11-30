@@ -35,6 +35,7 @@ def operator():
 def quote():
     return '"'
 
+
 def stringer():
     return '"', _(r'((\\")|[^"])*'), '"'
 
@@ -44,7 +45,7 @@ def operation():
 
 
 def expression():
-    return [operation, functioncall, stringer,symbol,literal]
+    return [operation, functioncall, stringer, symbol, literal]
 
 
 def expressionlist():
@@ -217,9 +218,10 @@ class Vis(PTNodeVisitor):
 
     def visit_comma(self, node, children):
         pass
-    
+
     def visit_quote(self, node, children):
         pass
+
 
 """
     def visit_call(self,node,children):

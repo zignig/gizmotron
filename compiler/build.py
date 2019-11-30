@@ -1,4 +1,3 @@
-
 import parser
 import registers
 
@@ -46,5 +45,5 @@ class Program:
         # print(len(r))
 
 
-p = Program(debug=True)
+p = Program(debug=False)
 p.build()
