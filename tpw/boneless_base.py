@@ -9,19 +9,36 @@ from boneless.arch.opcode import *
 import boneload
 
 from pll import PLL
+from spram import SPRAM
 import uart
 import spi
 
 
-class BonelessLED(Elaboratable):
-    def __init__(self, panel_desc, led_domain="sync"):
-        self.cpu_rom = Memory(width=16, depth=512,
-            init=boneload.boneload_fw(uart_addr=0, spi_addr=16))
+class BonelessBase(Elaboratable):
+    def __init__(self, platform, led_domain="sync"):
+        self.platform = platform
+        if self.platform.device == "iCE40UP5K":
+            # lots of spram , use it
+            self.depth = 512 # 2 brams for bootloader 
+            self.split_mem = True
+            self.cpu_ram = SPRAM()
+        else:
+            self.depth = 4 * 1024 # tinyfpga_bx 
+            self.split_mem = False
+
+        # generate the default memory
+        self.cpu_rom = Memory(width=16, depth=self.depth,
+            init=boneload.boneload_fw(platform,uart_addr=0, spi_addr=16))
+
+        # create the core
         self.cpu_core = CoreFSM(alsru_cls=ALSRU_4LUT,
             reset_pc=0xFE00, reset_w=0xFFF8)
 
+        # add a uart
         self.uart = uart.SimpleUART(
             default_divisor=uart.calculate_divisor(12e6, 115200))
+
+        # add the spi flash
         self.spi = spi.SimpleSPI(fifo_depth=512)
 
     def elaborate(self, platform):
@@ -29,42 +46,65 @@ class BonelessLED(Elaboratable):
         spi_pins = platform.request("spi_flash_1x")
 
         m = Module()
-        m.submodules.panel = panel = self.panel
         m.submodules.cpu_core = cpu_core = self.cpu_core
         m.submodules.cpu_rom_r = cpu_rom_r = self.cpu_rom.read_port(
             transparent=False)
         m.submodules.cpu_rom_w = cpu_rom_w = self.cpu_rom.write_port()
+
         m.submodules.uart = uart = self.uart
         m.submodules.spi = spi = self.spi
+        m.submodules.mul = mul = self.mul
 
         # split up main bus
-        rom_en = Signal()
-        ram_en = Signal()
-        m.d.comb += [
-            rom_en.eq(cpu_core.o_bus_addr[-1] == 1),
-            ram_en.eq(cpu_core.o_bus_addr[-1] == 0),
-        ]
-        # we need to know who was enabled one cycle later so we can route the
-        # read result back correctly.
-        rom_was_en = Signal()
-        ram_was_en = Signal()
-        m.d.sync += [
-            rom_was_en.eq(rom_en),
-            ram_was_en.eq(ram_en),
-        ]
-        m.d.comb += [
-            # address bus to the memories
-            cpu_rom_r.addr.eq(cpu_core.o_bus_addr),
-            cpu_rom_w.addr.eq(cpu_core.o_bus_addr),
-            # write data to memories
-            cpu_rom_w.data.eq(cpu_core.o_mem_data),
-            # selects to memories
-            cpu_rom_r.en.eq(rom_en & cpu_core.o_mem_re),
-            cpu_rom_w.en.eq(rom_en & cpu_core.o_mem_we),
-        ]
-        # read results back to cpu
-        with m.If(rom_was_en):
-            m.d.comb += cpu_core.i_mem_data.eq(cpu_rom_r.data)
+        # if this is running on 5k , split the memory into bram and spram
+        if self.split_mem:
+            m.submodules.cpu_ram = cpu_ram = self.cpu_ram
+            rom_en = Signal()
+            ram_en = Signal()
+            m.d.comb += [
+                rom_en.eq(cpu_core.o_bus_addr[-1] == 1),
+                ram_en.eq(cpu_core.o_bus_addr[-1] == 0),
+            ]
+            # we need to know who was enabled one cycle later so we can route the
+            # read result back correctly.
+            rom_was_en = Signal()
+            ram_was_en = Signal()
+            m.d.sync += [
+                rom_was_en.eq(rom_en),
+                ram_was_en.eq(ram_en),
+            ]
+            m.d.comb += [
+                # address bus to the memories
+                cpu_rom_r.addr.eq(cpu_core.o_bus_addr),
+                cpu_rom_w.addr.eq(cpu_core.o_bus_addr),
+                cpu_ram.i_addr.eq(cpu_core.o_bus_addr),
+                # write data to memories
+                cpu_rom_w.data.eq(cpu_core.o_mem_data),
+                cpu_ram.i_data.eq(cpu_core.o_mem_data),
+                # selects to memories
+                cpu_rom_r.en.eq(rom_en & cpu_core.o_mem_re),
+                cpu_rom_w.en.eq(rom_en & cpu_core.o_mem_we),
+                cpu_ram.i_re.eq(ram_en & cpu_core.o_mem_re),
+                cpu_ram.i_we.eq(ram_en & cpu_core.o_mem_we),
+            ]
+            # read results back to cpu
+            with m.If(rom_was_en):
+                m.d.comb += cpu_core.i_mem_data.eq(cpu_rom_r.data)
+            with m.Elif(ram_was_en):
+                m.d.comb += cpu_core.i_mem_data.eq(cpu_ram.o_data)
+        else:
+            # single bram array for memory
+            m.d.comb += [
+                # address bus to the memories
+                cpu_rom_r.addr.eq(cpu_core.o_bus_addr),
+                cpu_rom_w.addr.eq(cpu_core.o_bus_addr),
+                # write data to memories
+                cpu_rom_w.data.eq(cpu_core.o_mem_data),
+                # selects to memories
+                cpu_rom_r.en.eq(rom_en & cpu_core.o_mem_re),
+                cpu_rom_w.en.eq(rom_en & cpu_core.o_mem_we),
+            ]
+            
 
 
         # split up the external bus into 8 regions of 16 registers. this way,
@@ -72,26 +112,15 @@ class BonelessLED(Elaboratable):
         # framebuffer is special and gets the entire top half of the address
         # space to itself.
         periph_en = Signal(8)
-        panel_en = Signal()
         ext_addr = cpu_core.o_bus_addr
         ext_old_addr = Signal(16)
         for x in range(8):
             m.d.comb += periph_en[x].eq(
                 (ext_addr[-1] == 0) & (ext_addr[4:7] == x))
-        m.d.comb += panel_en.eq(ext_addr[-1] == 1)
         m.d.sync += ext_old_addr.eq(ext_addr)
 
         periph_was_en = Signal(8)
-        # remember what was active so we can redirect reads appropriately. the
-        # framebuffer can't be read from so we ignore it here.
         m.d.sync += periph_was_en.eq(periph_en)
-
-        # hook up the CPU's external bus to the panel engine
-        m.d.sync += [
-            panel.i_we.eq(cpu_core.o_ext_we & panel_en),
-            panel.i_waddr.eq(cpu_core.o_bus_addr[:self.pd.chan_bits]),
-            panel.i_wdata.eq(cpu_core.o_ext_data[:self.gp.bpp])
-        ]
 
         # plus the UART as peripheral 0
         uart_en = periph_en[0]
@@ -132,16 +161,11 @@ class BonelessLED(Elaboratable):
 
 # super top domain to manage clock stuff
 class Top(Elaboratable):
-    def __init__(self, panel_desc, led_freq_mhz=12):
-        self.pd = panel_desc
+    def __init__(self, led_freq_mhz=12):
         self.led_freq_mhz = led_freq_mhz
 
     def elaborate(self, platform):
-
         m = Module()
-        reset_btn = platform.request("button", 0) # should be the user button
-        # the button on the front of the purse
-        reset_btn_2 = platform.request("front_button", 0)
         if self.led_freq_mhz != 12:
             # we need a PLL so we can boost the clock. reserve the clock pin
             # before it gets switched to the default domain.
@@ -152,7 +176,6 @@ class Top(Elaboratable):
                 pll_domain_name="led", # runs at the LED frequency
             )
             m.submodules.pll = pll
-            m.d.comb += pll.reset.eq(~reset_btn & ~reset_btn_2)
             led_domain = "led"
         else:
             # the user doesn't want to run faster and the PLL can't make
@@ -165,7 +188,7 @@ class Top(Elaboratable):
 
         # create the actual demo and tell it to run in the domain we made
         # for it above
-        boneless_led = BonelessLED(self.pd, led_domain=led_domain)
+        boneless_led = BonelessBase(platform, led_domain=led_domain)
 
         # remap the default sync domain to the CPU domain, since most logic
         # should run there.

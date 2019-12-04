@@ -12,7 +12,7 @@ def main_parser(parser=None):
     if parser is None:
         parser = argparse.ArgumentParser()
 
-    p_action = parser.add_subparsers(dest="action", required=True)
+    p_action = parser.add_subparsers(dest="action")
 
     p_simulate = p_action.add_parser(
         "simulate", help="simulate the design")
