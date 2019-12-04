@@ -15,11 +15,22 @@ class BB(TinyFPGABXPlatform):
             Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
             Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
         ),
-        *LEDResources('blinky',pins="J1 H2 H9 D9",attrs=Attrs(IO_STANDARD="SB_LVCMOS")),
+        *LEDResources(
+            "blinky", pins="J1 H2 H9 D9", attrs=Attrs(IO_STANDARD="SB_LVCMOS")
+        ),
         Resource("pwm", 0, Pins("5", conn=("gpio", 0), dir="o")),
     ]
 
     clock = "clk16"
+    flashmap = {
+        "device": "AT25SF081-SSHD-B",
+        "addrmap": {
+            "bootloader": (0x00000, 0x2FFFF),
+            "userimage": (0x30000, 0x4FFFF),
+            "userdata": (0x50000, 0xFBFFF),
+            "desc.tgz": (0xFC000, 0xFFFFF),
+        },
+    }
 
     def freq(self):
         clk = self.lookup(self.clock)
