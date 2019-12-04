@@ -1,5 +1,7 @@
 from nmigen import *
+from nmigen.build import *
 from nmigen_boards.icebreaker import *
+from nmigen_boards.tinyfpga_bx import *
 
 # boneless CPU architecture stuff
 from boneless.gateware import ALSRU_4LUT, CoreFSM
@@ -15,7 +17,7 @@ import spi
 
 
 class BonelessBase(Elaboratable):
-    def __init__(self, platform, led_domain="sync"):
+    def __init__(self, platform):
         self.platform = platform
         if self.platform.device == "iCE40UP5K":
             # lots of spram , use it
@@ -53,7 +55,6 @@ class BonelessBase(Elaboratable):
 
         m.submodules.uart = uart = self.uart
         m.submodules.spi = spi = self.spi
-        m.submodules.mul = mul = self.mul
 
         # split up main bus
         # if this is running on 5k , split the memory into bram and spram
@@ -101,8 +102,8 @@ class BonelessBase(Elaboratable):
                 # write data to memories
                 cpu_rom_w.data.eq(cpu_core.o_mem_data),
                 # selects to memories
-                cpu_rom_r.en.eq(rom_en & cpu_core.o_mem_re),
-                cpu_rom_w.en.eq(rom_en & cpu_core.o_mem_we),
+                cpu_rom_r.en.eq(cpu_core.o_mem_re),
+                cpu_rom_w.en.eq(cpu_core.o_mem_we),
             ]
             
 
@@ -173,10 +174,10 @@ class Top(Elaboratable):
             # then create the PLL
             pll = PLL(12, self.led_freq_mhz, clk_pin,
                 orig_domain_name="cpu", # runs at 12MHz
-                pll_domain_name="led", # runs at the LED frequency
+                pll_domain_name="base", # runs at the LED frequency
             )
             m.submodules.pll = pll
-            led_domain = "led"
+            base_domain = "base"
         else:
             # the user doesn't want to run faster and the PLL can't make
             # input = output, so just create the CPU domain using the default
@@ -184,17 +185,17 @@ class Top(Elaboratable):
             cpu = ClockDomain("cpu")
             m.domains += cpu
             m.d.comb += ClockSignal("cpu").eq(ClockSignal("sync"))
-            led_domain = "cpu"
+            base_domain = "cpu"
 
         # create the actual demo and tell it to run in the domain we made
         # for it above
-        boneless_led = BonelessBase(platform, led_domain=led_domain)
+        boneless_base = BonelessBase(platform)
 
         # remap the default sync domain to the CPU domain, since most logic
         # should run there.
-        boneless_led = DomainRenamer("cpu")(boneless_led)
+        boneless_base= DomainRenamer("cpu")(boneless_base)
 
-        m.submodules.boneless_led = boneless_led
+        m.submodules.boneless_base = boneless_base
 
         return m
 
@@ -204,7 +205,16 @@ if __name__ == "__main__":
         design = Top(
             # we can't simulate with different LED and CPU frequencies
             led_freq_mhz=(12 if simulating else 40))
-        platform = ICEBreakerPlatform()
+        #platform = ICEBreakerPlatform()
+        platform = TinyFPGABXPlatform()
+        platform.add_resources([
+            Resource(
+                "uart",
+                0,
+                Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
+                Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
+            )
+        ])
         return design, platform
 
     main(maker=make, build_args={"synth_opts": "-abc9"})

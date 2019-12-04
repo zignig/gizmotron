@@ -119,6 +119,7 @@
 from boneless.gateware import ALSRU_4LUT, CoreFSM
 from boneless.arch.opcode import Instr
 from boneless.arch.opcode import *
+from boneless.arch.asm import Assembler
 from bonetools import *
 import serial
 import random
@@ -692,7 +693,9 @@ def _bfw_main(uart_addr, spi_addr):
     return fw
 
 def boneload_fw(platform,uart_addr=0, spi_addr=16):
-    return Instr.assemble(_bfw_main(uart_addr, spi_addr))
+    a = Assembler()
+    a.parse(_bfw_main(uart_addr, spi_addr))
+    return a.assemble()
 
 # implementation taken from crcany
 def _crc(words):
