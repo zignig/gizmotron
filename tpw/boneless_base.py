@@ -25,7 +25,7 @@ class BonelessBase(Elaboratable):
             self.split_mem = True
             self.cpu_ram = SPRAM()
         else:
-            self.depth = 4 * 1024 # tinyfpga_bx 
+            self.depth = 6 * 1024 # tinyfpga_bx 
             self.split_mem = False
 
         # generate the default memory
@@ -104,6 +104,7 @@ class BonelessBase(Elaboratable):
                 # selects to memories
                 cpu_rom_r.en.eq(cpu_core.o_mem_re),
                 cpu_rom_w.en.eq(cpu_core.o_mem_we),
+                cpu_core.i_mem_data.eq(cpu_rom_r.data)
             ]
             
 
@@ -204,7 +205,7 @@ if __name__ == "__main__":
     def make(simulating):
         design = Top(
             # we can't simulate with different LED and CPU frequencies
-            led_freq_mhz=(12 if simulating else 40))
+            led_freq_mhz=12)
         #platform = ICEBreakerPlatform()
         platform = TinyFPGABXPlatform()
         platform.add_resources([
