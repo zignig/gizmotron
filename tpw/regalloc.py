@@ -21,6 +21,7 @@
 from boneless.gateware import ALSRU_4LUT, CoreFSM
 from boneless.arch.opcode import Instr
 from boneless.arch.opcode import *
+
 Label = L
 
 from collections import namedtuple
@@ -31,6 +32,7 @@ __all__ = ["RegisterAllocator", "R_USE"]
 class R_USE:
     def __init__(self, rsd):
         self.rsd = rsd
+
 
 # the register allocator itself. instantiate one, then reference arbitrary
 # registers in your code as attributes of the tracker. then add code with
@@ -65,8 +67,7 @@ class RegisterAllocator:
         bbs = RegisterAllocator._make_basic_blocks(self.code)
         bbs = RegisterAllocator._renumber_regs(bbs)
         interferences = RegisterAllocator._calculate_interferences(bbs)
-        colors, uncolorable = \
-            RegisterAllocator._color_interferences(interferences)
+        colors, uncolorable = RegisterAllocator._color_interferences(interferences)
         if len(uncolorable) > 0:
             raise Exception("failed to color", uncolorable)
 
@@ -92,26 +93,27 @@ class RegisterAllocator:
     @classmethod
     def _make_basic_blocks(cls, code_in):
         # a basic block's (BB) identifier is its integer index into the code.
-        bbs = {} # dict from identifiers to the BB objects
+        bbs = {}  # dict from identifiers to the BB objects
         # start with a dummy BB that just goes to the first instruction. it will
         # help us catch errors later.
-        bbs[-1] = BasicBlock(insns=(), sources=set(), targets={0},
-            r_use=set(), r_def=set(), label=None)
-        bb_starts = {0} # set of code indices that might start a BB
+        bbs[-1] = BasicBlock(
+            insns=(), sources=set(), targets={0}, r_use=set(), r_def=set(), label=None
+        )
+        bb_starts = {0}  # set of code indices that might start a BB
 
         # labels always start a BB. they're also not real instructions. remove
         # all the labels from the instructions and add their location to the BB
         # candidate list.
-        code = [] # the code, without labels. insn references index this.
-        label_indices = {} # dict of label names to index of their first insn
-        insn_idx = 0 # the number of the instruction that we're looking at
+        code = []  # the code, without labels. insn references index this.
+        label_indices = {}  # dict of label names to index of their first insn
+        insn_idx = 0  # the number of the instruction that we're looking at
         for insn in code_in:
-            if isinstance(insn, Label): # is this "instruction" a label?
-                label_indices[insn.name] = insn_idx # remember where it starts
-                bb_starts.add(insn_idx) # and queue it for BB search
-            else: # it's just an instruction
-                code.append(insn) # keep it
-                insn_idx += 1 # advance insn index since we've added another
+            if isinstance(insn, Label):  # is this "instruction" a label?
+                label_indices[insn.name] = insn_idx  # remember where it starts
+                bb_starts.add(insn_idx)  # and queue it for BB search
+            else:  # it's just an instruction
+                code.append(insn)  # keep it
+                insn_idx += 1  # advance insn index since we've added another
         # we also want to know the dict of BB idents to their labels so the BBs
         # that had labels in the program know their labels here
         bb_labels = {}
@@ -122,19 +124,19 @@ class RegisterAllocator:
         # make a BB from each instruction that starts one
         while len(bb_starts) > 0:
             bb_start = bb_starts.pop()
-            if bb_start in bbs: # is this already the start of a BB?
-                continue # no need to process it again
+            if bb_start in bbs:  # is this already the start of a BB?
+                continue  # no need to process it again
 
             insn_idx = bb_start
-            insns = [] # instructions in this BB
-            targets = set() # identifiers of BBs this one may jump to
+            insns = []  # instructions in this BB
+            targets = set()  # identifiers of BBs this one may jump to
             while True:
                 # are we bumping into another BB?
                 if insn_idx in bb_starts or insn_idx in bbs:
                     # yes, end this one.
-                    targets = {insn_idx} # it has to fall through to the bumpee
+                    targets = {insn_idx}  # it has to fall through to the bumpee
                     break
-                if insn_idx == len(code): # finished with the instructions?
+                if insn_idx == len(code):  # finished with the instructions?
                     # this BB has to end. it doesn't have any targets.
                     break
                 insn = code[insn_idx]
@@ -152,14 +154,18 @@ class RegisterAllocator:
                             targets.add(label_indices[target])
                         elif target is None:
                             # it just goes to the next instruction.
-                            targets.add(insn_idx+1)
-                    break # a change of flow must end the BB
+                            targets.add(insn_idx + 1)
+                    break  # a change of flow must end the BB
                 insn_idx += 1
 
             bb = BasicBlock(
-                insns=insns, targets=targets, label=bb_labels.get(bb_start),
+                insns=insns,
+                targets=targets,
+                label=bb_labels.get(bb_start),
                 # we calculate these later
-                r_use=set(), r_def=set(), sources=set(),
+                r_use=set(),
+                r_def=set(),
+                sources=set(),
             )
             bbs[bb_start] = bb
 
@@ -210,15 +216,17 @@ class RegisterAllocator:
         # first thing is to give each register definition its own "generation".
         # i.e. if one register is defined by two basic blocks, each register
         # gets a different generation.
-        gens = {} # dict from register number to latest generation number
+        gens = {}  # dict from register number to latest generation number
+
         def add_generation(bb):
             r_def_genned = set()
             # replace each register number with (reg num, generation)
             for r_def in bb.r_def:
                 gen = gens.get(r_def, 1)
-                gens[r_def] = gen+1
+                gens[r_def] = gen + 1
                 r_def_genned.add((r_def, gen))
             return bb._replace(r_def=frozenset(r_def_genned))
+
         # rebuild dict so we don't modify the one passed in
         bbs = {bb_ident: add_generation(bb) for bb_ident, bb in bbs.items()}
 
@@ -233,7 +241,7 @@ class RegisterAllocator:
         defined = {}
         for bb_ident, bb in bbs.items():
             defined[bb_ident] = set(r_def for r_def, r_def_gen in bb.r_def)
-        changed = True # loop until we've stopped updating reachability
+        changed = True  # loop until we've stopped updating reachability
         while changed:
             changed = False
             for bb_ident, bb in bbs.items():
@@ -249,7 +257,7 @@ class RegisterAllocator:
                         if r_def not in defined[bb_pred_ident]:
                             reaching_defs.add((r_def, r_def_gen))
 
-                if len(reaching_defs - reachable[bb_ident]): # found new defs?
+                if len(reaching_defs - reachable[bb_ident]):  # found new defs?
                     reachable[bb_ident] = reaching_defs
                     # changing what reaches us might also change what reaches
                     # other BBs, so we need to recalculate another time
@@ -274,8 +282,10 @@ class RegisterAllocator:
             # for every register the BB uses.
             bad_regs = bb.r_use - rs_with_gen
             if len(bad_regs) > 0:
-                raise Exception("registers {} were used before "
-                    "they were defined".format(bad_regs))
+                raise Exception(
+                    "registers {} were used before "
+                    "they were defined".format(bad_regs)
+                )
             bbs[bb_ident] = bb._replace(r_use=frozenset(r_use_genned))
 
         # we've calculated what register generations each BB uses and defines,
@@ -301,7 +311,7 @@ class RegisterAllocator:
                     # to this generation, so all usages have to be from that new
                     # generation too.
                     gen = gens.get(r, 1)
-                    gens[r] = gen+1
+                    gens[r] = gen + 1
                     def_gen[r] = gen
                 # this insn can only use the currently defined generations
                 r_use = set()
@@ -313,11 +323,12 @@ class RegisterAllocator:
                         # still SSA, so create and remember it for when we
                         # encounter that definition.
                         gen = gens.get(r, 1)
-                        gens[r] = gen+1
+                        gens[r] = gen + 1
                         def_gen[r] = gen
                     r_use.add((r, def_gen[r]))
-                insns_genned.append(insn._replace(
-                    r_use=frozenset(r_use), r_def=frozenset(r_def)))
+                insns_genned.append(
+                    insn._replace(r_use=frozenset(r_use), r_def=frozenset(r_def))
+                )
             # at this point, the currently defined generation for each register
             # is the generation that must be defined outside this BB. since we
             # assume that generation will be used by insns within this BB, the
@@ -327,12 +338,12 @@ class RegisterAllocator:
             # set of registers used by this BB
             nums_used = set(r for r, r_gen in bb.r_use)
             r_use = bb.r_use.union(
-                (r, r_gen) for r, r_gen in def_gen.items() if r in nums_used)
+                (r, r_gen) for r, r_gen in def_gen.items() if r in nums_used
+            )
             # there is by definition another generation of each register that's
             # already used by this BB, but it's okay if we have multiple; that
             # gets fixed later.
-            bbs[bb_ident] = bb._replace(
-                r_use=r_use, insns=tuple(insns_genned[::-1]))
+            bbs[bb_ident] = bb._replace(r_use=r_use, insns=tuple(insns_genned[::-1]))
 
         # once the above is done, each BB ends up using a lot of generations of
         # the same register, each from a different definition. however, the
@@ -370,7 +381,7 @@ class RegisterAllocator:
                 else:
                     # it doesn't, so create a new replacement generation
                     replace_gen = gens.get(r, 1)
-                    gens[r] = replace_gen+1
+                    gens[r] = replace_gen + 1
                 # we say that all the generations this BB uses get replaced by
                 # the one selected above
                 for r_gen in r_used_gens:
@@ -380,15 +391,17 @@ class RegisterAllocator:
         def replace(regs):
             # look up what each (reg, gen) is replaced by, or leave it alone if
             # we don't have a replacement
-            return frozenset(
-                gen_map.get((r, r_gen), (r, r_gen)) for r, r_gen in regs)
+            return frozenset(gen_map.get((r, r_gen), (r, r_gen)) for r, r_gen in regs)
+
         for bb_ident, bb in bbs.items():
             insns = []
             bbs[bb_ident] = bb._replace(
                 r_use=replace(bb.r_use),
                 r_def=replace(bb.r_def),
-                insns=tuple(insn._replace(r_use=replace(insn.r_use),
-                    r_def=replace(insn.r_def)) for insn in bb.insns)
+                insns=tuple(
+                    insn._replace(r_use=replace(insn.r_use), r_def=replace(insn.r_def))
+                    for insn in bb.insns
+                ),
             )
 
         # at this point, each (reg, gen) tuple is a unique register in the
@@ -409,7 +422,7 @@ class RegisterAllocator:
         bb_out = {bb_ident: set() for bb_ident in bbs.keys()}
         # we go "backward" through the dict because the information flows
         # backward, and thus we loop less times
-        changed = True # loop until we've stopped updating reachability
+        changed = True  # loop until we've stopped updating reachability
         while changed:
             changed = False
             for bb_ident in sorted(bbs.keys(), reverse=True):
@@ -423,13 +436,13 @@ class RegisterAllocator:
                 # expects to get it from
                 r_out = frozenset().union(*(bb_in[t] for t in bb.targets))
 
-                if len(r_in - bb_in[bb_ident]): # found new live-ins?
+                if len(r_in - bb_in[bb_ident]):  # found new live-ins?
                     bb_in[bb_ident] = r_in
                     # changing what's live coming into us might change what's
                     # live going out of other BBs, so we need to recalculate
                     changed = True
 
-                if len(r_out - bb_out[bb_ident]): # found new live-outs?
+                if len(r_out - bb_out[bb_ident]):  # found new live-outs?
                     bb_out[bb_ident] = r_out
                     # changing what's live going out of us might change what's
                     # live coming into other BBs, so we need to recalculate
@@ -446,8 +459,10 @@ class RegisterAllocator:
         # but its initial value must come from somewhere, and that propagates to
         # our dummy BB.
         if len(bb_out[-1]) > 0:
-            raise Exception("registers {} were used before they were "
-                "defined".format(set(r for r, r_gen in bb_out[-1])))
+            raise Exception(
+                "registers {} were used before they were "
+                "defined".format(set(r for r, r_gen in bb_out[-1]))
+            )
 
         # now that we know which registers we need to be concerned with in each
         # basic block, we have to extend that knowledge to the individual
@@ -492,7 +507,8 @@ class RegisterAllocator:
                         # if it was already defined, that definition can't be
                         # used anymore. move it to finished.
                         finished_defs.append(
-                            (r, curr_defs.pop(r), curr_uses.pop(r, None)))
+                            (r, curr_defs.pop(r), curr_uses.pop(r, None))
+                        )
                     curr_defs[r] = insn_idx
 
             # registers live out of this BB are effectively used after the last
@@ -517,7 +533,8 @@ class RegisterAllocator:
                 if use_idx is None:
                     use_idx = def_idx
                 live_ranges[r].update(
-                    (bb_ident, idx) for idx in range(def_idx, use_idx+1))
+                    (bb_ident, idx) for idx in range(def_idx, use_idx + 1)
+                )
 
         # we know precisely when a register is live, so we can now figure out
         # which others might interfere with it. this is currently probably
@@ -579,7 +596,7 @@ class RegisterAllocator:
 
         # now we "select" nodes to color, starting with the ones we claimed
         # couldn't be and hoping that they can get a color anyway.
-        colors = {} # dict from reg to its color
+        colors = {}  # dict from reg to its color
         uncolorable = []
         all_colors = set(range(phys_regs))
         for r, interferers in nodes[::-1]:
@@ -600,15 +617,17 @@ class RegisterAllocator:
     @classmethod
     def _bb_render_code(cls, bbs):
         from graphviz import Digraph
+
         dot = Digraph()
         for bb_ident, bb in bbs.items():
             # create a node for each basic block with its code inside
             code = "\n".join(str(insn) for insn in bb.insns)
             xlabel = str(bb_ident)
             if bb.label is not None:
-                xlabel += (": "+bb.label)
-            dot.node(str(bb_ident), code, shape="box", xlabel=xlabel,
-                forcelabels="true")
+                xlabel += ": " + bb.label
+            dot.node(
+                str(bb_ident), code, shape="box", xlabel=xlabel, forcelabels="true"
+            )
         for bb_ident, bb in bbs.items():
             # then connect all the nodes
             for target in bb.targets:
@@ -618,6 +637,7 @@ class RegisterAllocator:
     @classmethod
     def _bb_render_use_def(cls, bbs):
         from graphviz import Digraph
+
         dot = Digraph()
         for bb_ident, bb in bbs.items():
             # create a node for each basic block with its input and output regs
@@ -625,9 +645,10 @@ class RegisterAllocator:
             regs = "R_USE: {}\nR_DEF: {}".format(bb.r_use, bb.r_def)
             xlabel = str(bb_ident)
             if bb.label is not None:
-                xlabel += (": "+bb.label)
-            dot.node(str(bb_ident), regs, shape="box", xlabel=xlabel,
-                forcelabels="true")
+                xlabel += ": " + bb.label
+            dot.node(
+                str(bb_ident), regs, shape="box", xlabel=xlabel, forcelabels="true"
+            )
         for bb_ident, bb in bbs.items():
             # then connect all the nodes
             for target in bb.targets:
@@ -637,16 +658,19 @@ class RegisterAllocator:
     @classmethod
     def _bb_render_in_out(cls, bbs, bb_in, bb_out):
         from graphviz import Digraph
+
         dot = Digraph()
         for bb_ident, bb in bbs.items():
             # create a node for each basic block with its regs inside
             regs = "R_IN: {}\nR_USE: {}\nR_DEF: {}\nR_OUT: {}".format(
-                bb_in[bb_ident], bb.r_use, bb.r_def, bb_out[bb_ident])
+                bb_in[bb_ident], bb.r_use, bb.r_def, bb_out[bb_ident]
+            )
             xlabel = str(bb_ident)
             if bb.label is not None:
-                xlabel += (": "+bb.label)
-            dot.node(str(bb_ident), regs, shape="box", xlabel=xlabel,
-                forcelabels="true")
+                xlabel += ": " + bb.label
+            dot.node(
+                str(bb_ident), regs, shape="box", xlabel=xlabel, forcelabels="true"
+            )
         for bb_ident, bb in bbs.items():
             # then connect all the nodes
             for target in bb.targets:
@@ -656,12 +680,16 @@ class RegisterAllocator:
     @classmethod
     def _bb_render_interferences(cls, interferences, colors=None):
         from graphviz import Graph
+
         dot = Graph()
         # create a node for each register with its name inside
         for r, interferers in interferences.items():
-            dot.node(str(r), str(r),
+            dot.node(
+                str(r),
+                str(r),
                 xlabel=str(len(interferers) if colors is None else colors[r]),
-                forcelabels="true")
+                forcelabels="true",
+            )
         # then connect all the nodes
         for r, interferers in interferences.items():
             for r_o in interferers:
@@ -678,7 +706,7 @@ class RegisterTracker:
         self._regs = {"R{}".format(r): r for r in range(8)}
 
     def __getattr__(self, name):
-        if name.startswith("_"): # forward non-variable accesses
+        if name.startswith("_"):  # forward non-variable accesses
             return super().__getattr__(name)
 
         # assume any non-underscore attribute is trying to be a register.
@@ -686,34 +714,52 @@ class RegisterTracker:
         # available number to the name (and return that number).
         return self._regs.setdefault(name, len(self._regs))
 
+
 # decoded boneless instruction
 _i_fields = [
     # OTHER PEOPLE'S PROPERTIES
-    "r_use",   # frozenset of register numbers used by this insn
-    "r_def",   # frozenset of register numbers defined by ths insn
-    "targets", # frozenset of possible control flow targets:
-               #     None = next instruction
-               #     str = label with that name
-               #     int = register with that number
+    "r_use",  # frozenset of register numbers used by this insn
+    "r_def",  # frozenset of register numbers defined by ths insn
+    "targets",  # frozenset of possible control flow targets:
+    #     None = next instruction
+    #     str = label with that name
+    #     int = register with that number
     # OUR PROPERTIES
     # we save the information required to reconstruct the Instr that we were
     # built from so that we can generate unique objects with different register
     # mappings as necessary, instead of just modifying the same one.
-    "instr_type",   # type object of the instr that made this insn
-    "instr_fields", # dict mapping insn field names to register numbers (rN)
-                    #     or values (imm)
+    "instr_type",  # type object of the instr that made this insn
+    "instr_fields",  # dict mapping insn field names to register numbers (rN)
+    #     or values (imm)
 ]
+
+
 class Insn(namedtuple("Insn", _i_fields)):
     # instructions that branch to a label (not including aliases)
-    INSTRS_BRANCH = {BZ1, BZ0, BS1, BS0, BC1, BC0, BV1, BV0,
-        BGTS, BGTU, BGES, BLES, BLEU, BLTS}
+    INSTRS_BRANCH = {
+        BZ1,
+        BZ0,
+        BS1,
+        BS0,
+        BC1,
+        BC0,
+        BV1,
+        BV0,
+        BGTS,
+        BGTU,
+        BGES,
+        BLES,
+        BLEU,
+        BLTS,
+    }
     # instructions where rsd is a source
     INSTRS_RSD_SOURCE = {ST, STR, STX, STXA}
 
     def __new__(cls, instr):
         # hack for R_USE cause it's not a boneless instr
         if isinstance(instr, R_USE):
-            return super(Insn, cls).__new__(cls,
+            return super(Insn, cls).__new__(
+                cls,
                 r_use=frozenset((instr.rsd,)),
                 r_def=frozenset(),
                 targets=frozenset((None,)),
@@ -725,7 +771,7 @@ class Insn(namedtuple("Insn", _i_fields)):
         instr_type = type(instr)
         instr_fields = {}
         for field in instr._field_types:
-            v = getattr(instr, "_"+field)
+            v = getattr(instr, "_" + field)
             if field.startswith("r"):
                 # convert register objects back to numbers
                 instr_fields[field] = int(v)
@@ -743,13 +789,14 @@ class Insn(namedtuple("Insn", _i_fields)):
         r_use = set()
         r_def = set()
         targets = {None}
-        
+
         # third, figure out what exactly that type means
         if instr_base_type in Insn.INSTRS_BRANCH:
             dest = instr_fields["imm"]
             if not isinstance(dest, str):
                 raise ValueError(
-                    "branch target must be str, which '{}' is not".format(dest))
+                    "branch target must be str, which '{}' is not".format(dest)
+                )
             # target is the next instruction or the branch's destination
             targets = {dest, None}
         elif instr_base_type is J:
@@ -757,13 +804,13 @@ class Insn(namedtuple("Insn", _i_fields)):
             dest = instr_fields["imm"]
             if not isinstance(dest, str):
                 raise ValueError(
-                    "jump target must be str, which '{}' is not".format(dest))
+                    "jump target must be str, which '{}' is not".format(dest)
+                )
             targets = {dest}
         elif instr_base_type is JR:
             # register-based jump
             if instr_fields["imm"] != 0:
-                raise ValueError(
-                    "JR offset must be 0, which '{}' is not".format(dest))
+                raise ValueError("JR offset must be 0, which '{}' is not".format(dest))
             # we depend on the jump target register
             r_use = {instr_fields["rsd"]}
             # and that's where we go always
@@ -784,7 +831,8 @@ class Insn(namedtuple("Insn", _i_fields)):
             r_def = {instr_fields["rsd"]}
             if not isinstance(instr_fields["imm"], str):
                 raise ValueError(
-                    "JAL target must be str, which '{}' is not".format(dest))
+                    "JAL target must be str, which '{}' is not".format(dest)
+                )
             # see commentary in JRAL
             targets = {instr_fields["imm"], None}
         elif instr_base_type is NOP:
@@ -795,9 +843,11 @@ class Insn(namedtuple("Insn", _i_fields)):
             # just a generic instruction with whatever function.
             # ra and rb are always inputs.
             ra = instr_fields.get("ra")
-            if ra is not None: r_use.add(ra)
+            if ra is not None:
+                r_use.add(ra)
             rb = instr_fields.get("rb")
-            if rb is not None: r_use.add(rb)
+            if rb is not None:
+                r_use.add(rb)
             rsd = instr_fields.get("rsd")
             if rsd is not None:
                 if instr_base_type in Insn.INSTRS_RSD_SOURCE:
@@ -808,14 +858,15 @@ class Insn(namedtuple("Insn", _i_fields)):
                     r_def = {instr_fields["rsd"]}
 
         # freeze everything and return the data
-        return super(Insn, cls).__new__(cls,
+        return super(Insn, cls).__new__(
+            cls,
             r_use=frozenset(r_use),
             r_def=frozenset(r_def),
             targets=frozenset(targets),
             instr_type=instr_type,
             instr_fields=instr_fields,
         )
-            
+
     def __repr__(self):
         # only include parts that actually exist to shorten representation
         s = [
@@ -823,12 +874,11 @@ class Insn(namedtuple("Insn", _i_fields)):
             # get instruction name from its class
             "type={}".format(str(self.instr_type).split(".")[-1][:-2]),
             # convert frozensets to sets to avoid displaying frozenset()
-            (", r_use={}".format(set(self.r_use)))
-                if len(self.r_use) > 0 else "",
-            (", r_def={}".format(set(self.r_def)))
-                if len(self.r_def) > 0 else "",
+            (", r_use={}".format(set(self.r_use))) if len(self.r_use) > 0 else "",
+            (", r_def={}".format(set(self.r_def))) if len(self.r_def) > 0 else "",
             (", targets={}".format(set(self.targets)))
-                if len(self.targets) > 1 or None not in self.targets else "",
+            if len(self.targets) > 1 or None not in self.targets
+            else "",
             ")",
         ]
         return "".join(s)
@@ -853,13 +903,17 @@ class Insn(namedtuple("Insn", _i_fields)):
         # any imm doesn't need to be mapped
         return self.instr_type(**p)
 
-del _i_fields # avoid cluttering namespace
 
-BasicBlock = namedtuple("BasicBlock", [
-    "insns",   # tuple of instructions in this basic block
-    "r_use",   # frozenset of registers used by this basic block
-    "r_def",   # frozenset of registers defined by this basic block
-    "sources", # frozenset of basic blocks that may jump to us
-    "targets", # frozenset of basic blocks that we may jump to
-    "label",   # this BB's label in the original program, or None
-])
+del _i_fields  # avoid cluttering namespace
+
+BasicBlock = namedtuple(
+    "BasicBlock",
+    [
+        "insns",  # tuple of instructions in this basic block
+        "r_use",  # frozenset of registers used by this basic block
+        "r_def",  # frozenset of registers defined by this basic block
+        "sources",  # frozenset of basic blocks that may jump to us
+        "targets",  # frozenset of basic blocks that we may jump to
+        "label",  # this BB's label in the original program, or None
+    ],
+)

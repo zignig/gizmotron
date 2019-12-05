@@ -962,7 +962,7 @@ def boneload(firmware, port, ram_only=True):
         print("Complete!")
         return
 
-    return # hard return until the flash is safe
+    return  # hard return until the flash is safe
     print("Awakening flash...")
     _bl_flash_txn_imm(ser, ident[2], write_data=[0xAB], deassert_cs=True)
     # it takes a couple microseconds to wake up, which parsing this comment

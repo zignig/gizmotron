@@ -2,7 +2,7 @@
 # original https://github.com/tpwrules/ice_panel
 # converted to tinyfgpa_bx by Simon Kirkby
 
-# 
+#
 
 import argparse
 

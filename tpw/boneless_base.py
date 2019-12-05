@@ -111,7 +111,7 @@ class BonelessBase(Elaboratable):
                 cpu_core.i_mem_data.eq(cpu_rom_r.data),
             ]
 
-        # TODO , this is a simple reg layout that works well 
+        # TODO , this is a simple reg layout that works well
         # TODO , convert to Peripheral form
 
         # split up the external bus into 8 regions of 16 registers. this way,
