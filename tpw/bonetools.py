@@ -1,3 +1,7 @@
+# 20191205
+# original https://github.com/tpwrules/ice_panel
+# converted to tinyfgpa_bx by Simon Kirkby
+
 # some nice tools for coding boneless asm
 
 from boneless.gateware import ALSRU_4LUT, CoreFSM
@@ -23,7 +27,7 @@ class RegisterManager:
     def __iadd__(self, other):
         if not isinstance(other, str):
             raise TypeError("expected str, not '{}'".format(type(other)))
-        add = {} # add all at once so we don't half-assign on exception
+        add = {}  # add all at once so we don't half-assign on exception
         for assignment in other.split():
             reg, name = assignment.split(":")
             if len(reg) != 2 or reg[0] != "R" or reg[1] not in "0123456789":
@@ -32,18 +36,22 @@ class RegisterManager:
             if reg > 7:
                 raise ValueError("register R{} does not exist".format(reg))
             if not name.isidentifier():
-                raise ValueError("name '{}' is not a valid "
-                    "Python identifier".format(name))
+                raise ValueError(
+                    "name '{}' is not a valid " "Python identifier".format(name)
+                )
             if reg in self._reg2name or reg in add:
                 try:
                     name = self._reg2name[reg]
                 except KeyError:
                     name = add[reg]
-                raise ValueError("register R{} already assigned "
-                    "to name '{}'".format(reg, name))
+                raise ValueError(
+                    "register R{} already assigned " "to name '{}'".format(reg, name)
+                )
             if name in self._name2reg:
-                raise ValueError("name '{}' already assigned "
-                    "to register R{}".format(name, self._name2reg[name]))
+                raise ValueError(
+                    "name '{}' already assigned "
+                    "to register R{}".format(name, self._name2reg[name])
+                )
             add[reg] = name
 
         for reg, name in add.items():
@@ -64,12 +72,11 @@ class RegisterManager:
             other = other[1:]
         else:
             invert = False
-        rem = [] # remove all at once so we don't half-remove on exception
+        rem = []  # remove all at once so we don't half-remove on exception
         if not invert:
             for name in other.split():
                 if name not in self._name2reg:
-                    raise KeyError(
-                        "name '{}' not currently assigned".format(name))
+                    raise KeyError("name '{}' not currently assigned".format(name))
                 rem.append(name)
         else:
             # assume we're removing everything
@@ -77,8 +84,7 @@ class RegisterManager:
             # then remove things from that list that we want to keep
             for name in other.split():
                 if name not in self._name2reg:
-                    raise KeyError(
-                        "name '{}' not currently assigned".format(name))
+                    raise KeyError("name '{}' not currently assigned".format(name))
                 del rem[name]
             rem = list(rem)
 

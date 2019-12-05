@@ -1,6 +1,12 @@
+# 20191205
+# original https://github.com/tpwrules/ice_panel
+# converted to tinyfgpa_bx by Simon Kirkby
+
 # nmigen module to use ice40 SPRAM
+# the 5K has these
 
 from nmigen import *
+
 
 class SPRAM(Elaboratable):
     def __init__(self):
@@ -16,18 +22,15 @@ class SPRAM(Elaboratable):
         # convert re/we to wren/cs
         wren = Signal()
         cs = Signal()
-        m.d.comb += [
-            wren.eq(self.i_we & ~self.i_re),
-            cs.eq(self.i_re | self.i_we),
-        ]
-        m.submodules.spram = Instance("SB_SPRAM256KA",
+        m.d.comb += [wren.eq(self.i_we & ~self.i_re), cs.eq(self.i_re | self.i_we)]
+        m.submodules.spram = Instance(
+            "SB_SPRAM256KA",
             i_ADDRESS=self.i_addr,
             i_DATAIN=self.i_data,
             i_MASKWREN=Const(0b1111),
             i_WREN=wren,
             i_CHIPSELECT=cs,
             o_DATAOUT=self.o_data,
-
             i_CLOCK=ClockSignal(),
             i_STANDBY=Const(0),
             i_SLEEP=Const(0),

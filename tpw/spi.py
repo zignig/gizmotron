@@ -1,3 +1,7 @@
+# 20191205
+# original https://github.com/tpwrules/ice_panel
+# converted to tinyfgpa_bx by Simon Kirkby
+
 # a SPI master for Boneless
 
 from nmigen import *
@@ -25,13 +29,16 @@ from boneless.arch.opcode import *
 #                  1 if TX fifo is full, 0 otherwise (in write mode)
 #             6-0: remaining bits of char, if RX fifo is not empty in read mode
 
+
 class SetReset(Elaboratable):
     def __init__(self, parent, *, priority, initial=False):
         # if both set and reset are asserted on the same cycle, the value
         # becomes the prioritized state.
         if priority not in ("set", "reset"):
-            raise ValueError("Priority must be either 'set' or 'reset', "
-                "not '{}'.".format(priority))
+            raise ValueError(
+                "Priority must be either 'set' or 'reset', "
+                "not '{}'.".format(priority)
+            )
 
         self.priority = priority
 
@@ -58,6 +65,7 @@ class SetReset(Elaboratable):
 
         return m
 
+
 class SimpleSPI(Elaboratable):
     def __init__(self, fifo_depth=16):
 
@@ -70,12 +78,12 @@ class SimpleSPI(Elaboratable):
 
         # SPI signals
         self.o_clk = Signal()
-        self.o_cs = Signal() # inverted, like usual
+        self.o_cs = Signal()  # inverted, like usual
         self.o_mosi = Signal()
         self.i_miso = Signal()
 
         self.fifo = SyncFIFOBuffered(width=8, depth=fifo_depth)
-    
+
     def elaborate(self, platform):
         m = Module()
         m.submodules.fifo = fifo = self.fifo
@@ -88,17 +96,17 @@ class SimpleSPI(Elaboratable):
         r0_txn_length = Signal(12)
 
         # handle the boneless bus.
-        read_data = Signal(16) # it expects one cycle of read latency
+        read_data = Signal(16)  # it expects one cycle of read latency
         m.d.sync += self.o_rdata.eq(read_data)
 
         with m.If(self.i_re):
             with m.Switch(self.i_addr):
-                with m.Case(0): # status register
+                with m.Case(0):  # status register
                     m.d.comb += [
                         read_data[15].eq(r0_txn_active.value),
                         read_data[13:15].eq(r0_bus_mode),
                     ]
-                with m.Case(1): # receive read/FIFO status register
+                with m.Case(1):  # receive read/FIFO status register
                     with m.If(r0_write_txn):
                         # interested in if the write side of the fifo is full
                         m.d.comb += read_data[14].eq(~fifo.w_rdy)
@@ -107,30 +115,32 @@ class SimpleSPI(Elaboratable):
                         m.d.comb += read_data[14].eq(~fifo.r_rdy)
                         with m.If(fifo.r_rdy):
                             m.d.comb += [
-                                fifo.r_en.eq(1), # if it is, acknowledge it
+                                fifo.r_en.eq(1),  # if it is, acknowledge it
                                 # and give the user the current byte
                                 read_data[15].eq(fifo.r_data[0]),
-                                read_data[:7].eq(fifo.r_data[1:])
+                                read_data[:7].eq(fifo.r_data[1:]),
                             ]
         with m.Elif(self.i_we):
             with m.Switch(self.i_addr):
-                with m.Case(0): # transaction start register
+                with m.Case(0):  # transaction start register
                     with m.If(~r0_txn_active.value):
                         with m.If(self.i_wdata[:12] != 0):
                             m.d.comb += r0_txn_active.set.eq(1)
                         m.d.sync += [
                             r0_write_txn.eq(self.i_wdata[15]),
-                            r0_bus_mode.eq(Mux(self.i_wdata[13:15] == 0,
-                                r0_bus_mode, self.i_wdata[13:15])),
+                            r0_bus_mode.eq(
+                                Mux(
+                                    self.i_wdata[13:15] == 0,
+                                    r0_bus_mode,
+                                    self.i_wdata[13:15],
+                                )
+                            ),
                             r0_deassert_cs.eq(self.i_wdata[12]),
                             r0_txn_length.eq(self.i_wdata[:12]),
                         ]
-                with m.Case(1): # tx queue register
+                with m.Case(1):  # tx queue register
                     with m.If(r0_write_txn & fifo.w_rdy):
-                        m.d.comb += [
-                            fifo.w_data.eq(self.i_wdata[:8]),
-                            fifo.w_en.eq(1),
-                        ]
+                        m.d.comb += [fifo.w_data.eq(self.i_wdata[:8]), fifo.w_en.eq(1)]
 
         # this is a crappy state machine but at this point i just want something
         # that does actually work
@@ -139,7 +149,7 @@ class SimpleSPI(Elaboratable):
         curr_buf = Signal(8)
 
         with m.FSM("STOP"):
-            with m.State("STOP"): # no transaction happening
+            with m.State("STOP"):  # no transaction happening
                 with m.If(r0_txn_active.value):
                     # automatically assert CS at start of transaction
                     m.d.sync += self.o_cs.eq(0)
@@ -151,33 +161,27 @@ class SimpleSPI(Elaboratable):
                     # deassert CS once transaction stops if asked
                     m.d.sync += self.o_cs.eq(1)
 
-            with m.State("WIDLE"): # write transaction, waiting for data
-                with m.If(fifo.r_rdy): # have we got some?
+            with m.State("WIDLE"):  # write transaction, waiting for data
+                with m.If(fifo.r_rdy):  # have we got some?
                     # yes, acknowledge it
                     m.d.comb += fifo.r_en.eq(1)
-                    m.d.sync += [ # and prepare to write the byte
+                    m.d.sync += [  # and prepare to write the byte
                         curr_buf.eq(fifo.r_data),
                         bit_ctr.eq(7),
-                        r0_txn_length.eq(r0_txn_length-1),
+                        r0_txn_length.eq(r0_txn_length - 1),
                     ]
                     m.next = "WOUTA"
 
             with m.State("WOUTA"):
                 # the flash latches in the new value on the rising edge.
                 # so output the current data bit along with a low clock
-                m.d.comb += [
-                    self.o_mosi.eq(curr_buf[-1]),
-                    self.o_clk.eq(0),
-                ]
+                m.d.comb += [self.o_mosi.eq(curr_buf[-1]), self.o_clk.eq(0)]
                 m.next = "WOUTB"
 
             with m.State("WOUTB"):
                 # now that the value is output, we can raise the clock and the
                 # flash will latch it in.
-                m.d.comb += [
-                    self.o_mosi.eq(curr_buf[-1]),
-                    self.o_clk.eq(1),
-                ]
+                m.d.comb += [self.o_mosi.eq(curr_buf[-1]), self.o_clk.eq(1)]
                 with m.If(bit_ctr == 0):
                     with m.If(r0_txn_length == 0):
                         m.d.comb += r0_txn_active.reset.eq(1)
@@ -185,15 +189,15 @@ class SimpleSPI(Elaboratable):
                     with m.Else():
                         m.next = "WIDLE"
                 with m.Else():
-                    m.d.sync += bit_ctr.eq(bit_ctr-1)
-                    m.d.sync += curr_buf.eq(curr_buf<<1)
+                    m.d.sync += bit_ctr.eq(bit_ctr - 1)
+                    m.d.sync += curr_buf.eq(curr_buf << 1)
                     m.next = "WOUTA"
 
-            with m.State("RIDLE"): # read transaction, waiting for space
-                with m.If(fifo.w_rdy): # have we got some?
+            with m.State("RIDLE"):  # read transaction, waiting for space
+                with m.If(fifo.w_rdy):  # have we got some?
                     # yes, start reading a byte from the flash
                     m.d.sync += bit_ctr.eq(7)
-                    m.d.sync += r0_txn_length.eq(r0_txn_length-1)
+                    m.d.sync += r0_txn_length.eq(r0_txn_length - 1)
                     m.next = "RINA"
 
             with m.State("RINA"):
@@ -207,17 +211,14 @@ class SimpleSPI(Elaboratable):
             with m.State("RINB"):
                 m.d.comb += self.o_clk.eq(1)
                 with m.If(bit_ctr == 0):
-                    m.d.comb += [
-                        fifo.w_data.eq(curr_buf),
-                        fifo.w_en.eq(1),
-                    ]
+                    m.d.comb += [fifo.w_data.eq(curr_buf), fifo.w_en.eq(1)]
                     with m.If(r0_txn_length == 0):
                         m.d.comb += r0_txn_active.reset.eq(1)
                         m.next = "STOP"
                     with m.Else():
                         m.next = "RIDLE"
                 with m.Else():
-                    m.d.sync += bit_ctr.eq(bit_ctr-1)
+                    m.d.sync += bit_ctr.eq(bit_ctr - 1)
                     m.next = "RINA"
 
         return m

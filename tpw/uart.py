@@ -1,3 +1,7 @@
+# 20191205
+# original https://github.com/tpwrules/ice_panel
+# converted to tinyfgpa_bx by Simon Kirkby
+
 # a UART for Boneless
 
 from nmigen import *
@@ -29,13 +33,16 @@ from boneless.arch.opcode import *
 #    the character is invalid. otherwise, S is 0 and v is the correctly aligned
 #    character.
 
+
 class SetReset(Elaboratable):
     def __init__(self, parent, *, priority, initial=False):
         # if both set and reset are asserted on the same cycle, the value
         # becomes the prioritized state.
         if priority not in ("set", "reset"):
-            raise ValueError("Priority must be either 'set' or 'reset', "
-                "not '{}'.".format(priority))
+            raise ValueError(
+                "Priority must be either 'set' or 'reset', "
+                "not '{}'.".format(priority)
+            )
 
         self.priority = priority
 
@@ -62,8 +69,10 @@ class SetReset(Elaboratable):
 
         return m
 
+
 def calculate_divisor(freq, baud):
-    return int(freq/baud)-1
+    return int(freq / baud) - 1
+
 
 class SimpleUART(Elaboratable):
     def __init__(self, default_divisor=0, char_bits=8):
@@ -81,7 +90,7 @@ class SimpleUART(Elaboratable):
 
         # UART signals
         self.i_rx = Signal()
-        self.o_tx = Signal(reset=1) # inverted, like usual
+        self.o_tx = Signal(reset=1)  # inverted, like usual
 
     def elaborate(self, platform):
         m = Module()
@@ -102,64 +111,62 @@ class SimpleUART(Elaboratable):
         r3_rx_data = Signal(self.char_bits)
 
         # handle the boneless bus.
-        read_data = Signal(16) # it expects one cycle of read latency
+        read_data = Signal(16)  # it expects one cycle of read latency
         m.d.sync += self.o_rdata.eq(read_data)
 
         with m.If(self.i_re):
             with m.Switch(self.i_addr):
-                with m.Case(0): # status register
+                with m.Case(0):  # status register
                     m.d.comb += [
                         read_data[15].eq(r0_tx_active),
                         read_data[0].eq(r0_rx_active),
                     ]
-                with m.Case(1): # error register
+                with m.Case(1):  # error register
                     m.d.comb += [
                         read_data[15].eq(r1_rx_error.value),
                         read_data[1].eq(r1_tx_overflow.value),
                         read_data[0].eq(r1_rx_overflow.value),
                     ]
-                with m.Case(2): # tx fifo status register
+                with m.Case(2):  # tx fifo status register
                     m.d.comb += read_data[0].eq(r2_tx_full.value)
-                with m.Case(3): # rx fifo status + read data register
+                with m.Case(3):  # rx fifo status + read data register
                     # we don't really have a FIFO, just a buffer register and an
                     # input shift register. so do FIFO-type logic here.
                     m.d.comb += read_data[14].eq(r3_rx_empty.value)
                     # even if the buffer is "empty", the contents are still
                     # defined. read them out so we don't have to have a mux.
                     m.d.comb += read_data[15].eq(r3_rx_data[0])
-                    m.d.comb += read_data[:self.char_bits-1].eq(r3_rx_data[1:])
+                    m.d.comb += read_data[: self.char_bits - 1].eq(r3_rx_data[1:])
                     # and since we have read the only thing out of the buffer,
                     # it's now empty
                     m.d.comb += r3_rx_empty.set.eq(1)
         with m.Elif(self.i_we):
             with m.Switch(self.i_addr):
-                with m.Case(0): # baud rate register
+                with m.Case(0):  # baud rate register
                     m.d.sync += r0_baud_divisor.eq(self.i_wdata)
-                with m.Case(1): # error register
+                with m.Case(1):  # error register
                     m.d.comb += [
                         r1_rx_error.reset.eq(self.i_wdata[15]),
                         r1_tx_overflow.reset.eq(self.i_wdata[1]),
                         r1_rx_overflow.reset.eq(self.i_wdata[0]),
                     ]
-                with m.Case(2): # transmit data register
+                with m.Case(2):  # transmit data register
                     # we don't really have a FIFO, just a staging register and
                     # an output shift register. so do FIFO-type logic here.
                     with m.If(~r2_tx_full.value):
-                        m.d.sync += r2_tx_data.eq(
-                            self.i_wdata[:self.char_bits])
+                        m.d.sync += r2_tx_data.eq(self.i_wdata[: self.char_bits])
                         # we've put something in the staging register, so we
                         # can't accept anything else.
                         m.d.comb += r2_tx_full.set.eq(1)
-                    with m.Else(): # overflowed! drop the write and raise error.
+                    with m.Else():  # overflowed! drop the write and raise error.
                         m.d.comb += r1_tx_overflow.set.eq(1)
-
 
         # transmit data (written in a function to keep locals under control)
         def tx():
             # count out the bits we're sending (including start and stop)
-            bit_ctr = Signal(range(self.char_bits+2-1))
+            bit_ctr = Signal(range(self.char_bits + 2 - 1))
             # shift out the data bits and stop bit
-            out_buf = Signal(self.char_bits+1)
+            out_buf = Signal(self.char_bits + 1)
             # count cycles per baud
             baud_ctr = Signal(16)
 
@@ -174,7 +181,7 @@ class SimpleUART(Elaboratable):
                             # load data to send, plus stop bit
                             out_buf.eq(Cat(r2_tx_data, 1)),
                             # start counting down the bits
-                            bit_ctr.eq(self.char_bits+2-1),
+                            bit_ctr.eq(self.char_bits + 2 - 1),
                             # send the start bit first
                             self.o_tx.eq(0),
                             # start counting the baud time for the start bit
@@ -182,12 +189,12 @@ class SimpleUART(Elaboratable):
                             # finally, let it be known that we are sending
                             r0_tx_active.eq(1),
                         ]
-                        m.next = "SEND" # start sending data bits
+                        m.next = "SEND"  # start sending data bits
 
                 with m.State("SEND"):
-                    m.d.sync += baud_ctr.eq(baud_ctr-1)
+                    m.d.sync += baud_ctr.eq(baud_ctr - 1)
                     with m.If(baud_ctr == 0):
-                        with m.If(bit_ctr == 0): # we just sent the stop bit?
+                        with m.If(bit_ctr == 0):  # we just sent the stop bit?
                             with m.If(~r2_tx_full.value):
                                 # we are done! (iff the FIFO is empty)
                                 m.d.sync += r0_tx_active.eq(0)
@@ -198,9 +205,9 @@ class SimpleUART(Elaboratable):
                             # nope. shift out the next one and wait for the
                             # appropriate time.
                             m.d.sync += [
-                                self.o_tx.eq(out_buf[0]), # bus is LSB first
+                                self.o_tx.eq(out_buf[0]),  # bus is LSB first
                                 out_buf.eq(out_buf >> 1),
-                                bit_ctr.eq(bit_ctr-1), # one less bit to go
+                                bit_ctr.eq(bit_ctr - 1),  # one less bit to go
                                 baud_ctr.eq(r0_baud_divisor),
                             ]
                             m.next = "SEND"
@@ -208,9 +215,9 @@ class SimpleUART(Elaboratable):
         # receive data (written in a function to keep locals under control)
         def rx():
             # count out the bits we're receiving (including start and stop)
-            bit_ctr = Signal(range(self.char_bits+2-1))
+            bit_ctr = Signal(range(self.char_bits + 2 - 1))
             # shift in the data bits, plus start and stop
-            in_buf = Signal(self.char_bits+2)
+            in_buf = Signal(self.char_bits + 2)
             # count cycles per baud
             baud_ctr = Signal(16)
 
@@ -227,7 +234,7 @@ class SimpleUART(Elaboratable):
                     with m.If(~i_rx):
                         m.d.sync += [
                             # start counting down the bits
-                            bit_ctr.eq(self.char_bits+2-1),
+                            bit_ctr.eq(self.char_bits + 2 - 1),
                             # and tell the user that we're actively receiving
                             r0_rx_active.eq(1),
                         ]
@@ -236,25 +243,25 @@ class SimpleUART(Elaboratable):
                         # sample and can make sure that rx is still asserted.
                         # we're also then lined up to sample the rest of the
                         # bits in the middle.
-                        m.d.sync += baud_ctr.eq(r0_baud_divisor>>1)
+                        m.d.sync += baud_ctr.eq(r0_baud_divisor >> 1)
                         # then just receive the start bit like any other
                         m.next = "RECV"
 
                 with m.State("RECV"):
-                    m.d.sync += baud_ctr.eq(baud_ctr-1)
+                    m.d.sync += baud_ctr.eq(baud_ctr - 1)
                     with m.If(baud_ctr == 0):
                         # sample the bit once it's time. we shift bits into the
                         # MSB so the first bit ends up at the LSB once we are
                         # done.
                         m.d.sync += in_buf.eq(Cat(in_buf[1:], i_rx))
-                        with m.If(bit_ctr == 0): # this is the stop bit?
+                        with m.If(bit_ctr == 0):  # this is the stop bit?
                             # yes, sample it (this cycle) and finish up next
                             m.next = "FINISH"
                         with m.Else():
                             # no, wait to receive another bit
                             m.d.sync += [
                                 baud_ctr.eq(r0_baud_divisor),
-                                bit_ctr.eq(bit_ctr-1),
+                                bit_ctr.eq(bit_ctr - 1),
                             ]
 
                 with m.State("FINISH"):

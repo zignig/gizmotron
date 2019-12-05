@@ -1,5 +1,10 @@
 #!/usr/bin/env nmigen
 
+# 20191205
+# original https://github.com/tpwrules/ice_panel
+# converted to tinyfgpa_bx by Simon Kirkby
+
+
 from collections import namedtuple
 import warnings
 
@@ -8,6 +13,7 @@ from nmigen.lib.cdc import ResetSynchronizer
 from nmigen.cli import main
 
 # original code https://github.com/kbob/nmigen-examples/blob/master/lib/pll.py
+
 
 class PLL(Elaboratable):
 
@@ -31,8 +37,14 @@ class PLL(Elaboratable):
     good.
     """
 
-    def __init__(self, freq_in_mhz, freq_out_mhz, clk_pin,
-            pll_domain_name, orig_domain_name="sync"):
+    def __init__(
+        self,
+        freq_in_mhz,
+        freq_out_mhz,
+        clk_pin,
+        pll_domain_name,
+        orig_domain_name="sync",
+    ):
         self.freq_in = freq_in_mhz
         self.freq_out = freq_out_mhz
         self.coeff = self._calc_freq_coefficients()
@@ -51,9 +63,9 @@ class PLL(Elaboratable):
         f_in, f_req = self.freq_in, self.freq_out
         assert 10 <= f_in <= 16
         assert 16 <= f_req <= 275
-        coefficients = namedtuple('coefficients', 'divr divf divq')
-        divf_range = 128        # see comments in icepll.cc
-        best_fout = float('inf')
+        coefficients = namedtuple("coefficients", "divr divf divq")
+        divf_range = 128  # see comments in icepll.cc
+        best_fout = float("inf")
         for divr in range(16):
             pfd = f_in / (divr + 1)
             if 10 <= pfd <= 133:
@@ -61,39 +73,36 @@ class PLL(Elaboratable):
                     vco = pfd * (divf + 1)
                     if 533 <= vco <= 1066:
                         for divq in range(1, 7):
-                            fout = vco * 2**-divq
+                            fout = vco * 2 ** -divq
                             if abs(fout - f_req) < abs(best_fout - f_req):
                                 best_fout = fout
                                 best = coefficients(divr, divf, divq)
         if best_fout != f_req:
             warnings.warn(
-                f'PLL: requested {f_req} MHz, got {best_fout} MHz)',
-                stacklevel=3)
+                f"PLL: requested {f_req} MHz, got {best_fout} MHz)", stacklevel=3
+            )
         return best
 
     def elaborate(self, platform):
-        pll = Instance("SB_PLL40_2_PAD",
-            p_FEEDBACK_PATH='SIMPLE',
+        pll = Instance(
+            "SB_PLL40_2_PAD",
+            p_FEEDBACK_PATH="SIMPLE",
             p_DIVR=self.coeff.divr,
             p_DIVF=self.coeff.divf,
             p_DIVQ=self.coeff.divq,
             p_FILTER_RANGE=0b001,
-
             i_PACKAGEPIN=self.clk_pin,
             i_RESETB=self.reset,
             i_BYPASS=Const(0),
-
             o_PLLOUTGLOBALA=ClockSignal(self.orig_domain_name),
             o_PLLOUTGLOBALB=ClockSignal(self.pll_domain_name),
-            o_LOCK=self.pll_lock
+            o_LOCK=self.pll_lock,
         )
 
         m = Module()
         m.submodules += pll
-        m.submodules += ResetSynchronizer(
-            ~self.pll_lock, domain=self.pll_domain_name)
-        m.submodules += ResetSynchronizer(
-            ~self.pll_lock, domain=self.orig_domain_name)
+        m.submodules += ResetSynchronizer(~self.pll_lock, domain=self.pll_domain_name)
+        m.submodules += ResetSynchronizer(~self.pll_lock, domain=self.orig_domain_name)
 
         m.domains += self.orig_domain
         m.domains += self.pll_domain

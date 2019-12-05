@@ -1,3 +1,7 @@
+# 20191205
+# original https://github.com/tpwrules/ice_panel
+# converted to tinyfgpa_bx by Simon Kirkby
+
 from nmigen import *
 from nmigen.build import *
 from nmigen_boards.icebreaker import *
@@ -21,24 +25,28 @@ class BonelessBase(Elaboratable):
         self.platform = platform
         if self.platform.device == "iCE40UP5K":
             # lots of spram , use it
-            self.depth = 512 # 2 brams for bootloader 
+            self.depth = 512  # 2 brams for bootloader
             self.split_mem = True
             self.cpu_ram = SPRAM()
         else:
-            self.depth = 6 * 1024 # tinyfpga_bx 
+            self.depth = 6 * 1024  # tinyfpga_bx
             self.split_mem = False
 
         # generate the default memory
-        self.cpu_rom = Memory(width=16, depth=self.depth,
-            init=boneload.boneload_fw(platform,uart_addr=0, spi_addr=16))
+        self.cpu_rom = Memory(
+            width=16,
+            depth=self.depth,
+            init=boneload.boneload_fw(platform, uart_addr=0, spi_addr=16),
+        )
 
         # create the core
-        self.cpu_core = CoreFSM(alsru_cls=ALSRU_4LUT,
-            reset_pc=0xFE00, reset_w=0xFFF8)
+        self.cpu_core = CoreFSM(alsru_cls=ALSRU_4LUT, reset_pc=0xFE00, reset_w=0xFFF8)
 
         # add a uart
         self.uart = uart.SimpleUART(
-            default_divisor=uart.calculate_divisor(12e6, 115200))
+            # TODO fix for default clock
+            default_divisor=uart.calculate_divisor(12e6, 115200)
+        )
 
         # add the spi flash
         self.spi = spi.SimpleSPI(fifo_depth=512)
@@ -49,8 +57,7 @@ class BonelessBase(Elaboratable):
 
         m = Module()
         m.submodules.cpu_core = cpu_core = self.cpu_core
-        m.submodules.cpu_rom_r = cpu_rom_r = self.cpu_rom.read_port(
-            transparent=False)
+        m.submodules.cpu_rom_r = cpu_rom_r = self.cpu_rom.read_port(transparent=False)
         m.submodules.cpu_rom_w = cpu_rom_w = self.cpu_rom.write_port()
 
         m.submodules.uart = uart = self.uart
@@ -70,10 +77,7 @@ class BonelessBase(Elaboratable):
             # read result back correctly.
             rom_was_en = Signal()
             ram_was_en = Signal()
-            m.d.sync += [
-                rom_was_en.eq(rom_en),
-                ram_was_en.eq(ram_en),
-            ]
+            m.d.sync += [rom_was_en.eq(rom_en), ram_was_en.eq(ram_en)]
             m.d.comb += [
                 # address bus to the memories
                 cpu_rom_r.addr.eq(cpu_core.o_bus_addr),
@@ -104,10 +108,11 @@ class BonelessBase(Elaboratable):
                 # selects to memories
                 cpu_rom_r.en.eq(cpu_core.o_mem_re),
                 cpu_rom_w.en.eq(cpu_core.o_mem_we),
-                cpu_core.i_mem_data.eq(cpu_rom_r.data)
+                cpu_core.i_mem_data.eq(cpu_rom_r.data),
             ]
-            
 
+        # TODO , this is a simple reg layout that works well 
+        # TODO , convert to Peripheral form
 
         # split up the external bus into 8 regions of 16 registers. this way,
         # all of them can be addressed absolutely. of course, the panel
@@ -117,8 +122,7 @@ class BonelessBase(Elaboratable):
         ext_addr = cpu_core.o_bus_addr
         ext_old_addr = Signal(16)
         for x in range(8):
-            m.d.comb += periph_en[x].eq(
-                (ext_addr[-1] == 0) & (ext_addr[4:7] == x))
+            m.d.comb += periph_en[x].eq((ext_addr[-1] == 0) & (ext_addr[4:7] == x))
         m.d.sync += ext_old_addr.eq(ext_addr)
 
         periph_was_en = Signal(8)
@@ -168,14 +172,18 @@ class Top(Elaboratable):
 
     def elaborate(self, platform):
         m = Module()
+        # TODO , get default clock instead , Boneless can run @ 24MHz ,
         if self.led_freq_mhz != 12:
             # we need a PLL so we can boost the clock. reserve the clock pin
             # before it gets switched to the default domain.
             clk_pin = platform.request(platform.default_clk, dir="-")
             # then create the PLL
-            pll = PLL(12, self.led_freq_mhz, clk_pin,
-                orig_domain_name="cpu", # runs at 12MHz
-                pll_domain_name="base", # runs at the LED frequency
+            pll = PLL(
+                12,
+                self.led_freq_mhz,
+                clk_pin,
+                orig_domain_name="cpu",  # runs at 12MHz
+                pll_domain_name="base",  # runs at the LED frequency
             )
             m.submodules.pll = pll
             base_domain = "base"
@@ -188,34 +196,39 @@ class Top(Elaboratable):
             m.d.comb += ClockSignal("cpu").eq(ClockSignal("sync"))
             base_domain = "cpu"
 
-        # create the actual demo and tell it to run in the domain we made
+        # create the actual processor and tell it to run in the domain we made
         # for it above
         boneless_base = BonelessBase(platform)
 
         # remap the default sync domain to the CPU domain, since most logic
         # should run there.
-        boneless_base= DomainRenamer("cpu")(boneless_base)
+        boneless_base = DomainRenamer("cpu")(boneless_base)
 
         m.submodules.boneless_base = boneless_base
 
         return m
 
+
 if __name__ == "__main__":
     from cli import main
+
     def make(simulating):
         design = Top(
             # we can't simulate with different LED and CPU frequencies
-            led_freq_mhz=12)
-        #platform = ICEBreakerPlatform()
+            led_freq_mhz=12
+        )
+        # platform = ICEBreakerPlatform()
         platform = TinyFPGABXPlatform()
-        platform.add_resources([
-            Resource(
-                "uart",
-                0,
-                Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
-                Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
-            )
-        ])
+        platform.add_resources(
+            [
+                Resource(
+                    "uart",
+                    0,
+                    Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
+                    Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
+                )
+            ]
+        )
         return design, platform
 
     main(maker=make, build_args={"synth_opts": "-abc9"})
