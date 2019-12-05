@@ -862,7 +862,7 @@ def _bl_flash_txn(ser, addr, *,
 # boneload the given firmware to the given port. firmware should be a list of
 # integers (each one is one word) and the port should be a string that can be
 # given to pyserial.
-def boneload(firmware, port, ram_only=False):
+def boneload(firmware, port, ram_only=True):
     import serial
     firmware = Instr.assemble(firmware)
     print("Connecting...")
