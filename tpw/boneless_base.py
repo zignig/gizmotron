@@ -167,7 +167,7 @@ class BonelessBase(Elaboratable):
 
 # super top domain to manage clock stuff
 class Top(Elaboratable):
-    def __init__(self,platform, led_freq_mhz=12):
+    def __init__(self, platform, led_freq_mhz=12):
         self.led_freq_mhz = led_freq_mhz
         self.platform = platform
 

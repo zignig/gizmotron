@@ -351,7 +351,7 @@ def _bfw_tx_packet(uart_addr):
 # R4: buffer address. note that it is in words! low byte is sent first.
 # on exit (in our window):
 # nothing of significance
-def _bfw_flash_txn(spi_addr,userflash):
+def _bfw_flash_txn(spi_addr, userflash):
     # generate random prefix so that we effectively can make local labels
     lp = "_{}_".format(random.randrange(2 ** 32))
     r = RegisterManager(
@@ -454,7 +454,7 @@ def _bfw_flash_boot():
     ]
 
 
-def _bfw_main(user_flash,uart_addr, spi_addr):
+def _bfw_main(user_flash, uart_addr, spi_addr):
     max_length = 16  # adjust to fill memory
     fw = []
 
@@ -698,7 +698,7 @@ def _bfw_main(user_flash,uart_addr, spi_addr):
             L("tx_packet"),
             _bfw_tx_packet(uart_addr),
             L("flash_txn"),
-            _bfw_flash_txn(spi_addr,user_flash),
+            _bfw_flash_txn(spi_addr, user_flash),
             L("flash_boot"),
             _bfw_flash_boot(user_flash),
         ]
@@ -737,7 +737,7 @@ def _bfw_main(user_flash,uart_addr, spi_addr):
 
 def boneload_fw(user_flash=0, uart_addr=0, spi_addr=16):
     a = Assembler()
-    a.parse(_bfw_main(user_flash,uart_addr, spi_addr))
+    a.parse(_bfw_main(user_flash, uart_addr, spi_addr))
     return a.assemble()
 
 
