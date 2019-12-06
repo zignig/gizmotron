@@ -36,7 +36,7 @@ class BonelessBase(Elaboratable):
         self.cpu_rom = Memory(
             width=16,
             depth=self.depth,
-            init=boneload.boneload_fw(platform, uart_addr=0, spi_addr=16),
+            init=boneload.boneload_fw(platform.user_flash, uart_addr=0, spi_addr=16),
         )
 
         # create the core
@@ -167,8 +167,9 @@ class BonelessBase(Elaboratable):
 
 # super top domain to manage clock stuff
 class Top(Elaboratable):
-    def __init__(self, led_freq_mhz=12):
+    def __init__(self,platform, led_freq_mhz=12):
         self.led_freq_mhz = led_freq_mhz
+        self.platform = platform
 
     def elaborate(self, platform):
         m = Module()
