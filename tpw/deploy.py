@@ -22,14 +22,14 @@ class ICEBreakerBoneless(ICEBreakerPlatform):
     user_flash = (0x20000, 0xFFFFF)
 
 
-deploy_platform = ICEBreakerBoneless
+deploy_platform = TinyBoneless #ICEBreakerBoneless
 
 if __name__ == "__main__":
     from cli import main
 
     def make(simulating):
         platform = deploy_platform()
-        design = Top(platform, led_freq_mhz=12)
+        design = Top(platform, system_freq_mhz=16)
         return design, platform
 
     main(maker=make, build_args={"synth_opts": "-abc9"})

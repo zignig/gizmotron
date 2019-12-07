@@ -45,7 +45,7 @@ class BonelessBase(Elaboratable):
         # add a uart
         self.uart = uart.SimpleUART(
             # TODO fix for default clock
-            default_divisor=uart.calculate_divisor(12e6, 115200)
+            default_divisor=uart.calculate_divisor(platform.default_clk_frequency, 115200)
         )
 
         # add the spi flash
@@ -167,21 +167,26 @@ class BonelessBase(Elaboratable):
 
 # super top domain to manage clock stuff
 class Top(Elaboratable):
-    def __init__(self, platform, led_freq_mhz=12):
-        self.led_freq_mhz = led_freq_mhz
+    def __init__(self, platform, system_freq_mhz=12,debug=True):
+        self.system_freq_mhz = system_freq_mhz
         self.platform = platform
+        self.debug = debug
+        if debug:
+            print("Create boneless for ",self.platform)
 
     def elaborate(self, platform):
         m = Module()
         # TODO , get default clock instead , Boneless can run @ 24MHz ,
-        if self.led_freq_mhz != 12:
+        if self.system_freq_mhz != platform.default_clk_frequency/1e6:
+            if self.debug:
+                print("Add PLL at ",str(self.system_freq_mhz))
             # we need a PLL so we can boost the clock. reserve the clock pin
             # before it gets switched to the default domain.
             clk_pin = platform.request(platform.default_clk, dir="-")
             # then create the PLL
             pll = PLL(
                 12,
-                self.led_freq_mhz,
+                self.system_freq_mhz,
                 clk_pin,
                 orig_domain_name="cpu",  # runs at 12MHz
                 pll_domain_name="base",  # runs at the LED frequency
@@ -208,28 +213,3 @@ class Top(Elaboratable):
         m.submodules.boneless_base = boneless_base
 
         return m
-
-
-if __name__ == "__main__":
-    from cli import main
-
-    def make(simulating):
-        design = Top(
-            # we can't simulate with different LED and CPU frequencies
-            led_freq_mhz=12
-        )
-        # platform = ICEBreakerPlatform()
-        platform = TinyFPGABXPlatform()
-        platform.add_resources(
-            [
-                Resource(
-                    "uart",
-                    0,
-                    Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
-                    Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
-                )
-            ]
-        )
-        return design, platform
-
-    main(maker=make, build_args={"synth_opts": "-abc9"})

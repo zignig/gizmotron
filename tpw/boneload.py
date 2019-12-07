@@ -416,7 +416,7 @@ def _bfw_flash_txn(spi_addr, userflash):
     ]
 
 
-def _bfw_flash_boot():
+def _bfw_flash_boot(user_flash):
     # generate random prefix so that we effectively can make local labels
     lp = "_{}_".format(random.randrange(2 ** 32))
     r = RegisterManager("R7:lr R5:engine_cmd R4:buf_addr " "R2:zero R1:flash_addr")
