@@ -1,6 +1,7 @@
 
-from nmigen.build import Resource, Subsignal, Pins
+from nmigen.build import Resource, Subsignal, Pins,Attrs
 from boneless_base import Top
+from nmigen_boards.resources import *
 from nmigen_boards.icebreaker import ICEBreakerPlatform
 from nmigen_boards.tinyfpga_bx import TinyFPGABXPlatform
 
@@ -13,7 +14,11 @@ class TinyBoneless(TinyFPGABXPlatform):
             0,
             Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
             Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
-        )
+            Subsignal("dtr", Pins("21", conn=("gpio", 0), dir="i")),
+        ),
+        *LEDResources(
+            "blinky", pins="J1 H2 H9 D9", attrs=Attrs(IO_STANDARD="SB_LVCMOS")
+        ),
     ]
     user_flash = (0x50000, 0xFBFFF)
 

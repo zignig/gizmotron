@@ -13,16 +13,19 @@ from boneless.arch.opcode import Instr
 from boneless.arch.opcode import *
 
 import boneload
+import firm_test
 
 from pll import PLL
 from spram import SPRAM
 import uart
 import spi
+import led
 
 
 class BonelessBase(Elaboratable):
-    def __init__(self, platform):
+    def __init__(self, platform,debug=True):
         self.platform = platform
+        self.debug = debug
         if self.platform.device == "iCE40UP5K":
             # lots of spram , use it
             self.depth = 512  # 2 brams for bootloader
@@ -32,24 +35,33 @@ class BonelessBase(Elaboratable):
             self.depth = 6 * 1024  # tinyfpga_bx
             self.split_mem = False
 
+        # load testing firmware if debug is on
+        init_data = []
+        if self.debug:
+            print("setting test firmware")
+            init_data = firm_test.fw()
+        else:
+            init_data = boneload.boneload_fw(platform.user_flash, uart_addr=0, spi_addr=16),
+
         # generate the default memory
         self.cpu_rom = Memory(
             width=16,
             depth=self.depth,
-            init=boneload.boneload_fw(platform.user_flash, uart_addr=0, spi_addr=16),
+            init=init_data
         )
 
         # create the core
+        # TODO fix reset_c,_w
         self.cpu_core = CoreFSM(alsru_cls=ALSRU_4LUT, reset_pc=0xFE00, reset_w=0xFFF8)
 
         # add a uart
         self.uart = uart.SimpleUART(
-            # TODO fix for default clock
             default_divisor=uart.calculate_divisor(platform.default_clk_frequency, 115200)
         )
 
         # add the spi flash
         self.spi = spi.SimpleSPI(fifo_depth=512)
+        self.led = led.Leds()
 
     def elaborate(self, platform):
         uart_pins = platform.request("uart")
@@ -62,6 +74,7 @@ class BonelessBase(Elaboratable):
 
         m.submodules.uart = uart = self.uart
         m.submodules.spi = spi = self.spi
+        m.submodules.led = led = self.led
 
         # split up main bus
         # if this is running on 5k , split the memory into bram and spram
@@ -162,6 +175,17 @@ class BonelessBase(Elaboratable):
         with m.If(spi_was_en):
             m.d.comb += cpu_core.i_ext_data.eq(spi.o_rdata)
 
+        # plus some blinky
+        led_en = periph_en[2]
+        led_was_en = periph_was_en[2]
+        m.d.comb += [
+            led.i_re.eq(cpu_core.o_ext_re & led_en),
+            led.i_we.eq(cpu_core.o_ext_we & led_en),
+            #led.i_addr.eq(ext_addr[:1]),
+            led.i_wdata.eq(cpu_core.o_ext_data),
+        ]
+        with m.If(led_was_en):
+            m.d.comb += cpu_core.i_ext_data.eq(led.o_rdata)
         return m
 
 
@@ -176,7 +200,6 @@ class Top(Elaboratable):
 
     def elaborate(self, platform):
         m = Module()
-        # TODO , get default clock instead , Boneless can run @ 24MHz ,
         if self.system_freq_mhz != platform.default_clk_frequency/1e6:
             if self.debug:
                 print("Add PLL at ",str(self.system_freq_mhz))
@@ -204,7 +227,7 @@ class Top(Elaboratable):
 
         # create the actual processor and tell it to run in the domain we made
         # for it above
-        boneless_base = BonelessBase(platform)
+        boneless_base = BonelessBase(platform,debug=self.debug)
 
         # remap the default sync domain to the CPU domain, since most logic
         # should run there.
