@@ -1,13 +1,4 @@
 
-function AlertBox(value){
-    var alertBox = '<div class="alert-box error"><span></span>'+value+'</div>';
-    return alertBox;
-}
-
-function finder(list,name){
-    return list
-}
-
 function EventToServer(section,name){
     axios.post('/postevent',{
         section: section,
@@ -24,65 +15,12 @@ Vue.use(Buefy.default);
 // create and event bus
 EventBus = new Vue();
 
-
-Vue.component('section-table',
-{ 
-    data() {
-        return {
-            data : ['one','two'],
-            columns : [],
-        }
-    },
-    props: {
-        issueItem: {
-            type: String,
-        },
-    },
-    template: '<b-table :data="data" :columns="columns"></b-table>',
-}); 
-
-Vue.component('nav-blob',
-{ 
-    data() {
-        return {
-            isActive: false
-        }
-    },
-    props: {
-        issueItem: {
-            type: String,
-        },
-    },
-    template: '<div><b-button>Click Me</b-button></div>',
-}); 
-
-Vue.component('compile-steps',
-{ 
-    data() {
-        return {
-            isActive: true 
-        }
-    },
-    props: {
-        issueItem: {
-            type: String,
-        },
-    },
-    template: `  
-    <section>
-        <b-steps size="is-large">
-            <b-step-item label="Account" icon="account"></b-step-item>
-            <b-step-item label="Profile" icon="account"></b-step-item>
-            <b-step-item label="Social" icon="account"></b-step-item>
-        </b-steps>
-    </section>`,
-}); 
-
 vm = new Vue({
     el: '#app',
     data()  {
         return {
 		count: 0,
+		devices: [],
 	}
     },
     created() {
@@ -101,28 +39,11 @@ vm = new Vue({
         setup : function () {
             // base load
             axios.get('/list')
-                .then( response => (this.modelList = response.data));
+                .then( response => (this.devices= response.data));
 
             EventBus.$on('pin',function(payload){
                 EventToServer('pin',payload);
             });
-            // select a model, set camera and dislpay
-            EventBus.$on('select',function(payload){
-                clear();
-                camera.position.x = payload.view.cam.x;
-                camera.position.y = payload.view.cam.y;
-                camera.position.z = payload.view.cam.z;
-                controls.target.x = payload.view.target.x;
-                controls.target.y = payload.view.target.y;
-                controls.target.z = payload.view.target.z;
-                load(payload.name);
-                vm.setCurrent(payload.name);
-            });
-            EventBus.$on('render',function(payload){
-                vm.setCurrent(payload.name);
-                PostRender();
-            });
-
             EventBus.$on('issue',function(payload){
                 vm.setIssue(payload);
             });
@@ -133,54 +54,8 @@ vm = new Vue({
             }
 
             es.addEventListener('menu', event => {
-                let data = JSON.parse(event.data);
-                EventBus.$emit('menu item',data);
-                console.log(data);
-                if ((data.Name) != ''){
-                    this.modelList = this.modelList.filter(function( obj ) {
-                        return obj.name !== data.name;
-                    });
-                    this.modelList.unshift(data);
-                    clear();
-                    load(data.name);
-                };
             }, false);
 
-            es.addEventListener('update', event => {
-                let data = JSON.parse(event.data);
-                len = this.modelList.length
-                EventBus.$emit('menu item',4);
-                if ((data.Name) != ''){
-                    if (this.modelList.includes(data) == false){
-                        this.modelList.unshift(data);
-                        this.current = data.name;
-                    } else {
-                        console.log("fnord");
-                        if (this.modelList.indexOf(data) > 0) {
-                            this.modelList.splice(this.modelList.indexOf(data), 1);
-                            this.modelList.unshift(data);
-                            this.current = data.Name;
-                        }
-                    }
-                };
-                this.issueItem = '';
-                clear();
-                o = load(data.name);
-                vm.setTree(o);
-            }, false);
-
-            es.addEventListener('issue', event => {
-                let data = JSON.parse(event.data);
-                this.issueItem = data.Name;
-                EventBus.$emit('issue',data.Name);
-            }, false);
-
-            es.addEventListener('error', event => {
-                if (event.readyState == EventSource.CLOSED) {
-                    console.log('Event was closed');
-                    console.log(EventSource);
-                }
-            }, false);
         }
     }
 });

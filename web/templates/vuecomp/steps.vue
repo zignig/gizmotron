@@ -11,11 +11,14 @@ Vue.component('compile-steps',
         },
     },
     template: `  
-    <section>
-        <b-steps size="is-large">
-            <b-step-item label="Account" icon="account"></b-step-item>
-            <b-step-item label="Profile" icon="account"></b-step-item>
-            <b-step-item label="Social" icon="account"></b-step-item>
+	<section>
+	<div class="level">
+	<b-steps size="is-small">
+            <b-step-item label="Parse" ></b-step-item>
+            <b-step-item label="Build"  ></b-step-item>
+            <b-step-item label="Optimize"  ></b-step-item>
         </b-steps>
-    </section>`,
+	</div>
+	</section>
+    `, 
 }); 
