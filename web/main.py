@@ -1,18 +1,18 @@
 from quart import Quart, render_template, jsonify
 import os 
+
 def vue_comp(path):
     l = os.listdir(path)
     t = "" 
     for i in l:
-        print(i)
-        render_template(path+os.sep+i)
-        data = ''
-        t += data
-        t += '\n'
+        if i.endswith('.vue'):
+            print(i)
+            data = open(path+os.sep+i).read()
+            t += data
+            t += '\n'
     return t
 
 vc = vue_comp('templates/vuecomp')
-print(vc)
 
 app = Quart(__name__)
 
