@@ -2,11 +2,10 @@ Vue.component('menu-main',
 { 
     data() {
         return {
-            isActive: true ,
-	    itemList: Array,
         }
     },
     props: {
+	itemList: Array,
     },
     template: `  
 <b-menu>

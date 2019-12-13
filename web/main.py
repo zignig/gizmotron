@@ -22,7 +22,7 @@ async def hello():
 
 @app.route('/list')
 async def list():
-    return str(['one','two','three'])
+    return jsonify(['one','two','three'])
 
 @app.route('/widget.js')
 async def widget():
