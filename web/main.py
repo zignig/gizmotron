@@ -1,6 +1,6 @@
-from quart import Quart, render_template, jsonify
+from quart import Quart, render_template, jsonify,session
 import os 
-
+import uuid
 import hardware
 
 def vue_comp(path):
@@ -17,10 +17,18 @@ def vue_comp(path):
 vc = vue_comp('templates/vuecomp')
 
 app = Quart(__name__)
+app.secret_key = "notsosecret"
 bf = hardware.BoardFinder()
 
 @app.route('/')
 async def hello():
+    if 'uuid' in session:
+        value = session['uuid']
+    else:
+        print('new session')
+        value  = uuid.uuid4() 
+        session['uuid'] = value
+    print(value)
     return await render_template('index.html')
 
 @app.route('/list')

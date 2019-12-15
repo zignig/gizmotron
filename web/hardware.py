@@ -77,6 +77,9 @@ class BoardFinder:
         for i,j in enumerate(self.boards):
             print(i," : ",j)
 
+    def full(self):
+        return ['hello']
+
     def resources(self):
         return list(self._res.keys())
 

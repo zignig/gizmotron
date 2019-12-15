@@ -14,7 +14,7 @@ var navbar = Vue.component('nav-bar',
         <b-navbar type="is-black">
             <template slot="brand">
                 <b-navbar-item href="#">
-                    <h1>Boneless</h1>
+                    <b>Boneless</b>
                 </b-navbar-item>
             </template>
             <template slot="start">

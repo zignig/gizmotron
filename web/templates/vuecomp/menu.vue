@@ -8,15 +8,15 @@ Vue.component('menu-main',
 	itemList: Array,
     },
     methods: {
-        login(){
-            Eventbus.emit('click','hello');
+        login(iname){
+            console.log(name);
         },
     },
     template: `  
     <b-menu>
         </b-menu-list>
         <b-menu-list label="Boards">
-            <b-menu-item v-for="i in itemList" :label="i">
+            <b-menu-item @click="login" v-for="i in itemList" :label="i">
             </b-menu-item>
         </b-menu-list>
     </b-menu>
