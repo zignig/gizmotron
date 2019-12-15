@@ -1,4 +1,4 @@
 {% extends 'base.html' %}
 {% block content %}
-<board-def></board-dev>
+<board-def v-bind:item="$store.getters.current_board"></board-dev>
 {% endblock %}

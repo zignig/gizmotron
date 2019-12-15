@@ -14,7 +14,7 @@
             <nav-bar></nav-bar> 
             <div class="columns">
                 <div class="column is-one-fifth">
-                    <menu-main v-bind:item-list="devices"></menu-main>
+                    <menu-main v-bind:item-list="$store.getters.list"></menu-main>
                 </div>
                 <div class="column is-four-fifths">
                     {% block content %}

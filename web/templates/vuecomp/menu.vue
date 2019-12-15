@@ -6,17 +6,19 @@ Vue.component('menu-main',
     },
     props: {
 	itemList: Array,
+        name: "",
     },
     methods: {
-        login(iname){
-            console.log(name);
+        select(item){
+            console.log(item);
+            store.commit('set_current',item);
         },
     },
     template: `  
     <b-menu>
         </b-menu-list>
         <b-menu-list label="Boards">
-            <b-menu-item @click="login" v-for="i in itemList" :label="i">
+            <b-menu-item @click="select(item)" v-for="item  in itemList" :label="item.name" key="item.name">
             </b-menu-item>
         </b-menu-list>
     </b-menu>

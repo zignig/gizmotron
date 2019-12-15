@@ -13,11 +13,25 @@ Vue.use(Vuex);
 
 store = new Vuex.Store({
     state  : {
-        code : []
+        boards : [],
+        current_board : Object,
     },
     getters: {
+      list : state => {
+            return state.boards
+        },
+      current_board: state => {
+            return state.current_board
+        }
     },
     mutations: {
+       full_list: (state,boards) =>{
+            state.boards = boards;
+            state.current_board = boards[0];
+        },
+       set_current: (state,item) =>{
+            state.current_board = item;
+        } 
     },
     actions: {
     }
@@ -26,11 +40,9 @@ store = new Vuex.Store({
 vm = new Vue({
     store,
     el: '#app',
-    data()  {
+    data() { 
         return {
-		count: 0,
-		devices: [],
-	}
+        }
     },
     created() {
         this.setup();
@@ -42,7 +54,12 @@ vm = new Vue({
         setup : function () {
             // base load
             axios.get('/list')
-                .then( response => (this.devices= response.data));
+                .then(function(response){ 
+                    console.log(response.data);
+                    //vm.devices = response.data;
+                    store.commit('full_list',response.data);
+                }
+            );
 
             //let es = new EventSource('/events');
             //es.onerror = function(e){

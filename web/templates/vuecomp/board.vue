@@ -6,14 +6,12 @@ Vue.component('board-def',
         }
     },
     props: {
-        issueItem: {
-            type: String,
-        },
+        item: Function,
     },
     template: `  
 <nav class="panel">
   <p class="panel-heading">
-    Repositories
+    <b>{{item.name}}</b>
   </p>
   <div class="panel-block">
     <p class="control has-icons-left">
@@ -30,41 +28,11 @@ Vue.component('board-def',
     <a>Sources</a>
     <a>Forks</a>
   </p>
-  <a class="panel-block is-active">
-    <span class="panel-icon">
-      <i class="fas fa-book" aria-hidden="true"></i>
-    </span>
-    bulma
-  </a>
-  <a class="panel-block">
-    <span class="panel-icon">
-      <i class="fas fa-book" aria-hidden="true"></i>
-    </span>
-    marksheet
-  </a>
-  <a class="panel-block">
-    <span class="panel-icon">
-      <i class="fas fa-book" aria-hidden="true"></i>
-    </span>
-    minireset.css
-  </a>
-  <a class="panel-block">
-    <span class="panel-icon">
-      <i class="fas fa-book" aria-hidden="true"></i>
-    </span>
-    jgthms.github.io
-  </a>
-  <a class="panel-block">
+  <a v-for="info in item.info" class="panel-block">
     <span class="panel-icon">
       <i class="fas fa-code-branch" aria-hidden="true"></i>
+      {{info}}
     </span>
-    daniellowtw/infboard
-  </a>
-  <a class="panel-block">
-    <span class="panel-icon">
-      <i class="fas fa-code-branch" aria-hidden="true"></i>
-    </span>
-    mojs
   </a>
 </nav>
     `, 

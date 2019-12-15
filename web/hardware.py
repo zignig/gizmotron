@@ -78,7 +78,14 @@ class BoardFinder:
             print(i," : ",j)
 
     def full(self):
-        return ['hello']
+        l = list(self.boards.keys())
+        d = []
+        for i in l:
+            j = {'name':i,'info':['a','b']}
+            d.append(j) 
+        return d
+
+    
 
     def resources(self):
         return list(self._res.keys())

@@ -33,9 +33,7 @@ async def hello():
 
 @app.route('/list')
 async def list_boards():
-    val  = list(hardware.list_boards().keys())
-#    val = bf.resources()
-    print(val)
+    val  = bf.full()
     return jsonify(val)
 
 @app.route('/widget.js')
