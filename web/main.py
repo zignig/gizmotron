@@ -1,6 +1,8 @@
 from quart import Quart, render_template, jsonify
 import os 
 
+import hardware
+
 def vue_comp(path):
     l = os.listdir(path)
     t = "" 
@@ -15,14 +17,18 @@ def vue_comp(path):
 vc = vue_comp('templates/vuecomp')
 
 app = Quart(__name__)
+bf = hardware.BoardFinder()
 
 @app.route('/')
 async def hello():
     return await render_template('index.html')
 
 @app.route('/list')
-async def list():
-    return jsonify(['one','two','three'])
+async def list_boards():
+    val  = list(hardware.list_boards().keys())
+#    val = bf.resources()
+    print(val)
+    return jsonify(val)
 
 @app.route('/widget.js')
 async def widget():

@@ -1,4 +1,3 @@
-
 function EventToServer(section,name){
     axios.post('/postevent',{
         section: section,
@@ -10,12 +9,22 @@ function EventToServer(section,name){
 Vue.config.productionTip = false;
 // add semantic ui
 Vue.use(Buefy.default);
-//Vue.use(Vuex);
+Vue.use(Vuex);
 
-// create and event bus
-EventBus = new Vue();
+store = new Vuex.Store({
+    state  : {
+        code : []
+    },
+    getters: {
+    },
+    mutations: {
+    },
+    actions: {
+    }
+});
 
 vm = new Vue({
+    store,
     el: '#app',
     data()  {
         return {
@@ -26,35 +35,22 @@ vm = new Vue({
     created() {
         this.setup();
     },
+    mounted() {
+    },
+
     methods: {
-        setIssue: function (obj) {
-            this.issueItem = obj;
-        },
-        setCurrent : function (obj) {
-            this.current = obj;
-        },
-        setTree: function (obj) {
-            this.modeltree = obj;
-        },
         setup : function () {
             // base load
             axios.get('/list')
                 .then( response => (this.devices= response.data));
 
-            EventBus.$on('pin',function(payload){
-                EventToServer('pin',payload);
-            });
-            EventBus.$on('issue',function(payload){
-                vm.setIssue(payload);
-            });
+            //let es = new EventSource('/events');
+            //es.onerror = function(e){
+            //    console.log(e);
+            //}
 
-            let es = new EventSource('/events');
-            es.onerror = function(e){
-                console.log(e);
-            }
-
-            es.addEventListener('menu', event => {
-            }, false);
+            //es.addEventListener('menu', event => {
+            //}, false);
 
         }
     }
