@@ -51,16 +51,20 @@ def all_resources():
     counts = {}
     for i in boards.values():
         # collate resources
-        inst = i()
-        res = inst.resources
-        for j  in res:
-            name = j[0]
-            if name not in counts:
-                val = set()
-                counts[name] = val
-                val.add(i)
-            else:
-                counts[name].add(i)
+        print(i)
+        try:
+            inst = i()
+            res = inst.resources
+            for j  in res:
+                name = j[0]
+                if name not in counts:
+                    val = set()
+                    counts[name] = val
+                    val.add(i)
+                else:
+                    counts[name].add(i)
+        except:
+            print(str(i) + ' is broken')
     return counts
 
 
