@@ -53,7 +53,7 @@ vm = new Vue({
     methods: {
         setup : function () {
             // base load
-            axios.get('/list')
+            axios.get('/list.json')
                 .then(function(response){ 
                     console.log(response.data);
                     //vm.devices = response.data;

@@ -31,9 +31,9 @@ async def hello():
     print(value)
     return await render_template('index.html')
 
-@app.route('/list')
+@app.route('/list.json')
 async def list_boards():
-    val  = bf.full()
+    val  = bf.list_boards()
     return jsonify(val)
 
 @app.route('/widget.js')

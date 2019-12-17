@@ -81,12 +81,27 @@ class BoardFinder:
         l = list(self.boards.keys())
         d = []
         for i in l:
-            j = {'name':i,'info':['a','b']}
+            inst = self.boards[i]()
+            j = {'name':i,'info':['fnord','fnord','georsd','asdfasdf']}
             d.append(j) 
         return d
 
-    
+    def info(self,board):
+        if board in self.boards:
+            pass
+        else:
+            raise 
 
+    def list_boards(self):
+        d = [] 
+        for i in self.boards:
+            print(i)
+            name = i
+            info = self.info(i)
+            j = {'name':i,'info':info}
+            d.append(j)
+        return d
+   
     def resources(self):
         return list(self._res.keys())
 
