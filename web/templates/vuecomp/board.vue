@@ -16,10 +16,8 @@ Vue.component('board-def',
     <b>{{item.name}}</b>
   </p>
   <a v-for="info in item.info" class="panel-block">
-    <span class="panel-icon">
-      <i class="fas fa-code-branch" aria-hidden="true"></i>
+      <b-icon icon="cube"></b-icon>
       {{info}}
-    </span>
   </a>
 </nav>
     `, 
