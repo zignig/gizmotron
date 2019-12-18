@@ -90,9 +90,12 @@ class BoardFinder:
         if board in self.boards:
             inst = self.boards[board]()
             r = inst.resources
-            l = []
+            l = {} 
             for i in r:
-                l.append(i[0])
+                if i[0] not in l:
+                    l[i[0]] = 1 
+                else:
+                    l[i[0]] += 1 
             return l
             
         else:

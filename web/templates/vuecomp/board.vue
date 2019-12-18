@@ -15,9 +15,9 @@ Vue.component('board-def',
   <p class="panel-heading">
     <b>{{item.name}}</b>
   </p>
-  <a v-for="info in item.info" class="panel-block">
+  <a v-for="(name,value) in item.info" class="panel-block">
       <b-icon icon="cube"></b-icon>
-      {{info}}
+      {{value}} ({{name}})
   </a>
 </nav>
     `, 
