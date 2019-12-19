@@ -92,16 +92,18 @@ class BoardFinder:
 
     def info(self,board):
         if board in self.boards:
-            inst = self.boards[board]()
-            r = inst.resources
-            l = {} 
-            for i in r:
-                if i[0] not in l:
-                    l[i[0]] = 1 
-                else:
-                    l[i[0]] += 1 
-            return l
-            
+            try:
+                inst = self.boards[board]()
+                r = inst.resources
+                l = {} 
+                for i in r:
+                    if i[0] not in l:
+                        l[i[0]] = 1 
+                    else:
+                        l[i[0]] += 1 
+                return l
+            except:
+                return []
         else:
             raise 
 
