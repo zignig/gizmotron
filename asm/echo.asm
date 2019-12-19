@@ -50,7 +50,7 @@ init:                           ; initialize the program all the registers.
 run:                            ; main loop
     JAL R7,checkrx              ; get a char from the serial port
     JAL R7,txchar               ; write R2 ( holding ) to the serial port 
-    J procpad		        ; check pad active and process
+    ;J procpad		        ; check pad active and process
 J run
 
 warmboot:
@@ -70,7 +70,7 @@ warmme:
 checkrx:                        ; get a char off the serial port 
     LDXA R3,rx_status           ; load the RX status from the serial port
     CMPI R3,1                   ; compare the register to 1
-    JE addtopad                 ; if it is equal to one ,  add it to the pad
+    BEQ addtopad                 ; if it is equal to one ,  add it to the pad
     J checkrx
 addtopad:                       ; get the data and acknowledge
     LDXA R2,rx_data             ; load the RX data from the serial port
@@ -80,14 +80,14 @@ addtopad:                       ; get the data and acknowledge
     STXA R3,rx_status           ; acknowledge the char in the serial port
 
     CMPI R2,4                   ; check if it is ^D , warmboot
-    JE warmboot                  
+    BEQ warmboot                  
 
     CMPI R2,3                   ; check ^C restart processor
-    JE warmme 
+    BEQ warmme 
 
     ; check if it is a CR and set the padstatus to 1
     CMPI R2,13                  ; is a CR
-    JNE padContinue
+    BNE padContinue
     ; update the pad status to 1
     MOVR R1,padStatus
     MOVI R0,1
@@ -115,18 +115,18 @@ txchar:                         ; put a char into the serial port
 waitup:                         ; TODO , this should be a fifo in the serial port 
     LDXA R3,tx_status           ; wait for tx status to go high
     CMPI R3,1
-    JE waitup
+    BEQ waitup
 waitdown:
     LDXA R3,tx_status           ; wait for the status to go low
     CMPI R3,0
-    JE waitdown
+    BEQ waitdown
     JR R7,0
 
 ; strings are pascal style strings,  first word is the length of the string. 
 dumpstring:
     LD R0,R1,0                  ; load the length of the string into R0 
     CMPI R0,0                   ; empty string , go back
-    JE exitdump
+    BEQ exitdump
     AND R5,R1,R1                ; copy address into temp
     ADD R5,R5,R0                ; add the length to the address
     ; R1 is the current address
@@ -136,7 +136,7 @@ nextchar:
     LD   R2,R1,0                ; load the data at working address into holding
     JAL  R7,txchar              ; write the char
     CMP  R1,R5                  ; compare current with end of string
-    JULT nextchar               ; not there yet, get next char
+    BLTU nextchar               ; not there yet, get next char
 exitdump:
     JR R6,0                     ; return with jump2
     
@@ -145,7 +145,7 @@ procpad:
     MOVR R1,padStatus	        ; load the pad status address into R1
     LD R0,R1,0		        ; load the pad status into R0
     CMPI R0,1		        ; is the pad active
-    JE procPadContinue          ; continue
+    BEQ procPadContinue          ; continue
     J run                       ; return to run
 procPadContinue:
     ; process the pad here 
