@@ -16,8 +16,7 @@ Vue.component('board-def',
     <b>{{item.name}}</b>
   </p>
   <a v-for="(name,value) in item.info" class="panel-block">
-      <b-icon icon="cube"></b-icon>
-      {{value}} ({{name}})
+      <span class="tag is-info is-rounded"> {{name}} </span>&nbsp; {{value}}
   </a>
 </nav>
     `, 
