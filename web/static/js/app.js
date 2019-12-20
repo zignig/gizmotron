@@ -55,8 +55,6 @@ vm = new Vue({
             // base load
             axios.get('/list.json')
                 .then(function(response){ 
-                    console.log(response.data);
-                    //vm.devices = response.data;
                     store.commit('full_list',response.data);
                 }
             );

@@ -10,7 +10,6 @@ Vue.component('menu-main',
     },
     methods: {
         select(item){
-            console.log(item);
             store.commit('set_current',item);
         },
     },
@@ -18,7 +17,7 @@ Vue.component('menu-main',
     <b-menu>
         </b-menu-list>
         <b-menu-list label="Boards">
-            <b-menu-item @click="select(item)" v-for="item  in itemList" :label="item.name" key="item.name">
+            <b-menu-item @click="select(item)" v-for="item  in itemList" :label="item.name" v-bind:key="item.name">
             </b-menu-item>
         </b-menu-list>
     </b-menu>

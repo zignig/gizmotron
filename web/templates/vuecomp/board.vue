@@ -6,7 +6,7 @@ Vue.component('board-def',
         }
     },
     props: {
-        item: Function,
+        item: {},
     },
     computed: {
     },
@@ -15,7 +15,7 @@ Vue.component('board-def',
   <p class="panel-heading">
     <b>{{item.name}}</b>
   </p>
-  <a v-for="(name,value) in item.info" class="panel-block">
+  <a v-for="(name,value) in item.info" class="panel-block" v-bind:key="value">
       <span class="tag is-info is-rounded"> {{name}} </span>&nbsp; {{value}}
   </a>
 </nav>
