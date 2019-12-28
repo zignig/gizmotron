@@ -50,7 +50,7 @@ init:                           ; initialize the program all the registers.
 run:                            ; main loop
     JAL R7,checkrx              ; get a char from the serial port
     JAL R7,txchar               ; write R2 ( holding ) to the serial port 
-    ;J procpad		        ; check pad active and process
+    J procpad		        ; check pad active and process
 J run
 
 warmboot:
@@ -70,12 +70,19 @@ warmme:
 checkrx:                        ; get a char off the serial port 
     LDXA R3,rx_status           ; load the RX status from the serial port
     CMPI R3,1                   ; compare the register to 1
-    BEQ addtopad                 ; if it is equal to one ,  add it to the pad
+    BEQ addtopad                ; if it is equal to one ,  add it to the pad
     J checkrx
 addtopad:                       ; get the data and acknowledge
     LDXA R2,rx_data             ; load the RX data from the serial port
     MOVI R3,1                   ; load 1 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
+rxdown:
+    LDXA R3,rx_status           ; load the RX status from the serial port
+    STXA R3,blinky
+    CMPI R3,0                   ; compare the register to 1
+    BEQ rxcont                  ; if it is equal to zero continue 
+    J rxdown 
+rxcont:
     MOVI R3,0                   ; load 0 into to R3
     STXA R3,rx_status           ; acknowledge the char in the serial port
 

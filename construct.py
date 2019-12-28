@@ -22,8 +22,8 @@ def Construct(platform, asm_file="asm/tx.asm"):
     l = UserLeds("status_leds", platform=platform,source='blinky')
     b.add_periph(l)
 
-    l = UserLeds("status", platform=platform,source='led')
-    b.add_periph(l)
+    #l = UserLeds("status", platform=platform,source='led')
+    #b.add_periph(l)
 
     s = Serial(
         "serial_port", platform=platform, number=0, baud=19200
