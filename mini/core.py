@@ -1,4 +1,7 @@
-from nmigen import * 
+from nmigen import *
+
+from mem import RAM
+from stack import Stack
 
 
 class ProgramCounter(Elaboratable):
@@ -6,8 +9,8 @@ class ProgramCounter(Elaboratable):
         self.i_addr = Signal(16)
         self.r_addr = Signal(16, reset=reset)
 
-        self.c_set  = Signal()
-        self.c_inc  = Signal()
+        self.c_set = Signal()
+        self.c_inc = Signal()
 
     def elaborate(self, platform):
         m = Module()
@@ -22,28 +25,29 @@ class ProgramCounter(Elaboratable):
 
 class MetaInstr(type):
     instructions = []
+
     class tree:
-        def __init__(self,cls):
-            self.name = cls 
+        def __init__(self, cls):
+            self.name = cls
             self.children = []
 
-        def add(self,c):
+        def add(self, c):
             self.children.append(c)
-        
+
         def walk(self):
-            if len(self.children)> 0:
+            if len(self.children) > 0:
                 for i in self.children:
                     print(i)
                     i.walk()
- 
-        def insert(self,cls):
+
+        def insert(self, cls):
             li = cls.mro()
             li.reverse()
             li = li[1:]
             for i in li:
                 print(i)
-            print('--')
-            
+            print("--")
+
     heirachy = tree(object)
 
     def __new__(cls, clsname, bases, attrs):
@@ -68,80 +72,60 @@ class MetaInstr(type):
             l = l[1:]
             print(l)
 
+
 class Instr(metaclass=MetaInstr):
     def __init__(self):
         pass
 
 
 class PC(Instr):
-    pc = ProgramCounter(0)
+    pc = ProgramCounter(reset=0)
+
     def device(self):
-        return self.pc  
+        return self.pc
 
-class JUMP(PC):
-    def decode(self,m):
-        return m
-        
-        
-class Test(Instr):
-    def fetch(self):
-        pass
-
-    def execute(self):
-        pass
+    def execute(self, m):
+        m.d.sync += self.pc.c_inc.eq(True)
 
 
-class Test2(Instr):
-    def decode(self):
-        pass
+class Ram(Instr):
+    r = RAM()
 
+    def device(self):
+        return self.r
 
-class Test3(Test2):
-    def execute(self):
-        pass
-
-
-class ALU(Instr):
-    pass
-
-class ADD(ALU):
-    pass
-
-class SUB(ALU):
-    pass
-
-class REG(Instr):
-    pass
-
-class jump(Instr):
-    pass
-
-def registers(count):
-    for i in range(count):
-        type('R'+str(i),(REG,),{})
 
 class CPU(Elaboratable):
-    def __init__(self):
+    states = ["fetch", "decode", "execute"]
+
+    def registers(self, count):
+        for i in range(count):
+            type("R" + str(i), (self.reg,), {})
+
+    def __init__(self, width=64):
         self.instr = MetaInstr.instructions
-        self.states = ['fetch','decode','execute']
-        registers(16)
+        self.devices = set()
 
     def show(self):
         for i in self.instr:
             instr = i()
-            if hasattr(instr,'device'):
-                print(instr.device())
+            if hasattr(instr, "device"):
+                print(instr)
+                self.devices.add(instr.device())
+        print("Devices")
+        for i in self.devices:
+            print("\t", i)
 
         for i in self.states:
             print(i)
             for j in self.instr:
                 inst = j()
-                if hasattr(inst,i):
-                    print(inst," has ",i) 
-                
-    def elaborate(self,platform):
+                if hasattr(inst, i):
+                    print("\t", inst, " has ", i)
+
+    def elaborate(self, platform):
         m = Module()
-        
+
         with m.FSM():
             for i in self.states:
                 with m.State(i):
@@ -152,4 +136,3 @@ class CPU(Elaboratable):
 c = CPU()
 c.show()
 MetaInstr.tree()
-

@@ -7,7 +7,7 @@ def Device():
     pass
 
 
-class RAM(Elaboratable):
+class Stack(Elaboratable):
     def __init__(self, width=16, depth=32):
         self.addr = Signal(width)
         self.rdat = Signal(width)
@@ -33,17 +33,4 @@ class RAM(Elaboratable):
             wrport.data.eq(self.wdat),
             wrport.en.eq(self.we),
         ]
-        return m
-
-
-class IO(Elaboratable):
-    def __init__(self, width=16):
-        self.addr = Signal(width)
-        self.rdat = Signal(width)
-        self.wdat = Signal(width)
-        self.we = Signal()
-        self.re = Signal()
-
-    def elaborate(self, platform):
-        m = Module()
         return m
