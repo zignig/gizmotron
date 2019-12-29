@@ -24,7 +24,6 @@ class ProgramCounter(Elaboratable):
 
 
 class MetaInstr(type):
-    instructions = []
 
     class tree:
         def __init__(self, cls):
@@ -48,25 +47,25 @@ class MetaInstr(type):
                 print(i)
             print("--")
 
-    heirachy = tree(object)
-
     def __new__(cls, clsname, bases, attrs):
         newclass = super(MetaInstr, cls).__new__(cls, clsname, bases, attrs)
         cls.register(newclass)  # here is your register function
         return newclass
 
     def register(cls):
-        d = MetaInstr.instructions
+        if not hasattr(cls,"_registry"):
+            setattr(cls,"_registry",set())
+        if not hasattr(cls,"_heirachy"):
+            setattr(cls,"_heirachy",MetaInstr.tree(object))
+
         if cls.__qualname__ == "Instr":
             # Don't add root subclass
             return
-        if cls not in d:
-            d.append(cls)
-        MetaInstr.heirachy.insert(cls)
+        cls._registry.add(cls)
+        cls._heirachy.insert(cls)
 
-    @classmethod
-    def tree(cls):
-        for i in MetaInstr.instructions:
+    def ShowTree(cls):
+        for i in cls._registry:
             l = i.mro()
             l.reverse()
             l = l[1:]
@@ -94,8 +93,11 @@ class Ram(Instr):
     def device(self):
         return self.r
 
+    def fetch(self):
+        pass
 
-class CPU(Elaboratable):
+
+class CPU(Instr):
     states = ["fetch", "decode", "execute"]
 
     def registers(self, count):
@@ -103,11 +105,10 @@ class CPU(Elaboratable):
             type("R" + str(i), (self.reg,), {})
 
     def __init__(self, width=64):
-        self.instr = MetaInstr.instructions
         self.devices = set()
 
     def show(self):
-        for i in self.instr:
+        for i in self._registry:
             instr = i()
             if hasattr(instr, "device"):
                 print(instr)
@@ -117,11 +118,11 @@ class CPU(Elaboratable):
             print("\t", i)
 
         for i in self.states:
-            print(i)
-            for j in self.instr:
+            print("", i)
+            for j in self._registry:
                 inst = j()
                 if hasattr(inst, i):
-                    print("\t", inst, " has ", i)
+                    print("\t", inst)
 
     def elaborate(self, platform):
         m = Module()
@@ -131,8 +132,3 @@ class CPU(Elaboratable):
                 with m.State(i):
                     pass
         return m
-
-
-c = CPU()
-c.show()
-MetaInstr.tree()

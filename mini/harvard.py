@@ -16,13 +16,17 @@ class DataMem(Instr):
 
 class Harvard(CPU):
     class data(Instr):
-        r = RAM()
+        r = DataMem()
 
         def device(self):
             return self.r
 
         def fetch(self):
             pass
+
+    class inc(data):
+        def execute(self):
+            self.r.eq(self.r + 1)
 
     class J(PC):
         pass

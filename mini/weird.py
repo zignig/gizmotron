@@ -1,16 +1,19 @@
 from nmigen import *
-from core import CPU, MetaInstr, Instr,PC,ProgramCounter
+from core import CPU, MetaInstr, Instr, PC, ProgramCounter
 from mem import RAM
 from stack import Stack
 
 
 class Weird(CPU):
-    states = ["fetch", "decode","load1", "load2", "wait", "execute"]
+    states = ["fetch", "decode", "load1", "load2", "wait", "execute"]
 
     class switch(PC):
         pc = ProgramCounter(0)
 
-        def decode(self,m):
+        def decode(self, m):
+            pass
+
+        def load1(self):
             pass
 
     class dstack(Instr):
@@ -25,8 +28,11 @@ class Weird(CPU):
         def device(self):
             return self.rs
 
+    class rpop(rstack):
+        pass
+
     class fpstack(Instr):
-        fp = Stack()
+        fp = Stack(width=64)
 
         def device(self):
             return self.fp
