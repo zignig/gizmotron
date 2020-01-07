@@ -34,10 +34,11 @@ def glob(name, value, length=1):
 
 def header(name, imm=False):
     global last_ref
-    r = [L(name)]
-    r.append(String(name))
-    r.append(AR(last_ref))
+    r = [AR(last_ref)]
+    r.append(L(name))
     last_ref = name
+    r.append(String(name))
+    r.append(L("xt_"+name))
     return r
 
 
@@ -46,6 +47,13 @@ def primitive(name, code):
     r.append(code)
     return r
 
+def variable(name):
+    r = header(name)
+    code = [
+            J('init'),
+            ]
+    r.append(code)
+    return r
 
 def docol(name, code, imm=False):
     r = header(name, imm)
@@ -58,9 +66,8 @@ def docol(name, code, imm=False):
 def comma():
     return [primitive("comma", [])]
 
-
-
 class Forth(Firmware):
+
     def instr(self):
         w = self.w
         w.req("stackp")
@@ -73,7 +80,8 @@ class Forth(Firmware):
             header("test"),
             header("hello"),
             header("fnord"),
-            primitive("export", [ADDI(R0, R0, 2)])
+            primitive("export", [ADDI(R0, R0, 2)]),
+            variable('tib')
             # docol('fnord',[L('wot')]),
             # glob('state',0),
             # glob('>in',0),
