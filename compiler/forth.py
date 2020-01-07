@@ -10,7 +10,21 @@ import pprint
 
 last_ref = "init"
 
+class String:
+    def __init__(self,name):
+        assert len(name) < 32
+        self.name = name
 
+    def __repr__(self):
+        return "String('"+self.name+"')"
+
+    def __call__(self,sym):
+        r = [len(self.name)]
+        for i in self.name:
+            r.append(ord(i))
+        return r
+
+        
 def glob(name, value, length=1):
     r = [L(name)]
     for i in range(length):
@@ -21,10 +35,7 @@ def glob(name, value, length=1):
 def header(name, imm=False):
     global last_ref
     r = [L(name)]
-    assert len(name) < 32
-    r.append(len(name))
-    for i in name:
-        r.append(ord(i))
+    r.append(String(name))
     r.append(AR(last_ref))
     last_ref = name
     return r
@@ -44,9 +55,9 @@ def docol(name, code, imm=False):
 
 # some words
 
-
 def comma():
     return [primitive("comma", [])]
+
 
 
 class Forth(Firmware):
