@@ -1,4 +1,4 @@
-# a forth for boneless , 
+# a forth for boneless ,
 # transcribed from itsy forth
 
 from registers import *
@@ -6,17 +6,19 @@ from boneless.arch.opcode import *
 from boneless.arch.asm import Assembler
 import pprint
 
-last_ref = 'init'
+# running global reference.
 
-def glob(name,value,length=1):
-    r = [
-            L(name)
-        ]
+last_ref = "init"
+
+
+def glob(name, value, length=1):
+    r = [L(name)]
     for i in range(length):
         r.append(value)
-    return r 
+    return r
 
-def header(name,imm=False):
+
+def header(name, imm=False):
     global last_ref
     r = [L(name)]
     assert len(name) < 32
@@ -27,18 +29,27 @@ def header(name,imm=False):
     last_ref = name
     return r
 
-def primitive(name):
-    r = header(name)
-    r.append(5)
-    return r
 
-def docol(name,code,imm=False):
-    r = header(name,imm)
+def primitive(name, code):
+    r = header(name)
     r.append(code)
     return r
 
-class Forth(Firmware):
 
+def docol(name, code, imm=False):
+    r = header(name, imm)
+    r.append(code)
+    return r
+
+
+# some words
+
+
+def comma():
+    return [primitive("comma", [])]
+
+
+class Forth(Firmware):
     def instr(self):
         w = self.w
         w.req("stackp")
@@ -48,18 +59,18 @@ class Forth(Firmware):
         w.req("tos")
         w.req("temp")
         return [
-                header('test'),
-                header('hello'),
-                header('fnord'),
-
-               #docol('fnord',[L('wot')]),
-               #glob('state',0),
-               #glob('>in',0),
-               #glob('#tib',0),
-               #glob('base',10),
-               #glob('dp',0),
-               #glob('stack',0,32),
-               #glob('rstack',0,32)
+            header("test"),
+            header("hello"),
+            header("fnord"),
+            primitive("export", [ADDI(R0, R0, 2)])
+            # docol('fnord',[L('wot')]),
+            # glob('state',0),
+            # glob('>in',0),
+            # glob('#tib',0),
+            # glob('base',10),
+            # glob('dp',0),
+            # glob('stack',0,32),
+            # glob('rstack',0,32)
         ]
 
 
@@ -71,4 +82,3 @@ if __name__ == "__main__":
     asm.parse(code)
     bin = asm.assemble()
     print(bin)
-
