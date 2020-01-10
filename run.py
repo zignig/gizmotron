@@ -13,6 +13,10 @@ import intelhex
 from sim import Simulator
 from utils.serial_write import writer
 
+def _test(rx,dut):
+    for i in range(100):
+        yield rx.eq(1)
+
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
     p = argparse.ArgumentParser()
@@ -70,7 +74,12 @@ if __name__ == "__main__":
         print("Gateware Simulation")
         design = construct.simCPU(platform,asm_file=args.f)
         fragment = Fragment.get(design, platform)
+        print(dir(fragment))
+        print()
+        print(dir(design.b))
         f = open("test.vcd", "w")
+        dut = design.b.periph._modules[1].devices[0].RX
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
             sim.add_clock(100e-6)
+            sim.add_sync_process(_test(rx,dut)
             sim.run_until(100e-6 * 50000, run_passive=True)

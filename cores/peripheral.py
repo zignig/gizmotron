@@ -222,7 +222,8 @@ class Periph:
                         m.d.sync += el.sig_out.eq(el.w_data)
         if len(self.devices) > 0:
             for dev in self.devices:
-                m.submodules += dev
+                #m.submodules += dev
+                setattr(m.submodules,self.name,dev)
 
     def __repr__(self):
         return (

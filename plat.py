@@ -10,15 +10,9 @@ from nmigen.build import Resource, Subsignal, Pins, Attrs
 class BB(TinyFPGABXPlatform):
     resources = TinyFPGABXPlatform.resources + [
         # FTDI link back to pc
-        #UARTResource(0,
-        #    rx="B8", tx="A8",
-        #    attrs=Attrs(IO_STANDARD="SB_LVCMOS", PULLUP=1)
-        #),
-        Resource(
-            "uart",
-            0,
-            Subsignal("tx", Pins("19", conn=("gpio", 0), dir="o")),
-            Subsignal("rx", Pins("20", conn=("gpio", 0), dir="i")),
+        UARTResource(0,
+            rx="A8", tx="B8",
+            attrs=Attrs(IO_STANDARD="SB_LVCMOS", PULLUP=1)
         ),
         *LEDResources(
             "blinky", pins="J1 H2 H9 D9", attrs=Attrs(IO_STANDARD="SB_LVCMOS")

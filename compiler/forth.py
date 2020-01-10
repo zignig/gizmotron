@@ -45,6 +45,7 @@ def header(name, imm=False):
 def primitive(name, code):
     r = header(name)
     r.append(code)
+    r.append(J('next'))
     return r
 
 def variable(name):
@@ -53,6 +54,7 @@ def variable(name):
             J('init'),
             ]
     r.append(code)
+    r.append(J('next'))
     return r
 
 def docol(name, code, imm=False):
@@ -62,6 +64,9 @@ def docol(name, code, imm=False):
 
 
 # some words
+
+def next():
+    return [L('next')]
 
 def comma():
     return [primitive("comma", [])]
@@ -81,7 +86,8 @@ class Forth(Firmware):
             header("hello"),
             header("fnord"),
             primitive("export", [ADDI(R0, R0, 2)]),
-            variable('tib')
+            variable('tib'),
+            next(),
             # docol('fnord',[L('wot')]),
             # glob('state',0),
             # glob('>in',0),
