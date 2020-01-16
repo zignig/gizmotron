@@ -81,5 +81,5 @@ if __name__ == "__main__":
         dut = design.b.periph._modules[1].devices[0].RX
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
             sim.add_clock(100e-6)
-            sim.add_sync_process(_test(rx,dut)
+            sim.add_sync_process(_test(rx,dut))
             sim.run_until(100e-6 * 50000, run_passive=True)
