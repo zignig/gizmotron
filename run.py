@@ -78,5 +78,5 @@ if __name__ == "__main__":
         tx = dut.tx_o
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
             sim.add_clock(100e-6)
-            sim.add_sync_process(sim_data.test_rx(dut))
-            sim.run_until(100e-6 * 500000, run_passive=True)
+            sim.add_sync_process(_test(rx,dut))
+            sim.run_until(100e-6 * 50000, run_passive=True)
