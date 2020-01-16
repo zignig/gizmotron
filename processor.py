@@ -8,7 +8,9 @@ from nmigen import *
 from nmigen.back import pysim
 from nmigen.cli import main
 
-from cores.peripheral import Periph, PeriphCollection
+#from cores.peripheral import Periph, PeriphCollection
+from cores.gizmo import Gizmo,GizmoCollection
+
 
 from nmigen_soc.csr.bus import * 
 
@@ -21,7 +23,8 @@ class Boneless(Elaboratable):
 
         # Peripherals
         self._prepared = False
-        self.periph = PeriphCollection(data_width=16,addr_width=16)
+        #self.periph = PeriphCollection(data_width=16,addr_width=16)
+        self.periph = GizmoCollection()
 
     def add_periph(self, p):
         self.periph += p 

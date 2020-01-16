@@ -10,7 +10,7 @@ class EpicFail(BaseException):
     pass
 
 
-class _GizmoCollection:
+class GizmoCollection:
     " A collection of gizmos "
 
     def __init__(self):

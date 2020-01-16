@@ -25,10 +25,10 @@ def Construct(platform, asm_file="asm/tx.asm"):
     #l = UserLeds("status", platform=platform,source='led')
     #b.add_periph(l)
 
-    s = Serial_nm(
-        "serial_port", platform=platform, number=0, baud=19200
-    )
-    b.add_periph(s)
+    #s = Serial_nm(
+    #    "serial_port", platform=platform, number=0, baud=19200
+    #)
+    #b.add_periph(s)
 
     wb = WarmBoot("warmboot")
     b.add_periph(wb)
