@@ -61,7 +61,8 @@ class Boneless(Elaboratable):
         m.submodules.core = core = CoreFSM(
             alsru_cls = ALSRU_4LUT,
             reset_pc=8,
-            memory = self.memory
+            memory = self.memory,
+            reset_w=0,
         )
 
         # Bind the csr decoder to the external bus

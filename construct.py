@@ -5,7 +5,7 @@ from processor import Boneless
 
 # Working periphs
 from cores.user_leds import UserLeds
-from cores.serial import Serial
+from cores.serial import Serial,Serial_nm
 from cores.counter import Counter
 from cores.pwm import Pwm
 from cores.warm import WarmBoot
@@ -25,7 +25,7 @@ def Construct(platform, asm_file="asm/tx.asm"):
     #l = UserLeds("status", platform=platform,source='led')
     #b.add_periph(l)
 
-    s = Serial(
+    s = Serial_nm(
         "serial_port", platform=platform, number=0, baud=19200
     )
     b.add_periph(s)
