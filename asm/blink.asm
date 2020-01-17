@@ -10,6 +10,6 @@ entry:
 wait:
         ADDI    R1,R1,1         ; add 1 to the counter
         CMPI    R1,timer        ; is the counter equal to timer ?  
-        JNE     wait            ; not there yet jump back
+        BNE     wait            ; not there yet jump back
         MOVI    R1,0            ; reset R1 to zero
 	J	entry           ; start again , increment the leds
