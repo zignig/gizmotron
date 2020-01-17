@@ -2,13 +2,14 @@ import itertools
 
 from nmigen.build import Resource, Subsignal, Pins
 from nmigen.build import ResourceError
-from .peripheral import Periph, IO, BIT
+#from .peripheral import Periph, IO, BIT
+from .gizmo import Gizmo , IO, BIT
 
 from nmigen import *
 from .uart import UART, Loopback
 from .uart_nm import UART_nm
 
-class Serial_nm(Periph):
+class Serial_nm(Gizmo):
     " Uart connection in 4 registers"
 
     def build(self):
@@ -39,7 +40,7 @@ class Serial_nm(Periph):
     def simulate(self):
         pass
 
-class Serial(Periph):
+class Serial(Gizmo):
     " Uart connection in 4 registers"
 
     def build(self):

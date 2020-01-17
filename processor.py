@@ -24,7 +24,7 @@ class Boneless(Elaboratable):
         # Peripherals
         self._prepared = False
         #self.periph = PeriphCollection(data_width=16,addr_width=16)
-        self.periph = GizmoCollection()
+        self.periph = GizmoCollection(self)
 
     def add_periph(self, p):
         self.periph += p 
@@ -69,14 +69,20 @@ class Boneless(Elaboratable):
         )
 
         # Bind the csr decoder to the external bus
-        m.submodules.csr = csr = self.periph.mplex
-        m.d.comb += [
-                csr.bus.addr.eq(core.o_bus_addr),
-                csr.bus.r_stb.eq(core.o_ext_re),
-                csr.bus.w_stb.eq(core.o_ext_we),
-                csr.bus.w_data.eq(core.o_ext_data),
-                core.i_ext_data.eq(csr.bus.r_data)
-        ]
+        #m.submodules.csr = csr = self.periph.mplex
+        #m.d.comb += [
+        #        csr.bus.addr.eq(core.o_bus_addr),
+        #        csr.bus.r_stb.eq(core.o_ext_re),
+        #        csr.bus.w_stb.eq(core.o_ext_we),
+        #        csr.bus.w_data.eq(core.o_ext_data),
+        #        core.i_ext_data.eq(csr.bus.r_data)
+        #]
+        self.o_bus_addr = core.o_bus_addr
+        self.o_ext_re = core.o_ext_re
+        self.o_ext_we = core.o_ext_we
+        self.o_ext_data = core.o_ext_data
+        self.i_ext_data = core.i_ext_data
+
         self.insert_periph(m)
         return m
 

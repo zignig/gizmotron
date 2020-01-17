@@ -13,11 +13,12 @@ class EpicFail(BaseException):
 class GizmoCollection:
     " A collection of gizmos "
 
-    def __init__(self):
+    def __init__(self,boneless):
         #object.__setattr__(self, "_modules", OrderedDict())
         self._modules = OrderedDict()
         self.addr = 0  # global address counter
         self.name_map  =  {}
+        self.boneless = boneless
 
     def __next__(self):
         print('next')
@@ -52,10 +53,10 @@ class GizmoCollection:
                 m[k.addr] = (j,k)
         return m
 
-    def attach(self,b,m,platform):
+    def attach(self,m):
         " attach all the gizmos to boneless from the platform"
         for i,j in self._modules.items():
-            j.attach(b,m,platform)
+            j.attach(m,self.boneless)
 
     def prepare(self):
         for i,j in self._modules.items():
@@ -178,7 +179,7 @@ class Gizmo:
                     if self.name not in self.__dir__():
                         setattr(self,reg.name,reg)
 
-    def attach(self, boneless, m, platform):
+    def attach(self,m, boneless):
         " Generate and bind the gateway to the Boneless "
         if self.debug:
             print("<< " + self.name + " >>")
