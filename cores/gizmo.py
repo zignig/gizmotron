@@ -60,7 +60,7 @@ class GizmoCollection:
 
     def prepare(self):
         for i,j in self._modules.items():
-            #print(i,j)
+            print(i,j)
             j.prepare(self)
 
     def asm_header(self):
@@ -128,7 +128,7 @@ class IO:
 
 class Gizmo:
     " A gizmo is a wrapper around an Elaboratable module that binds to the external interface of the Boneless-CPU"
-    debug = False 
+    debug = True 
 
     def __init__(self, name, platform=None, **kwargs):
         for i, j in kwargs.items():
