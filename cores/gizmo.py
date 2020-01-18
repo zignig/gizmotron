@@ -204,7 +204,9 @@ class Gizmo:
         if len(self.devices) > 0:
             for dev in self.devices:
                 print(dev)
-                m.submodules += dev
+                #m.submodules += dev
+                setattr(m.submodules,self.name,dev)
+                setattr(boneless,self.name,dev)
 
     def __repr__(self):
         return (
