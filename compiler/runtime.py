@@ -1,4 +1,7 @@
 # boneless runtime
+from collections import OrderedDict
+
+from registers import Window
 
 """
 #Boneless runtime
@@ -18,7 +21,7 @@ The first 8 words contain program information
 2: program start
 3: start window 
 4: window count 
-5: 
+5: checksum 
 6: running task bitfield 
 7: task count (0..8) , defined in the next part of the header
 
@@ -51,10 +54,40 @@ contains relative vector addresses for common code
 
 ## program entry point 
 
-code goes here
+- code goes here
+- static content
+
+- heap
+
+#TODO align 8
+- window stack
+- task windows
+- root window (last address % 8)
 """
 
-class Runtime:
+
+class BORK(Exception):
     pass
 
 
+class Runtime:
+    def __init__(self):
+        self.info = Window()
+        self.task = Window()
+        self.vector = Window()
+
+        self.sections = OrderedDict(
+            {"info": self.info, "task": self.task, "vector": self.vector}
+        )
+
+    def fetch(self):
+        raise BORK
+
+    def dump(self):
+        for i, j in self.sections.items():
+            print(i, j)
+
+
+if __name__ == "__main__":
+    r = Runtime()
+    r.dump()
