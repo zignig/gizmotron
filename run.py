@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     action.add_parser("gatesim")
 
-    p.add_argument("-f",action="store",help="asm file to include",default="asm/smallecho.asm")
+    p.add_argument("-f",action="store",help="asm file to include",default="asm/echo.asm")
 
     args = p.parse_args()
     print(args)

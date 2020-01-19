@@ -183,6 +183,7 @@ wb: .string "!warmboot"
 next: .string "..."
 error: .string "\r\n!Error"
 boottext: .string "\r\nbooting..."
+
 ; add strings various here
 
 ; some variables 
