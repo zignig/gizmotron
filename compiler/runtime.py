@@ -70,6 +70,19 @@ class BORK(Exception):
     pass
 
 
+class Task:
+    " individual task "
+    def __init__(self,name):
+        self.name = name
+        self.code = []
+        
+class Scheduler:
+    " Upper class for the scheduling "
+    pass
+
+class BasicScheduler(Scheduler):
+    pass
+
 class Runtime:
     def __init__(self):
         self.info = VectorTable('info')
