@@ -165,6 +165,28 @@ class Window:
 
     # TODO spill and reuse registers
 
+class VectorTable:
+
+    _size = 8
+
+    def __init__(self,name="no_name"):
+        self.labels = OrderedDict()
+        self.name = name
+
+    def __getattr__(self,key):
+        if key in self.labels:
+            print('get ',key)
+            return self.lables[key]
+
+    def __setattr__(self,key,value):
+        self.__dict__[key] = value
+        if key not in ['labels','name']:
+            print('set ',key,' to ',value)
+            self.labels[key] = value
+
+    def dump(self):
+        for i in self.labels.items():
+            print(i)
 
 class MetaSub(type):
     subroutines = []

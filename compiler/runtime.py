@@ -1,7 +1,7 @@
 # boneless runtime
 from collections import OrderedDict
 
-from registers import Window
+from registers import Window,VectorTable
 
 """
 #Boneless runtime
@@ -72,9 +72,9 @@ class BORK(Exception):
 
 class Runtime:
     def __init__(self):
-        self.info = Window()
-        self.task = Window()
-        self.vector = Window()
+        self.info = VectorTable('info')
+        self.task = VectorTable('task')
+        self.vector = VectorTable('vector')
 
         self.sections = OrderedDict(
             {"info": self.info, "task": self.task, "vector": self.vector}
@@ -85,7 +85,7 @@ class Runtime:
 
     def dump(self):
         for i, j in self.sections.items():
-            print(i, j)
+            print(i, j.dump())
 
 
 if __name__ == "__main__":
