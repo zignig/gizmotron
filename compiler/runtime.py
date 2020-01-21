@@ -84,14 +84,58 @@ class BasicScheduler(Scheduler):
     pass
 
 class Runtime:
+    debug = True 
+
     def __init__(self):
         self.info = VectorTable('info')
         self.task = VectorTable('task')
         self.vector = VectorTable('vector')
 
+        self.tasks = OrderedDict()
+
         self.sections = OrderedDict(
             {"info": self.info, "task": self.task, "vector": self.vector}
         )
+        
+        self.code = []
+
+    # 
+    def add_task(self,task):
+        if not isinstance(task,Task):
+            raise(TaskError)
+        self.tasks[task.name] = task
+
+    # build sections 
+    def build_info(self):
+        " build the info header "
+        return []
+
+    def build_task(self):
+        " build the task table"
+        return []
+
+    def build_vector(self):
+        " build the vector table"
+        return []
+
+    def build_static(self):
+        " build the static data"
+        return []
+
+    def build_code(self):
+        " build the code section "
+        return []
+
+    def build(self):
+        " Build all the sections"
+        self.code += [
+                build_info(),
+                build_task(),
+                build_vector(),
+                build_static(),
+                build_code(),
+        ]
+        return self.code
 
     def fetch(self):
         raise BORK

@@ -185,8 +185,10 @@ class VectorTable:
             self.labels[key] = value
 
     def dump(self):
+        data = []
         for i in self.labels.items():
-            print(i)
+            data += [L(i[0]),AR(i[1])]
+        return data
 
 class MetaSub(type):
     subroutines = []
