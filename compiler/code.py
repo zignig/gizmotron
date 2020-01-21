@@ -51,7 +51,6 @@ class Leds(SubR):
     def instr(self):
         return [STXA(self.w.value, 0)]
 
-
 class Blinker(Firmware):
     def instr(self):
         delay = Delay()
@@ -67,6 +66,7 @@ class Blinker(Firmware):
         return [
             MOVI(w.delay, delay_count),
             delay(w.delay),
+            leds(4)
         ]
 
 

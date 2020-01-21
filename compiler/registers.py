@@ -187,7 +187,11 @@ class VectorTable:
     def dump(self):
         data = []
         for i in self.labels.items():
-            data += [L(i[0]),AR(i[1])]
+            data.append([L(i[0]),AR(i[1])])
+        l = len(data)
+        if l < self._size:
+            for i in range(self._size - l):
+                data.append([0])
         return data
 
 class MetaSub(type):

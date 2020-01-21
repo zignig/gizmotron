@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 from registers import Window,VectorTable
 
+from boneless.arch.opcode import *
 """
 #Boneless runtime
 
@@ -69,6 +70,8 @@ contains relative vector addresses for common code
 class BORK(Exception):
     pass
 
+class TaskError(BORK):
+    pass
 
 class Task:
     " individual task "
@@ -112,7 +115,7 @@ class Runtime:
 
     def build_task(self):
         " build the task table"
-        return []
+        return self.task.dump() 
 
     def build_vector(self):
         " build the vector table"
@@ -128,12 +131,19 @@ class Runtime:
 
     def build(self):
         " Build all the sections"
+        self.code = []
         self.code += [
-                build_info(),
-                build_task(),
-                build_vector(),
-                build_static(),
-                build_code(),
+                L('runtime_info'),
+                self.build_info(),
+                L('runtime_task'),
+                self.build_task(),
+                L('runtime_vector'),
+                self.build_vector(),
+                L('runtime_static'),
+                self.build_static(),
+                L('runtime_code'),
+                self.build_code(),
+                L('runtime_codeend'),
         ]
         return self.code
 
