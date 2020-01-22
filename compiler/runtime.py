@@ -4,6 +4,9 @@ from collections import OrderedDict
 from registers import Window,VectorTable
 
 from boneless.arch.opcode import *
+
+import pprint
+
 """
 #Boneless runtime
 
@@ -111,7 +114,7 @@ class Runtime:
     # build sections 
     def build_info(self):
         " build the info header "
-        return []
+        return self.info.dump() 
 
     def build_task(self):
         " build the task table"
@@ -119,7 +122,7 @@ class Runtime:
 
     def build_vector(self):
         " build the vector table"
-        return []
+        return self.vector.dump() 
 
     def build_static(self):
         " build the static data"
@@ -129,16 +132,23 @@ class Runtime:
         " build the code section "
         return []
 
-    def build(self):
-        " Build all the sections"
-        self.code = []
-        self.code += [
+
+    def header(self):
+        header_code = [
                 L('runtime_info'),
                 self.build_info(),
                 L('runtime_task'),
                 self.build_task(),
                 L('runtime_vector'),
                 self.build_vector(),
+            ]
+        return header_code
+
+    def build(self):
+        " Build all the sections"
+        self.code = []
+        self.code += [
+                self.header(),
                 L('runtime_static'),
                 self.build_static(),
                 L('runtime_code'),
@@ -154,7 +164,9 @@ class Runtime:
         for i, j in self.sections.items():
             print(i, j.dump())
 
+    def show(self):
+        pprint.pprint(self.build(),indent=4,depth=5)
 
 if __name__ == "__main__":
     r = Runtime()
-    r.dump()
+    r.show()
