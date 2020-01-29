@@ -33,7 +33,7 @@ class RX(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        rx_counter = Signal(max=self.divisor)
+        rx_counter = Signal(range(self.divisor))
         rx_strobe = Signal()
 
         m.d.comb += rx_strobe.eq(rx_counter == 0)
@@ -94,7 +94,7 @@ class TX(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        tx_counter = Signal(max=self.divisor)
+        tx_counter = Signal(range(self.divisor))
         tx_strobe = Signal()
         m.d.comb += tx_strobe.eq(tx_counter == 0)
 
