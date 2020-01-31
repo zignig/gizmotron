@@ -69,6 +69,8 @@ class Blinker(Firmware):
             leds(4)
         ]
 
+leds = Leds()
+delay = Delay()
 
 if __name__ == "__main__":
     bl = Blinker()
