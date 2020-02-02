@@ -103,9 +103,9 @@ class uLoader(Firmware):
         cs = CheckSum()
         return [
             s.read(ret=w.char),
-            # bl.blink(w.led_val),
-            # cs(w.char,w.checksum,ret=w.checksum),
-            # s.write(w.char)
+            bl.blink(w.led_val),
+            cs(w.char,w.checksum,ret=w.checksum),
+            s.write(w.char)
         ]
 
 

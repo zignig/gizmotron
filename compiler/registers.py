@@ -107,7 +107,7 @@ class Rem:
         return []
 
     def __repr__(self):
-        return 'Remark("' + str(self.val) + '")'
+        return 'Rem("' + str(self.val) + '")'
 
 
 class LocalLabels:
@@ -301,6 +301,7 @@ class SubR(metaclass=MetaSub):
         for i, j in enumerate(args):
             source = j
             target = self.w[self.params[i]].value
+            instr += [Rem("Load "+self.params[i])]
             instr += [ST(source, self.w.fp, -8 + target)]
 
         instr += [JAL(self.w.ret, self.name)]
@@ -323,6 +324,7 @@ class SubR(metaclass=MetaSub):
                     source = vals
                     target = self.w[self.ret[0]].value
                     # instr += [Rem(self.ret[0]),Rem(self.ret[0])]
+                    instr += [Rem("Return "+self.ret[0])]
                     instr += [LD(source, self.w.fp, -8 + target)]
 
             else:
