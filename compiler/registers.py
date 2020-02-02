@@ -109,15 +109,15 @@ class LocalLabels:
 
     def __call__(self, name):
         self._names[name] = self._postfix + name
-        setattr(self,name,name  +  self._postfix )
-        return L(name + self._postfix )
+        setattr(self, name, name + self._postfix)
+        return L(name + self._postfix)
 
     def __getattr__(self, key):
         if key in self._names:
             return self._names[key]
         # for forward declarations
         self._names[key] = key + self._postfix
-        setattr(self,key,key + self._postfix )
+        setattr(self, key, key + self._postfix)
         return self._names[key]
 
 
@@ -166,34 +166,36 @@ class Window:
 
     # TODO spill and reuse registers
 
+
 class VectorTable:
 
     _size = 8
 
-    def __init__(self,name="no_name"):
+    def __init__(self, name="no_name"):
         self.labels = OrderedDict()
         self.name = name
 
-    def __getattr__(self,key):
+    def __getattr__(self, key):
         if key in self.labels:
-            print('get ',key)
+            print("get ", key)
             return self.lables[key]
 
-    def __setattr__(self,key,value):
+    def __setattr__(self, key, value):
         self.__dict__[key] = value
-        if key not in ['labels','name']:
-            print('set ',key,' to ',value)
+        if key not in ["labels", "name"]:
+            print("set ", key, " to ", value)
             self.labels[key] = value
 
     def dump(self):
         data = []
         for i in self.labels.items():
-            data.append([L(i[0]),AR(i[1])])
+            data.append([L(i[0]), AR(i[1])])
         l = len(data)
         if l < self._size:
             for i in range(self._size - l):
                 data.append([0])
         return data
+
 
 class MetaSub(type):
     subroutines = []
@@ -243,7 +245,7 @@ class SubR(metaclass=MetaSub):
 
     _called = False
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         self.w = Window()
         self.setup()
         if not hasattr(self, "name"):
@@ -294,7 +296,7 @@ class SubR(metaclass=MetaSub):
 
 
 class Firmware:
-    def __init__(self,io_map=None,start_window=0x1000):
+    def __init__(self, io_map=None, start_window=0x1000):
         self.w = Window()
         self.sw = start_window
         self.io_map = io_map
@@ -317,7 +319,8 @@ class Firmware:
         return fw
 
     def show(self):
-        pprint.pprint(self.code(),width=1,indent=2)
+        pprint.pprint(self.code(), width=1, indent=2)
+
 
 # Test Objects
 

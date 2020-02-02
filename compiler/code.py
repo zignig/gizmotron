@@ -3,6 +3,7 @@ from boneless.arch.opcode import *
 from boneless.arch.asm import Assembler
 import pprint
 
+
 class Delay(SubR):
     def setup(self):
         self.params = ["duration"]
@@ -24,25 +25,26 @@ class Delay(SubR):
 
 class Writer(SubR):
     def setup(self):
-        self.params = ["address","count","target"]
-        self.locals = ["val","pos","finish"]
+        self.params = ["address", "count", "target"]
+        self.locals = ["val", "pos", "finish"]
 
     def instr(self):
         w = self.w
         ll = LocalLabels()
         return [
-                MOV(w.pos,w.address),
-                MOV(w.finish,w.address),
-                ADD(w.finish,w.finish,w.count),
-                ll("again"),
-                MOVR(w.val,w.pos),
-                STXA(w.val,w.target),
-                ADDI(w.pos,w.pos,1),
-                CMP(w.pos,w.finish),
-                BZ(ll.exit),
-                J(ll.again),
-                ll('exit'),
+            MOV(w.pos, w.address),
+            MOV(w.finish, w.address),
+            ADD(w.finish, w.finish, w.count),
+            ll("again"),
+            MOVR(w.val, w.pos),
+            STXA(w.val, w.target),
+            ADDI(w.pos, w.pos, 1),
+            CMP(w.pos, w.finish),
+            BZ(ll.exit),
+            J(ll.again),
+            ll("exit"),
         ]
+
 
 class Leds(SubR):
     def setup(self):
@@ -50,6 +52,7 @@ class Leds(SubR):
 
     def instr(self):
         return [STXA(self.w.value, 0)]
+
 
 class Blinker(Firmware):
     def instr(self):
@@ -63,11 +66,8 @@ class Blinker(Firmware):
         w.req("count")
         w.req("target")
         delay_count = 8192
-        return [
-            MOVI(w.delay, delay_count),
-            delay(w.delay),
-            leds(4)
-        ]
+        return [MOVI(w.delay, delay_count), delay(w.delay), leds(4)]
+
 
 leds = Leds()
 delay = Delay()
@@ -80,4 +80,3 @@ if __name__ == "__main__":
     asm.parse(code)
     bin = asm.assemble()
     print(bin)
-

@@ -8,9 +8,9 @@ class LibR:
     def __init__(self):
         self.make()
 
-
     def make(self):
         raise
+
 
 class Serial(LibR):
     class ReadBlock(SubR):
@@ -24,7 +24,9 @@ class Serial(LibR):
             print(dir(self))
             return [
                 ll("rxdown"),
-                LDXA(w.status, self.io_map.rx_status),  # load the RX status from the serial port
+                LDXA(
+                    w.status, self.io_map.rx_status
+                ),  # load the RX status from the serial port
                 CMPI(w.status, 0),  # compare the register to 1
                 BEQ(ll.rxcont),  # if it is equal to zero continue
                 J(ll.rxdown),
@@ -41,26 +43,39 @@ class Serial(LibR):
             ll = LocalLabels()
             return []
 
-
     def make(self):
         self.read = self.ReadBlock()
         self.write = self.Write()
 
-class Blinker:
-    def __init__(self):
-        pass
+
+class Blinker(LibR):
+    class Blink(SubR):
+        def setup(self):
+            self.params = ["value", "next"]
+
+        def instr(self):
+            w = self.w
+            return [STXA(w.value, self.io_map.leds)]
+
+    def make(self):
+        self.blink = self.Blink()
 
 
 class FakeIO:
     rx_status = 1
+    leds = 2
+
 
 class uLoader(Firmware):
     def instr(self):
         w = self.w
         w.req("rx")
+        w.req("led_val")
+        w.req("led_next")
         SubR.io_map = FakeIO()
         s = Serial()
-        return [s.read(w.rx), s.write(w.rx)]
+        bl = Blinker()
+        return [s.read(w.rx), bl.blink(w.led_val, w.led_next), s.write(w.rx)]
 
 
 ul = uLoader()

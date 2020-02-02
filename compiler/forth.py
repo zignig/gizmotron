@@ -10,21 +10,22 @@ import pprint
 
 last_ref = "init"
 
+
 class String:
-    def __init__(self,name):
+    def __init__(self, name):
         assert len(name) < 32
         self.name = name
 
     def __repr__(self):
-        return "String('"+self.name+"')"
+        return "String('" + self.name + "')"
 
-    def __call__(self,sym):
+    def __call__(self, sym):
         r = [len(self.name)]
         for i in self.name:
             r.append(ord(i))
         return r
 
-        
+
 def glob(name, value, length=1):
     r = [L(name)]
     for i in range(length):
@@ -38,24 +39,24 @@ def header(name, imm=False):
     r.append(L(name))
     last_ref = name
     r.append(String(name))
-    r.append(L("xt_"+name))
+    r.append(L("xt_" + name))
     return r
 
 
 def primitive(name, code):
     r = header(name)
     r.append(code)
-    r.append(J('next'))
+    r.append(J("next"))
     return r
+
 
 def variable(name):
     r = header(name)
-    code = [
-            J('init'),
-            ]
+    code = [J("init")]
     r.append(code)
-    r.append(J('next'))
+    r.append(J("next"))
     return r
+
 
 def docol(name, code, imm=False):
     r = header(name, imm)
@@ -65,14 +66,16 @@ def docol(name, code, imm=False):
 
 # some words
 
+
 def next():
-    return [L('next')]
+    return [L("next")]
+
 
 def comma():
     return [primitive("comma", [])]
 
-class Forth(Firmware):
 
+class Forth(Firmware):
     def instr(self):
         w = self.w
         w.req("stackp")
@@ -86,7 +89,7 @@ class Forth(Firmware):
             header("hello"),
             header("fnord"),
             primitive("export", [ADDI(R0, R0, 2)]),
-            variable('tib'),
+            variable("tib"),
             next(),
             # docol('fnord',[L('wot')]),
             # glob('state',0),
