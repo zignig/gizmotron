@@ -3,6 +3,8 @@ from collections import OrderedDict
 import random
 import pprint
 
+from boneless.arch.asm import Assembler
+
 __all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware"]
 
 """
@@ -305,7 +307,7 @@ class Firmware:
         return []
 
     def code(self):
-        w = self.w
+        w = self.w = Window()
         fw = [
             L("init"),
             MOVI(w.fp, self.sw),
@@ -321,6 +323,11 @@ class Firmware:
     def show(self):
         pprint.pprint(self.code(), width=1, indent=2)
 
+    def assemble(self):
+        a = Assembler()
+        a.parse(self.code())
+        code = a.assemble()
+        return code
 
 # Test Objects
 

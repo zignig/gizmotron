@@ -4,15 +4,7 @@ from boneless.arch.asm import Assembler
 import pprint
 
 
-class LibR:
-    def __init__(self):
-        self.make()
-
-    def make(self):
-        raise
-
-
-class Serial(LibR):
+class Serial():
     class ReadBlock(SubR):
         def setup(self):
             self.params = ["char"]
@@ -21,13 +13,12 @@ class Serial(LibR):
         def instr(self):
             w = self.w
             ll = LocalLabels()
-            print(dir(self))
             return [
                 ll("rxdown"),
                 LDXA(
                     w.status, self.io_map.rx_status
                 ),  # load the RX status from the serial port
-                CMPI(w.status, 0),  # compare the register to 1
+                CMPI(w.status, 1),  # compare the register to 1
                 BEQ(ll.rxcont),  # if it is equal to zero continue
                 J(ll.rxdown),
                 ll("rxcont"),
@@ -43,12 +34,11 @@ class Serial(LibR):
             ll = LocalLabels()
             return []
 
-    def make(self):
-        self.read = self.ReadBlock()
-        self.write = self.Write()
+    read = ReadBlock()
+    write = Write()
 
 
-class Blinker(LibR):
+class Blinker():
     class Blink(SubR):
         def setup(self):
             self.params = ["value", "next"]
@@ -60,7 +50,21 @@ class Blinker(LibR):
     def make(self):
         self.blink = self.Blink()
 
+    blink = Blink()
 
+class CheckSum(SubR):
+    def setup(self):
+        self.params = ["data","checksum"]
+        self.locals = ["calc"]
+
+    def instr(self):
+        w = self.w
+        return [
+            SRLI(w.data,w.data,1),
+            XOR(w.data,w.checksum,w.data)
+        ]
+            
+            
 class FakeIO:
     rx_status = 1
     leds = 2
@@ -72,11 +76,20 @@ class uLoader(Firmware):
         w.req("rx")
         w.req("led_val")
         w.req("led_next")
+        w.req("checksum")
+        # map the IO to all the Subroutines
         SubR.io_map = FakeIO()
         s = Serial()
         bl = Blinker()
-        return [s.read(w.rx), bl.blink(w.led_val, w.led_next), s.write(w.rx)]
+        cs = CheckSum()
+        return [
+            s.read(w.rx), 
+            bl.blink(w.led_val, w.led_next), 
+            cs(w.rx,w.checksum),
+            s.write(w.rx)
+        ]
 
 
 ul = uLoader()
 c = ul.show()
+ul.assemble()

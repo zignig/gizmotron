@@ -10,6 +10,9 @@ class EpicFail(BaseException):
     pass
 
 
+class IOMap:
+    pass
+
 class GizmoCollection:
     " A collection of gizmos "
 
@@ -46,8 +49,10 @@ class GizmoCollection:
 
     def io_map(self):
         # TODO make a io map object 
-
-        raise 
+        iom = IOMap()
+        for i,j in self._modules.items():
+            setattr(iom,i,j)
+        return iom
 
     def addr_map(self):
         " return an address map to (gizmo,register) tuple"
