@@ -1,6 +1,7 @@
 # attempt at a register allocator
 from collections import OrderedDict
 import random
+import pprint
 
 __all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware"]
 
@@ -242,7 +243,7 @@ class SubR(metaclass=MetaSub):
 
     _called = False
 
-    def __init__(self):
+    def __init__(self,**kwargs):
         self.w = Window()
         self.setup()
         if not hasattr(self, "name"):
@@ -293,14 +294,16 @@ class SubR(metaclass=MetaSub):
 
 
 class Firmware:
-    def __init__(self, start_window=0x1000):
+    def __init__(self,io_map=None,start_window=0x1000):
         self.w = Window()
         self.sw = start_window
+        self.io_map = io_map
 
     def instr(self):
         return []
 
     def code(self):
+        w = self.w
         fw = [
             L("init"),
             MOVI(w.fp, self.sw),
@@ -308,15 +311,17 @@ class Firmware:
             L("main"),
             self.instr(),
             J("main"),
-            L("ExtraCode"),
+            L("lib_code"),
             MetaSub.code(),
         ]
         return fw
 
+    def show(self):
+        pprint.pprint(self.code(),width=1,indent=2)
 
 # Test Objects
 
-
+"""
 class Printer(SubR):
     def setup(self):
         self.params = ["addr", "data"]
@@ -361,7 +366,8 @@ class Outer:
     comp = Composite()
 
 
-w = Window()
-w.req("addr")
-w.req("counter")
-w.req("data")
+#w = Window()
+#w.req("addr")
+#w.req("counter")
+#w.req("data")
+"""

@@ -44,6 +44,11 @@ class GizmoCollection:
         for i in self._modules:
             print(i)
 
+    def io_map(self):
+        # TODO make a io map object 
+
+        raise 
+
     def addr_map(self):
         " return an address map to (gizmo,register) tuple"
         m = {} 
