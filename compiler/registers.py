@@ -299,7 +299,7 @@ class SubR(metaclass=MetaSub):
         for i, j in enumerate(args):
             source = j
             target = self.w[self.params[i]].value
-            instr += [LD(source, self.w.fp, -8 + target)]
+            instr += [ST(source, self.w.fp, -8 + target)]
 
         instr += [JAL(self.w.ret, self.name)]
 
@@ -317,12 +317,12 @@ class SubR(metaclass=MetaSub):
                     for i,j in enumerate(vals):
                         source  = self.w[self.ret[i]]
                         instr += [Rem(self.ret[i]),Rem(self.ret[i])]
-                        instr += [LD(j,self.w.fp, 8 - source.value )]
+                        instr += [LD(j,self.w.fp, -8 + source.value )]
                 else:
                         source = vals
                         target = self.w[self.ret[0]].value
                         instr += [Rem(self.ret[0]),Rem(self.ret[0])]
-                        instr += [LD(source,self.w.fp, 8 - target)]
+                        instr += [LD(source,self.w.fp, -8 + target)]
 
             else:
                 raise ValueError("No return registers exist")

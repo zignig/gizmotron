@@ -60,7 +60,7 @@ class Serial:
 class Blinker():
     class Blink(SubR):
         def setup(self):
-            self.params = ["value", "next"]
+            self.params = ["value"]
 
         def instr(self):
             w = self.w
@@ -96,11 +96,11 @@ class FakeIO:
 class uLoader(Firmware):
     def instr(self):
         w = self.w
-        w.req("status")
+        w.req("current_value")
         w.req("char")
         w.req("led_val")
-        w.req("led_next")
         w.req("checksum")
+        w.req("address")
         # map the IO to all the Subroutines
         SubR.io_map = FakeIO()
         s = Serial()
@@ -108,7 +108,7 @@ class uLoader(Firmware):
         cs = CheckSum()
         return [
             s.read(ret=w.char), 
-            #bl.blink(w.led_val, w.led_next), 
+            bl.blink(w.led_val), 
             cs(w.char,w.checksum,ret=w.checksum),
             s.write(w.char)
         ]
