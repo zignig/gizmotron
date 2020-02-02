@@ -5,7 +5,7 @@ import pprint
 
 from boneless.arch.asm import Assembler
 
-__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware"]
+__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware","Rem"]
 
 """
 ideas
@@ -96,6 +96,17 @@ class WindowFull(RegError):
 class BadParamCount(RegError):
     pass
 
+
+class Rem:
+    " for adding remarks in code "
+    def __init__(self,val):
+        self.val = val
+    
+    def __call__(self,m):
+        return []
+
+    def __repr__(self):
+        return 'remark > ' + str(self.val)
 
 class LocalLabels:
     """ Local random labels for inside subr
@@ -249,6 +260,9 @@ class SubR(metaclass=MetaSub):
 
     def __init__(self, **kwargs):
         self.w = Window()
+        # return registers to upper window
+        self._ret = False
+        self._ret_target = []
         self.setup()
         if not hasattr(self, "name"):
             self.name = type(self).__qualname__
@@ -261,6 +275,13 @@ class SubR(metaclass=MetaSub):
         if hasattr(self, "locals"):
             for i in self.locals:
                 self.w.req(i)
+        if hasattr(self,"ret"):
+            self._ret_len = len(self.ret)
+            self._ret = True
+            for i in self.ret:
+                # return registers can be existing registers
+                if i not in self.w.__dict__:
+                    self.w.req(i)
 
     @classmethod
     def mark(cls):
@@ -270,7 +291,7 @@ class SubR(metaclass=MetaSub):
     def setup(self):
         pass
 
-    def __call__(self, *args):
+    def __call__(self,*args,**kwargs):
         if len(args) != self.length:
             raise ValueError("Parameter count is should be '{}'".format(self.length))
         # load the parameters into the next frame
@@ -279,7 +300,33 @@ class SubR(metaclass=MetaSub):
             source = j
             target = self.w[self.params[i]].value
             instr += [LD(source, self.w.fp, -8 + target)]
+
         instr += [JAL(self.w.ret, self.name)]
+
+        # TODO fix register passing
+        # This adds a code to copy registers down a window
+        # if requesed with a ret=[return,register] in the call
+        if 'ret' in kwargs:
+            instr += [Rem("return values")]
+            if self._ret:
+                self._ret_target = []
+                vals = kwargs['ret']
+                if type(vals) == type([]):
+                    if len(vals) > self._ret_len:
+                        raise ValueError("To many returns")
+                    for i,j in enumerate(vals):
+                        source  = self.w[self.ret[i]]
+                        instr += [Rem(self.ret[i]),Rem(self.ret[i])]
+                        instr += [LD(j,self.w.fp, 8 - source.value )]
+                else:
+                        source = vals
+                        target = self.w[self.ret[0]].value
+                        instr += [Rem(self.ret[0]),Rem(self.ret[0])]
+                        instr += [LD(source,self.w.fp, 8 - target)]
+
+            else:
+                raise ValueError("No return registers exist")
+
         self.mark()
         return instr
 
@@ -290,6 +337,7 @@ class SubR(metaclass=MetaSub):
     def code(self):
         prelude = [L(self.name)]
         data = []
+        data += [Rem(self.w._name)]
         data += [LDW(self.w.fp, -8)]  # window shift up
         data += self.instr()
         data += [ADJW(8), JR(R7, 0)]
@@ -298,10 +346,9 @@ class SubR(metaclass=MetaSub):
 
 
 class Firmware:
-    def __init__(self, io_map=None, start_window=0x1000):
+    def __init__(self, start_window=0x1000):
         self.w = Window()
         self.sw = start_window
-        self.io_map = io_map
 
     def instr(self):
         return []
@@ -309,6 +356,7 @@ class Firmware:
     def code(self):
         w = self.w = Window()
         fw = [
+            Rem(self.w._name),
             L("init"),
             MOVI(w.fp, self.sw),
             STW(w.fp),
@@ -330,7 +378,6 @@ class Firmware:
         return code
 
 # Test Objects
-
 """
 class Printer(SubR):
     def setup(self):
@@ -375,9 +422,8 @@ class Outer:
     printer = Printer()
     comp = Composite()
 
-
+"""
 #w = Window()
 #w.req("addr")
 #w.req("counter")
 #w.req("data")
-"""
