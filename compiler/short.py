@@ -18,5 +18,9 @@ class Adder(SubR):
 adder = Adder()
 w = Window()
 w.req(['a','b','c'])
-code = [adder(w.a,w.b,ret=w.c),MetaSub.code()]
+code = [
+        Rem(w._name),
+        adder(w.a,w.b,ret=w.c),
+        MetaSub.code()
+        ]
 pprint.pprint(code,width=1,indent=3)
