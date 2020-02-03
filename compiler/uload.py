@@ -79,6 +79,17 @@ class CheckSum(SubR):
         w = self.w
         return [SRLI(w.data, w.data, 1), XOR(w.data, w.checksum, w.data)]
 
+class WriteToMem(SubR):
+    def setup(self):
+        self.params = ["data","address"]
+        self.ret = ['address']
+    
+    def instr(self):
+        w = self.w
+        return [
+                ST(w.data,w.address,0),
+                ADDI(w.address,w.address,1)
+        ]
 
 class FakeIO:
     rx_data = 0
@@ -101,10 +112,12 @@ class uLoader(Firmware):
         s = Serial()
         bl = Blinker()
         cs = CheckSum()
+        wm = WriteToMem()
         return [
             s.read(ret=w.char),
-            bl.blink(w.led_val),
+            #bl.blink(w.led_val),
             cs(w.char,w.checksum,ret=w.checksum),
+            wm(w.current_value,w.address,ret=w.address),
             s.write(w.char)
         ]
 
