@@ -5,7 +5,7 @@ import pprint
 
 from boneless.arch.asm import Assembler
 
-__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware", "Rem"]
+__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware", "Rem", "Block" ]
 
 """
 ideas
@@ -110,6 +110,10 @@ class Rem:
         return 'Rem("' + str(self.val) + '")'
 
 
+class Block:
+    " A Block of code "
+    pass 
+
 class LocalLabels:
     """ Local random labels for inside subr
         create a local labeler
@@ -137,6 +141,8 @@ class LocalLabels:
 
 
 class Window:
+    " Allocatable register window "
+
     _REGS = [R0, R1, R2, R3, R4, R5, R6, R7]
     _size = 8
 
@@ -183,6 +189,8 @@ class Window:
 
 
 class VectorTable:
+    
+    " Vector Table "
 
     _size = 8
 
@@ -255,7 +263,16 @@ class SubR(metaclass=MetaSub):
     R7 = return address (used by the child frame)
     R6 = frame pointer
 
+    Call structure 
     
+    1. copy registers up into frame
+    2. jump into subroutine
+    3. shift window up
+    4. run code
+    5. shift window down
+    6. return from jump
+    7. copy data from upper frame 
+
     """
 
     _called = False
@@ -349,6 +366,12 @@ class SubR(metaclass=MetaSub):
 
 
 class Firmware:
+    """ 
+    Firmware construct 
+
+    does initialization , main loop and library code
+    """
+
     def __init__(self, start_window=0x1000):
         self.w = Window()
         self.sw = start_window
