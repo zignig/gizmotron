@@ -275,6 +275,8 @@ class SubR(metaclass=MetaSub):
 
     """
 
+    debug = True 
+
     _called = False
 
     def __init__(self, **kwargs):
@@ -318,7 +320,8 @@ class SubR(metaclass=MetaSub):
         for i, j in enumerate(args):
             source = j
             target = self.w[self.params[i]].value
-            instr += [Rem("Load "+self.params[i])]
+            if self.debug:
+                instr += [Rem("Load "+self.params[i])]
             instr += [ST(source, self.w.fp, -8 + target)]
 
         instr += [JAL(self.w.ret, self.name)]
@@ -340,8 +343,8 @@ class SubR(metaclass=MetaSub):
                 else:
                     source = vals
                     target = self.w[self.ret[0]].value
-                    # instr += [Rem(self.ret[0]),Rem(self.ret[0])]
-                    instr += [Rem("Return "+self.ret[0])]
+                    if self.debug:
+                        instr += [Rem("Return "+self.ret[0])]
                     instr += [LD(source, self.w.fp, -8 + target)]
 
             else:
@@ -355,14 +358,13 @@ class SubR(metaclass=MetaSub):
         return []
 
     def code(self):
-        prelude = [L(self.name)]
-        data = []
-        data += [Rem(self.w._name)]
+        data = [L(self.name)]
+        if self.debug:
+            data += [Rem(self.w._name)]
         data += [LDW(self.w.fp, -8)]  # window shift up
         data += self.instr()
         data += [ADJW(8), JR(R7, 0)]
-        prelude += [data]
-        return prelude
+        return [data] 
 
 
 class Firmware:

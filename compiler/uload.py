@@ -55,6 +55,25 @@ class Serial:
                 BEQ(ll.waitdown),
             ]
 
+
+    class ReadWord(SubR):
+        def setup(self):
+            self.locals = ["first","second","holding"]
+            self.ret = ["word"]
+
+        def instr(self):
+            w = self.w
+            rb = Serial.read
+            return [
+                rb(ret=w.first),
+                rb(ret=w.second),
+                MOVI(w.holding,0),
+                OR(w.holding,w.holding,w.first),
+                SRLI(w.holding,w.holding,8),
+                OR(w.holding,w.holding,w.second)
+            ]
+
+
     class WriteWord(SubR):
         def setup(self):
             self.params = ["word"]
@@ -75,6 +94,7 @@ class Serial:
     read = ReadBlock()
     write = Write()
     writeword = WriteWord()
+    readword =  ReadWord()
 
 class Blinker:
     class Blink(SubR):
@@ -110,7 +130,10 @@ class WriteToMem(SubR):
                 ADDI(w.address,w.address,1)
         ]
 
-        
+class BootInto(SubR):
+    pass
+
+
 class FakeIO:
     rx_data = 0
     rx_status = 1
@@ -124,7 +147,7 @@ class uLoader(Firmware):
         w = self.w
         w.req("current_value")
         w.req("char")
-        w.req("led_val")
+        w.req("counter")
         w.req("checksum")
         w.req("address")
         # map the IO to all the Subroutines
@@ -133,16 +156,24 @@ class uLoader(Firmware):
         bl = Blinker()
         cs = CheckSum()
         wm = WriteToMem()
+        bi = BootInto()
         return [
-            s.read(ret=w.char),
-            #bl.blink(w.led_val),
-            cs(w.char,w.checksum,ret=w.checksum),
-            wm(w.current_value,w.address,ret=w.address),
-            s.writeword(w.checksum),
+            s.readword(ret=w.counter),
+            L('again'),
+            [
+                s.readword(ret=w.current_value),
+                cs(w.char,w.checksum,ret=w.checksum),
+                wm(w.current_value,w.address,ret=w.address),
+                s.writeword(w.checksum),
+            ],
+            SUBI(w.counter,w.counter,1),
+            CMPI(w.counter,0),
+            BEQ('program_start'),
+            J('again'),
             L('program_start'),
         ]
 
-
+#SubR.debug = False
 ul = uLoader()
 c = ul.show()
 ul.assemble()
