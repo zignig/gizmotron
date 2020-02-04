@@ -22,5 +22,9 @@ class Short(Firmware):
         return [adder(w.a, w.b, ret=w.c)]
 
 
-sh = Short()
-sh.show()
+if __name__ == "__main__":
+    ul = Short()
+    fw = ul.assemble()
+    ul.show()
+    from loader import load
+    load(fw)
