@@ -177,19 +177,9 @@ class uLoader(Firmware):
             JR(w.ret,1),
         ]
 
-#SubR.debug = False
-#ul = uLoader()
-#c = ul.show()
-if False:
-    code = ul.assemble()
-    a = Assembler()
-    di = a.disassemble(code)
-    pprint.pprint(di)
-
-def b16(i): return '{:016b}'.format(i)
-def b8(i): return '{:08b}'.format(i)
 if __name__ == "__main__":
     ul = uLoader()
+    ul.show()
     fw = ul.assemble()
-    for i in fw:
-        print(b16(i),b8(i >> 8),b8(i & 0xFF))
+    from loader import load
+    load(fw)
