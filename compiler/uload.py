@@ -130,10 +130,6 @@ class WriteToMem(SubR):
                 ADDI(w.address,w.address,1)
         ]
 
-class BootInto(SubR):
-    pass
-
-
 class FakeIO:
     rx_data = 0
     rx_status = 1
@@ -156,9 +152,13 @@ class uLoader(Firmware):
         bl = Blinker()
         cs = CheckSum()
         wm = WriteToMem()
-        bi = BootInto()
         return [
+            Rem('load the starting address'),
+            MOVR(w.address,'program_start'),
+            ADDI(w.address,w.address,1),
+            Rem('read the program length'),
             s.readword(ret=w.counter),
+            Rem('loop through the words'),
             L('again'),
             [
                 s.readword(ret=w.current_value),
@@ -168,12 +168,21 @@ class uLoader(Firmware):
             ],
             SUBI(w.counter,w.counter,1),
             CMPI(w.counter,0),
-            BEQ('program_start'),
+            BEQ('boot_into'),
             J('again'),
-            L('program_start'),
+            L('boot_into'),
+            Rem('Boot into the new program'),
+            ADJW(-8),
+            MOVR(w.ret,'program_start'),
+            ADDI(w.ret,w.ret,1),
+            J(w.ret),
         ]
 
 #SubR.debug = False
 ul = uLoader()
 c = ul.show()
-ul.assemble()
+if True:
+    code = ul.assemble()
+    a = Assembler()
+    di = a.disassemble(code)
+    pprint.pprint(di)

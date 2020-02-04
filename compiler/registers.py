@@ -393,6 +393,7 @@ class Firmware:
             J("main"),
             L("lib_code"),
             MetaSub.code(),
+            L("program_start"),
         ]
         return fw
 
