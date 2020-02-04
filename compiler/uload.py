@@ -5,6 +5,8 @@ import pprint
 
 
 class Serial:
+
+
     class ReadBlock(SubR):
         def setup(self):
             self.locals = ["rx_status"]
@@ -53,9 +55,26 @@ class Serial:
                 BEQ(ll.waitdown),
             ]
 
+    class WriteWord(SubR):
+        def setup(self):
+            self.params = ["word"]
+            self.locals = ["holding"]
+
+        def instr(self):
+            w = self.w
+            ww = Serial.Write()
+            return [
+                ANDI(w.holding,w.word,0x00FF),
+                ww(w.holding),
+                MOV(w.holding,w.word),
+                SRLI(w.holding,w.holding,8),
+                ww(w.holding),
+            ]
+
+
     read = ReadBlock()
     write = Write()
-
+    writeword = WriteWord()
 
 class Blinker:
     class Blink(SubR):
@@ -91,6 +110,7 @@ class WriteToMem(SubR):
                 ADDI(w.address,w.address,1)
         ]
 
+        
 class FakeIO:
     rx_data = 0
     rx_status = 1
@@ -118,7 +138,8 @@ class uLoader(Firmware):
             #bl.blink(w.led_val),
             cs(w.char,w.checksum,ret=w.checksum),
             wm(w.current_value,w.address,ret=w.address),
-            s.write(w.char)
+            s.writeword(w.checksum),
+            L('program_start'),
         ]
 
 
