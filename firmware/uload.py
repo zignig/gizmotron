@@ -15,8 +15,8 @@ class Serial:
         def instr(self):
             w = self.w
             ll = LocalLabels()
-            rx_status = self.io_map.serial_port.rx_status.addr
-            rx_data = self.io_map.serial_port.rx_data.addr
+            rx_status = self.io_map.rx_status
+            rx_data = self.io_map.rx_data
             return [
                 ll("rxdown"),
                 Rem("load the RX status from the serial port"),
@@ -36,8 +36,8 @@ class Serial:
         def instr(self):
             w = self.w
             ll = LocalLabels()
-            tx_data = self.io_map.serial_port.tx_data.addr
-            tx_status = self.io_map.serial_port .tx_status.addr
+            tx_data = self.io_map.tx_data
+            tx_status = self.io_map.tx_status
             return [
                 ll("txchar"),  # put a char into the serial port
                 STXA(w.char, tx_data),  # put the holding data into the serial port
@@ -107,7 +107,7 @@ class Blinker:
 
         def instr(self):
             w = self.w
-            return [STXA(w.value, self.io_map.leds)]
+            return [STXA(w.value, self.io_map.status)]
 
     blink = Blink()
 

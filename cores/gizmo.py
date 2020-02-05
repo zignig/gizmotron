@@ -51,7 +51,8 @@ class GizmoCollection:
         # TODO make a io map object 
         iom = IOMap()
         for i,j in self._modules.items():
-            setattr(iom,i,j)
+            for k in j.registers:
+                setattr(iom,k.name,k.addr)
         return iom
 
     def addr_map(self):
