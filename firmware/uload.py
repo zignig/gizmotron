@@ -1,4 +1,4 @@
-from registers import *
+from .registers import *
 from boneless.arch.opcode import *
 from boneless.arch.asm import Assembler
 import pprint
