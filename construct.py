@@ -16,8 +16,8 @@ from cores.multiply import Multiply
 Elaboratable._Elaboratable__silence = True 
 
 # The device construct
-def Construct(platform, asm_file="asm/tx.asm"):
-    b = Boneless(asm_file=asm_file)
+def Construct(platform,fw=None,asm_file=None):
+    b = Boneless(fw=fw,asm_file=asm_file)
 
     l = UserLeds("status_leds", platform=platform,source='blinky')
     b.add_periph(l)

@@ -17,9 +17,10 @@ from nmigen_soc.csr.bus import *
 
 class Boneless(Elaboratable):
     debug = True
-    def __init__(self, asm_file="asm/blink.asm"):
+    def __init__(self,fw=None,asm_file=None):
         self.memory = Memory(width=16, depth=2*1024)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
+        self.code = []
 
         # Peripherals
         self._prepared = False
@@ -40,13 +41,17 @@ class Boneless(Elaboratable):
         header = self.periph.asm_header()
         print(header)
         # Code
-        asm = Assembler()
-        self.asm = asm
-        txt = open(self.asm_file).read()
-        asm.parse(header)
-        asm.parse(txt)
-        code = asm.assemble()
-        self.code = code
+        if self.asm_file is not None:
+            asm = Assembler()
+            self.asm = asm
+            txt = open(self.asm_file).read()
+            asm.parse(header)
+            asm.parse(txt)
+            code = asm.assemble()
+            self.code = code
+        else:
+            print("no firmware")
+
         # Object list
         if self.debug:
             print("len :",len(code))
