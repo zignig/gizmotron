@@ -57,12 +57,12 @@ class Boneless(Elaboratable):
                 for i,j in enumerate(asm.disassemble(self.code)):
                     print('{:04X}'.format(i),j)
         else:
-            print("no firmware")
             io_map = self.periph.io_map()
-            print(io_map)
             self.io_map = io_map
             f = firmware.get_bootloader(io_map)
+            f.show()
             self.code = f.assemble()
+            print(self.code)
 
         self.memory.init = self.code 
         self.devices = []
