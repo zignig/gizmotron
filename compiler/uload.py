@@ -68,8 +68,10 @@ class Serial:
                 rb(ret=w.first),
                 rb(ret=w.second),
                 MOVI(w.holding,0),
+                Rem('high byte'),
                 OR(w.holding,w.holding,w.first),
                 SRLI(w.holding,w.holding,8),
+                Rem('low byte'),
                 OR(w.holding,w.holding,w.second)
             ]
 
@@ -83,10 +85,12 @@ class Serial:
             w = self.w
             ww = Serial.Write()
             return [
-                ANDI(w.holding,w.word,0x00FF),
-                ww(w.holding),
+                Rem('write high byte'),
                 MOV(w.holding,w.word),
                 SRLI(w.holding,w.holding,8),
+                ww(w.holding),
+                Rem('write low byte'),
+                ANDI(w.holding,w.word,0x00FF),
                 ww(w.holding),
             ]
 
@@ -146,8 +150,7 @@ class uLoader(Firmware):
         w.req("counter")
         w.req("checksum")
         w.req("address")
-        # map the IO to all the Subroutines
-        SubR.io_map = FakeIO()
+        ll = LocalLabels()
         s = Serial()
         bl = Blinker()
         cs = CheckSum()
@@ -159,7 +162,7 @@ class uLoader(Firmware):
             Rem('read the program length'),
             s.readword(ret=w.counter),
             Rem('loop through the words'),
-            L('again'),
+            ll('again'),
             [
                 s.readword(ret=w.current_value),
                 cs(w.char,w.checksum,ret=w.checksum),
@@ -168,9 +171,9 @@ class uLoader(Firmware):
             ],
             SUBI(w.counter,w.counter,1),
             CMPI(w.counter,0),
-            BEQ('boot_into'),
-            J('again'),
-            L('boot_into'),
+            BEQ(ll.boot_into),
+            J(ll.again),
+            ll('boot_into'),
             Rem('Boot into the new program'),
             ADJW(-8),
             MOVR(w.ret,'program_start'),
@@ -178,7 +181,7 @@ class uLoader(Firmware):
         ]
 
 if __name__ == "__main__":
-    ul = uLoader()
+    ul = uLoader(io_map=FakeIO())
     ul.show()
     fw = ul.assemble()
     from loader import load

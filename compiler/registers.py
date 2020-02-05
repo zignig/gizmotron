@@ -374,9 +374,12 @@ class Firmware:
     does initialization , main loop and library code
     """
 
-    def __init__(self, start_window=0x1000):
+    def __init__(self,io_map=None, start_window=0x1000):
         self.w = Window()
         self.sw = start_window
+        self.io_map = io_map
+        # attach the io_map to all the subroutines
+        SubR.io_map = self.io_map
 
     def instr(self):
         return []
