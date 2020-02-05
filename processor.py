@@ -10,7 +10,7 @@ from nmigen.cli import main
 
 #from cores.peripheral import Periph, PeriphCollection
 from cores.gizmo import Gizmo,GizmoCollection
-
+import firmware
 
 from nmigen_soc.csr.bus import * 
 
@@ -38,10 +38,10 @@ class Boneless(Elaboratable):
         # Prepare all the gizmos and map their addresses
         self.periph.prepare()
         # generate asm header address list
-        header = self.periph.asm_header()
-        print(header)
         # Code
         if self.asm_file is not None:
+            header = self.periph.asm_header()
+            print(header)
             asm = Assembler()
             self.asm = asm
             txt = open(self.asm_file).read()
@@ -49,17 +49,22 @@ class Boneless(Elaboratable):
             asm.parse(txt)
             code = asm.assemble()
             self.code = code
+            # Object list
+            if self.debug:
+                print("len :",len(self.code))
+                for i,j in enumerate(asm.input):
+                    print('{:04X}'.format(i),j)
+                for i,j in enumerate(asm.disassemble(self.code)):
+                    print('{:04X}'.format(i),j)
         else:
             print("no firmware")
+            io_map = self.periph.io_map()
+            print(io_map)
+            self.io_map = io_map
+            f = firmware.get_bootloader(io_map)
+            self.code = f.assemble()
 
-        # Object list
-        if self.debug:
-            print("len :",len(code))
-            for i,j in enumerate(asm.input):
-                print('{:04X}'.format(i),j)
-            for i,j in enumerate(asm.disassemble(code)):
-                print('{:04X}'.format(i),j)
-        self.memory.init = code 
+        self.memory.init = self.code 
         self.devices = []
         self._prepared = True
 

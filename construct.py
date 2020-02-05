@@ -45,7 +45,7 @@ def Construct(platform,fw=None,asm_file=None):
 # For FPGA
 class CPU(Elaboratable):
     has_pll = False 
-    def __init__(self, platform, asm_file="asm/blink.asm"):
+    def __init__(self, platform, asm_file=None):
         self.b = Construct(platform, asm_file=asm_file)
         self.platform = platform
 
