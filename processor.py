@@ -18,7 +18,8 @@ from nmigen_soc.csr.bus import *
 class Boneless(Elaboratable):
     debug = True
     def __init__(self,fw=None,asm_file=None):
-        self.memory = Memory(width=16, depth=2*1024)  # max of  8*1024 on the 8k
+        self.memsize = 4 * 512
+        self.memory = Memory(width=16, depth=self.memsize)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
         self.code = []
 
@@ -73,9 +74,9 @@ class Boneless(Elaboratable):
 
         m.submodules.core = core = CoreFSM(
             alsru_cls = ALSRU_4LUT,
-            reset_pc=8,
+            #reset_pc=0,
             memory = self.memory,
-            reset_w=0,
+            reset_w=self.memsize - 8,
         )
 
         # Bind the csr decoder to the external bus

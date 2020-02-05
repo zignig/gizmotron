@@ -374,7 +374,7 @@ class Firmware:
     does initialization , main loop and library code
     """
 
-    def __init__(self,io_map=None, start_window=0x1000):
+    def __init__(self,io_map=None, start_window=512):
         self.w = Window()
         self.sw = start_window
         self.io_map = io_map
@@ -390,7 +390,7 @@ class Firmware:
             Rem(self.w._name),
             L("init"),
             MOVI(w.fp, self.sw),
-            STW(w.fp),
+            LDW(w.fp,0),
             L("main"),
             self.instr(),
             J("main"),

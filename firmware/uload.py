@@ -6,10 +6,9 @@ import pprint
 
 class Serial:
 
-
     class ReadBlock(SubR):
         def setup(self):
-            self.locals = ["rx_status"]
+            self.locals = ["rx_status","counter","leds"]
             self.ret = ["char"]
 
         def instr(self):
@@ -18,14 +17,38 @@ class Serial:
             rx_status = self.io_map.rx_status
             rx_data = self.io_map.rx_data
             return [
+                MOVI(w.leds,1),
+                MOVI(w.counter,0xFFFF),
                 ll("rxdown"),
                 Rem("load the RX status from the serial port"),
+                [
+                    SUBI(w.counter,w.counter,1),
+                    CMPI(w.counter,0),
+                    BEQ(ll.blink),
+                    J(ll.next),
+                    ll('blink'),
+                    STXA(w.leds,self.io_map.led),
+                    MOVI(w.counter,0xFFFF),
+                    XORI(w.leds,w.leds,0xFFFF),
+                ],
                 LDXA(w.rx_status, rx_status),  # load the RX status from the serial port
                 CMPI(w.rx_status, 1),  # compare the register to 1
-                BEQ(ll.rxcont),  # if it is equal to zero continue
+                BEQ(ll.rxwait),  # if it is equal to zero continue
+                ll('next'),
                 J(ll.rxdown),
-                ll("rxcont"),
-                LDXA(w.char, rx_data),
+                LDXA(w.char, rx_data), # load the rx data into w.char
+                MOVI(w.rx_status,1),
+                STXA(w.rx_status,rx_status), # ack the char
+                ll("rxwait"), # wait for the serial port to be ready
+                LDXA(w.rx_status,rx_status),
+                CMPI(w.rx_status,0),
+                BEQ(ll.rxack),
+                J(ll.rxwait),
+                ll("rxack"),
+                MOVI(w.rx_status,0),
+                STXA(w.rx_status,rx_status), # ack the char
+                MOVI(w.leds,0),
+                STXA(w.leds,self.io_map.led),
             ]
 
     class Write(SubR):
@@ -103,11 +126,22 @@ class Serial:
 class Blinker:
     class Blink(SubR):
         def setup(self):
-            self.params = ["value"]
+            self.params = ["counter"]
+            self.locals = ["leds"]
 
         def instr(self):
             w = self.w
-            return [STXA(w.value, self.io_map.status)]
+            ll = LocalLabels()
+            return [
+                    ll('next'),
+                    SUBI(w.counter,w.counter,1),
+                    CMPI(w.counter,0),
+                    BEQ(ll.blink),
+                    J(ll.next),
+                    ll('blink'),
+                    STXA(w.leds,self.io_map.led),
+                    XORI(w.leds,w.leds,0xFFFF),
+                ]
 
     blink = Blink()
 
@@ -156,11 +190,22 @@ class uLoader(Firmware):
         cs = CheckSum()
         wm = WriteToMem()
         return [
+            MOVI(w.counter,5),
+            ll('fnord'), 
+            bl.blink(w.counter),
+            ADDI(w.counter,w.counter,1),
+            J(ll.fnord),
+            #s.read(ret=w.current_value),
+            #MOVI(w.current_value,ord('!')),
+            #s.write(w.current_value),
+        ]
+        """
             Rem('load the starting address'),
             MOVR(w.address,'program_start'),
             ADDI(w.address,w.address,1),
             Rem('read the program length'),
             s.readword(ret=w.counter),
+            s.writeword(w.counter),
             Rem('loop through the words'),
             ll('again'),
             [
@@ -179,6 +224,7 @@ class uLoader(Firmware):
             MOVR(w.ret,'program_start'),
             JR(w.ret,1),
         ]
+        """
 
 if __name__ == "__main__":
     ul = uLoader(io_map=FakeIO())

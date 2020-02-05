@@ -73,10 +73,10 @@ if __name__ == "__main__":
         design = construct.simCPU(platform,asm_file=args.f)
         fragment = Fragment.get(design, platform)
         f = open("test.vcd", "w")
-        dut = design.b.serial_port
-        rx = dut.rx_i
-        tx = dut.tx_o
+        #dut = design.b.serial_port
+        #rx = dut.rx_i
+        #tx = dut.tx_o
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
             sim.add_clock(100e-6)
-            sim.add_sync_process(sim_data.test_rx(dut))
+            #sim.add_sync_process(sim_data.test_rx(dut))
             sim.run_until(100e-6 * 50000, run_passive=True)
