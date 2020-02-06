@@ -29,6 +29,19 @@ class WriteToMem(SubR):
                 ADDI(w.address,w.address,1)
         ]
 
+class Depth1(SubR):
+    def instr(self):
+        return [ADDI(R0,R0,1)]
+
+
+class Depth2(SubR):
+    def instr(self):
+        return [Depth1()()]
+
+class Depth3(SubR):
+    def instr(self):
+        return [Depth2()()]
+
 class FakeIO:
     rx_data = 0
     rx_status = 1
@@ -50,17 +63,18 @@ class uLoader(Firmware):
         bl = Blinker()
         cs = CheckSum()
         wm = WriteToMem()
+        d = Depth3()
         return [
+            d(),
             #MOVI(w.counter,5),
             #ll('fnord'), 
             #bl.blink(w.counter),
             #ADDI(w.counter,w.counter,10),
             #J(ll.fnord),
-            #s.read(ret=w.current_value),
-            #MOVI(w.current_value,ord('!')),
-            #s.write(w.current_value),
-            s.readword(ret=w.counter),
-            s.writeword(w.counter),
+            s.read(ret=w.current_value),
+            s.write(w.current_value),
+            #s.readword(ret=w.current_value),
+            #s.writeword(w.current_value),
         ]
         """
             Rem('load the starting address'),

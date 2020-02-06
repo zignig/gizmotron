@@ -328,7 +328,7 @@ class SubR(metaclass=MetaSub):
 
         # TODO fix register passing
         # This adds a code to copy registers down a window
-        # if requesed with a ret=[return,register] in the call
+        # if requested with a ret=[return,register] in the call
         if "ret" in kwargs:
             if self._ret:
                 self._ret_target = []
@@ -350,6 +350,10 @@ class SubR(metaclass=MetaSub):
             else:
                 raise ValueError("No return registers exist")
 
+        if False:#self.debug:
+            instr += [MOVI(self.w.ret,0)]
+            for i in range(8,2,-1):
+                instr += [ST(self.w.ret,self.w.fp,-i)]
         self.mark()
         return instr
 
@@ -409,6 +413,12 @@ class Firmware:
         code = a.assemble()
         return code
 
+    def disassemble(self):
+        c = self.assemble()
+        a = Assembler()
+        return a.disassemble(c)
+         
+        
 
 # Test Objects
 """

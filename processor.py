@@ -53,8 +53,6 @@ class Boneless(Elaboratable):
             # Object list
             if self.debug:
                 print("len :",len(self.code))
-                for i,j in enumerate(asm.input):
-                    print('{:04X}'.format(i),j)
                 for i,j in enumerate(asm.disassemble(self.code)):
                     print('{:04X}'.format(i),j)
         else:
@@ -63,8 +61,7 @@ class Boneless(Elaboratable):
             f = firmware.get_bootloader(io_map)
             f.show()
             self.code = f.assemble()
-            print(len(self.code))
-            print(self.code)
+            print(f.disassemble())
 
         self.memory.init = self.code 
         self.devices = []

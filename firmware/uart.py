@@ -49,6 +49,7 @@ class Serial:
                 MOVI(w.rx_status,0),
                 STXA(w.rx_status,rx_status), # ack the char
                 MOVI(w.leds,0),
+                MOVI(w.counter,0),
                 STXA(w.leds,self.io_map.led),
             ]
 
@@ -89,12 +90,12 @@ class Serial:
             w = self.w
             rb = Serial.read
             return [
-                rb(ret=w.first),
-                rb(ret=w.second),
                 MOVI(w.holding,0),
+                rb(ret=w.first),
                 Rem('high byte'),
-                OR(w.holding,w.holding,w.first),
+                MOV(w.holding,w.first),
                 SRLI(w.holding,w.holding,8),
+                rb(ret=w.second),
                 Rem('low byte'),
                 OR(w.holding,w.holding,w.second)
             ]
@@ -110,11 +111,9 @@ class Serial:
             ww = Serial.Write()
             return [
                 Rem('write high byte'),
-                MOV(w.holding,w.word),
-                SRLI(w.holding,w.holding,8),
+                SRLI(w.holding,w.word,8),
                 ww(w.holding),
                 Rem('write low byte'),
-                MOVI(w.holding,0),
                 ANDI(w.holding,w.word,0x00FF),
                 ww(w.holding),
             ]

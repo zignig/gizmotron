@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Thu Feb  6 13:50:36 2020
+[*] Thu Feb  6 15:26:11 2020
 [*]
 [dumpfile] "/opt/FPGA/gizmotron/test.vcd"
-[dumpfile_mtime] "Thu Feb  6 13:50:03 2020"
-[dumpfile_size] 42606068
+[dumpfile_mtime] "Thu Feb  6 15:16:16 2020"
+[dumpfile_size] 95840993
 [savefile] "/opt/FPGA/gizmotron/core.gtkw"
-[timestart] 0
-[size] 1680 1000
+[timestart] 797381000000
+[size] 1676 997
 [pos] -1 -1
-*-39.671600 -1 2799463000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-29.130486 -1 2799463000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.boneless.
 [treeopen] top.boneless.core.
@@ -17,16 +17,19 @@
 [treeopen] top.boneless.core.memwr.
 [treeopen] top.boneless.serial_port.
 [treeopen] top.boneless.serial_port.tx.
-[sst_width] 228
-[signals_width] 253
+[sst_width] 219
+[signals_width] 364
 [sst_expanded] 1
 [sst_vpaned_height] 458
 @28
 top.boneless.core.clk
-@22
+@24
+top.boneless.core.memwr.memory(485)[15:0]
+top.boneless.core.memwr.memory(486)[15:0]
++{window-4-return} top.boneless.core.memwr.memory(487)[15:0]
 [color] 1
-+{w1-r0} top.boneless.core.memwr.memory(488)[15:0]
-@c00022
++{w3-r0} top.boneless.core.memwr.memory(488)[15:0]
+@c00024
 [color] 1
 +{w3-r1} top.boneless.core.memwr.memory(489)[15:0]
 @28
@@ -62,9 +65,9 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(489)[15:0]
 [color] 1
 (15)top.boneless.core.memwr.memory(489)[15:0]
-@1401200
+@1401204
 -group_end
-@c00022
+@c00024
 [color] 1
 +{w3-r2} top.boneless.core.memwr.memory(490)[15:0]
 @28
@@ -100,12 +103,12 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(490)[15:0]
 [color] 1
 (15)top.boneless.core.memwr.memory(490)[15:0]
-@1401200
+@1401204
 -group_end
-@22
+@24
 [color] 1
 +{w3-r3} top.boneless.core.memwr.memory(491)[15:0]
-@c00022
+@c00024
 [color] 1
 +{w3-r4} top.boneless.core.memwr.memory(492)[15:0]
 @28
@@ -141,7 +144,7 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(492)[15:0]
 [color] 1
 (15)top.boneless.core.memwr.memory(492)[15:0]
-@1401200
+@1401204
 -group_end
 @c00024
 [color] 1
@@ -179,14 +182,14 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(493)[15:0]
 [color] 1
 (15)top.boneless.core.memwr.memory(493)[15:0]
-@1401200
+@1401204
 -group_end
 @24
 [color] 1
-+{window-3-framepointer} top.boneless.core.memwr.memory(494)[15:0]
-@c00024
-[color] 1
-+{window-3-return} top.boneless.core.memwr.memory(495)[15:0]
+top.boneless.core.memwr.memory(494)[15:0]
+@c00025
+[color] 2
+top.boneless.core.memwr.memory(495)[15:0]
 @28
 [color] 1
 (0)top.boneless.core.memwr.memory(495)[15:0]
@@ -220,7 +223,7 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(495)[15:0]
 [color] 1
 (15)top.boneless.core.memwr.memory(495)[15:0]
-@1401200
+@1401205
 -group_end
 @c00024
 [color] 3
@@ -258,7 +261,7 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(496)[15:0]
 [color] 3
 (15)top.boneless.core.memwr.memory(496)[15:0]
-@1401200
+@1401204
 -group_end
 @c00024
 [color] 3
@@ -296,7 +299,7 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(497)[15:0]
 [color] 3
 (15)top.boneless.core.memwr.memory(497)[15:0]
-@1401200
+@1401204
 -group_end
 @c00024
 [color] 3
@@ -334,7 +337,7 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(498)[15:0]
 [color] 3
 (15)top.boneless.core.memwr.memory(498)[15:0]
-@1401200
+@1401204
 -group_end
 @24
 [color] 3
@@ -344,9 +347,45 @@ top.boneless.core.clk
 [color] 3
 +{w2-r5} top.boneless.core.memwr.memory(501)[15:0]
 [color] 3
-+{window-2-frame-pointer} top.boneless.core.memwr.memory(502)[15:0]
+top.boneless.core.memwr.memory(502)[15:0]
+@c00025
+[color] 2
+top.boneless.core.memwr.memory(503)[15:0]
+@28
 [color] 3
-+{window-2-return} top.boneless.core.memwr.memory(503)[15:0]
+(0)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(1)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(2)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(3)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(4)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(5)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(6)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(7)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(8)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(9)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(10)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(11)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(12)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(13)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(14)top.boneless.core.memwr.memory(503)[15:0]
+[color] 3
+(15)top.boneless.core.memwr.memory(503)[15:0]
+@1401205
+-group_end
 @c00024
 [color] 7
 +{w1-r0} top.boneless.core.memwr.memory(504)[15:0]
@@ -383,7 +422,7 @@ top.boneless.core.clk
 (14)top.boneless.core.memwr.memory(504)[15:0]
 [color] 7
 (15)top.boneless.core.memwr.memory(504)[15:0]
-@1401200
+@1401204
 -group_end
 @24
 [color] 7
@@ -397,31 +436,34 @@ top.boneless.core.clk
 [color] 7
 +{w1-r6} top.boneless.core.memwr.memory(509)[15:0]
 [color] 7
-+{window-1-frame-pointer} top.boneless.core.memwr.memory(510)[15:0]
-[color] 7
-+{window-1-return} top.boneless.core.memwr.memory(511)[15:0]
-@820
-top.boneless.serial_port.rx.rx_data[7:0]
-@24
-top.boneless.serial_port.rx.rx_data[7:0]
-@28
-top.boneless.serial_port.rx.rx_strobe
-top.boneless.serial_port.rx.rx_ready
-top.boneless.rx_ack
-+{rx_state} top.boneless.serial_port.rx.fsm_state
+top.boneless.core.memwr.memory(510)[15:0]
+@25
+[color] 2
+top.boneless.core.memwr.memory(511)[15:0]
 @24
 top.boneless.core.i_w[12:0]
 @28
 top.boneless.core.i_insn
 @22
+>-167000000000
+top.boneless.core.pc.r_addr[15:0]
+>0
 top.boneless.core.i_addr[15:0]
 @28
 top.boneless.core.fsm_state
 top.boneless.serial_port.tx.fsm_state
 @820
+top.boneless.serial_port.rx.rx_data[7:0]
 top.boneless.tx_data[7:0]
 @28
 top.boneless.tx_ready
 top.boneless.rx_ack
+@24
+top.boneless.serial_port.rx.rx_data[7:0]
+@28
++{rx_state} top.boneless.serial_port.rx.fsm_state
+top.boneless.serial_port.rx.rx_strobe
+top.boneless.rx_ack
+top.boneless.serial_port.rx.rx_ready
 [pattern_trace] 1
 [pattern_trace] 0
