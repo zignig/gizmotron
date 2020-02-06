@@ -63,6 +63,7 @@ class Boneless(Elaboratable):
             f = firmware.get_bootloader(io_map)
             f.show()
             self.code = f.assemble()
+            print(len(self.code))
             print(self.code)
 
         self.memory.init = self.code 
