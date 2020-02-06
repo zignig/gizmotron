@@ -31,6 +31,7 @@ def Construct(platform,fw=None,asm_file=None):
     b.add_periph(s)
 
     wb = WarmBoot("warmboot")
+    b.wb_access = wb # for external warm booter 
     b.add_periph(wb)
 
     #c = Counter('counter1')
