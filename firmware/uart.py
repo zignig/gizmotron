@@ -2,6 +2,7 @@ from .registers import *
 from boneless.arch.opcode import *
 from boneless.arch.asm import Assembler
 
+__all__ = ["Serial"]
 
 class Serial:
 
