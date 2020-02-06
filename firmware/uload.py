@@ -19,7 +19,7 @@ class Serial:
             return [
                 MOVI(w.leds,1),
                 MOVI(w.counter,0xFFFF),
-                ll("rxdown"),
+                ll("checkrx"),
                 Rem("load the RX status from the serial port"),
                 [
                     SUBI(w.counter,w.counter,1),
@@ -30,16 +30,17 @@ class Serial:
                     STXA(w.leds,self.io_map.led),
                     MOVI(w.counter,0xFFFF),
                     XORI(w.leds,w.leds,0xFFFF),
+                    ll('next'),
                 ],
                 LDXA(w.rx_status, rx_status),  # load the RX status from the serial port
                 CMPI(w.rx_status, 1),  # compare the register to 1
-                BEQ(ll.rxwait),  # if it is equal to zero continue
-                ll('next'),
-                J(ll.rxdown),
+                BEQ(ll.rxnext),  # if it is equal to zero continue
+                J(ll.checkrx),
+                ll("rxnext"), # wait for the serial port to be ready
                 LDXA(w.char, rx_data), # load the rx data into w.char
                 MOVI(w.rx_status,1),
                 STXA(w.rx_status,rx_status), # ack the char
-                ll("rxwait"), # wait for the serial port to be ready
+                ll("rxwait"),
                 LDXA(w.rx_status,rx_status),
                 CMPI(w.rx_status,0),
                 BEQ(ll.rxack),
@@ -190,14 +191,14 @@ class uLoader(Firmware):
         cs = CheckSum()
         wm = WriteToMem()
         return [
-            MOVI(w.counter,5),
-            ll('fnord'), 
-            bl.blink(w.counter),
-            ADDI(w.counter,w.counter,1),
-            J(ll.fnord),
-            #s.read(ret=w.current_value),
+            #MOVI(w.counter,5),
+            #ll('fnord'), 
+            #bl.blink(w.counter),
+            #ADDI(w.counter,w.counter,10),
+            #J(ll.fnord),
+            s.read(ret=w.current_value),
             #MOVI(w.current_value,ord('!')),
-            #s.write(w.current_value),
+            s.write(w.current_value),
         ]
         """
             Rem('load the starting address'),

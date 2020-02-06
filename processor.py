@@ -18,7 +18,7 @@ from nmigen_soc.csr.bus import *
 class Boneless(Elaboratable):
     debug = True
     def __init__(self,fw=None,asm_file=None):
-        self.memsize = 4 * 512
+        self.memsize = 1 * 512
         self.memory = Memory(width=16, depth=self.memsize)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
         self.code = []

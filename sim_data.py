@@ -21,10 +21,10 @@ def test_rx(dut):
     print("test RX")
 
     def T():
-        for i in range(dut.divisor):
+        for i in range(dut.RX.divisor):
             yield
     def B(bit):
-        yield dut.rx_i.eq(bit)
+        yield dut.RX.rx.eq(bit)
         yield from T()
 
     def S():
