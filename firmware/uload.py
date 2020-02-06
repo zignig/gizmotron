@@ -114,6 +114,7 @@ class Serial:
                 SRLI(w.holding,w.holding,8),
                 ww(w.holding),
                 Rem('write low byte'),
+                MOVI(w.holding,0),
                 ANDI(w.holding,w.word,0x00FF),
                 ww(w.holding),
             ]
@@ -196,9 +197,11 @@ class uLoader(Firmware):
             #bl.blink(w.counter),
             #ADDI(w.counter,w.counter,10),
             #J(ll.fnord),
-            s.read(ret=w.current_value),
+            #s.read(ret=w.current_value),
             #MOVI(w.current_value,ord('!')),
-            s.write(w.current_value),
+            #s.write(w.current_value),
+            s.readword(ret=w.counter),
+            s.writeword(w.counter),
         ]
         """
             Rem('load the starting address'),
