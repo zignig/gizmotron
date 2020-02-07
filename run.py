@@ -12,6 +12,7 @@ import array
 import intelhex
 from sim import Simulator
 from utils.serial_write import writer
+import firmware
 
 import sim_data 
 
@@ -21,6 +22,8 @@ if __name__ == "__main__":
     action = p.add_subparsers(dest="action")
 
     action.add_parser("info")
+
+    action.add_parser("list")
 
     action.add_parser("build")
 
@@ -32,12 +35,18 @@ if __name__ == "__main__":
 
     p.add_argument("-f",action="store",help="asm file to include",default=None)
 
+    p.add_argument("-p",action="store",help="firmware to run , use list to show",default="uLoader")
+
     args = p.parse_args()
     print(args)
 
     platform = BB()
+    if args.action == "list":
+        print(firmware.show())
+
     if args.action == "info":
         print("Show info")
+        print(args.p)
         cpu = construct.CPU(platform,asm_file=args.f)
 
     if args.action == "build":
