@@ -1,5 +1,6 @@
 from .registers import *
 from boneless.arch.opcode import *
+from .lister import register 
 
 class Blinker:
     class Blink(SubR):
@@ -22,3 +23,7 @@ class Blinker:
                 ]
 
     blink = Blink()
+
+@register
+class Blinky(Firmware):
+    pass

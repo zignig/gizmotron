@@ -4,6 +4,7 @@ from .lister import register
 
 from .uload import uLoader
 from .echo import Echo
+from .leds import Blinker
 
 __all__ = ['registers','uart','leds']
 

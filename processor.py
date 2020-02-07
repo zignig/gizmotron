@@ -64,8 +64,7 @@ class Boneless(Elaboratable):
             if self.fw in l:
                 f = firmware.available[self.fw](io_map)
             else:
-                print("No firmware specified , default to uloader ")
-                f = firmware.get_bootloader(io_map)
+                raise ValueError("Firmware does not exist")
             f.show()
             self.code = f.assemble()
             print(f.disassemble())
