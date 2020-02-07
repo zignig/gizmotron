@@ -17,3 +17,7 @@ def get_bootloader(io=None):
 
 
 available = lister.available
+
+def show():
+    return lister.show()
+available
