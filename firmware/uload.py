@@ -4,7 +4,7 @@ from boneless.arch.asm import Assembler
 import pprint
 from .uart import Serial
 from .leds import Blinker
-
+from .lister import register
 
 
 class CheckSum(SubR):
@@ -49,7 +49,7 @@ class FakeIO:
     tx_data = 3
     tx_status = 4
 
-
+@register
 class uLoader(Firmware):
     def instr(self):
         w = self.w
