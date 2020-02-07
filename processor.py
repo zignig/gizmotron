@@ -22,6 +22,7 @@ class Boneless(Elaboratable):
         self.memory = Memory(width=16, depth=self.memsize)  # max of  8*1024 on the 8k
         self.asm_file = asm_file
         self.code = []
+        self.fw = fw
 
         # Peripherals
         self._prepared = False
@@ -56,9 +57,15 @@ class Boneless(Elaboratable):
                 for i,j in enumerate(asm.disassemble(self.code)):
                     print('{:04X}'.format(i),j)
         else:
+            print("FIRMWARE ",self.fw)
             io_map = self.periph.io_map()
             self.io_map = io_map
-            f = firmware.get_bootloader(io_map)
+            l = firmware.show()
+            if self.fw in l:
+                f = firmware.available[self.fw](io_map)
+            else:
+                print("No firmware specified , default to uloader ")
+                f = firmware.get_bootloader(io_map)
             f.show()
             self.code = f.assemble()
             print(f.disassemble())

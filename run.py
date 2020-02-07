@@ -38,20 +38,20 @@ if __name__ == "__main__":
     p.add_argument("-p",action="store",help="firmware to run , use list to show",default="uLoader")
 
     args = p.parse_args()
-    print(args)
 
     platform = BB()
     if args.action == "list":
-        print(firmware.show())
+        fw_list = firmware.show()
+        for i,j in enumerate(fw_list):
+            print(i," : ",j)
 
     if args.action == "info":
         print("Show info")
-        print(args.p)
-        cpu = construct.CPU(platform,asm_file=args.f)
+        cpu = construct.CPU(platform,fw=args.p,asm_file=args.f)
 
     if args.action == "build":
         print("Build")
-        cpu = construct.CPU(platform,asm_file=args.f)
+        cpu = construct.CPU(platform,fw=args.p,asm_file=args.f)
         platform.build(cpu, do_program=True)
 
     if args.action == "program":
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         
     if args.action == "gatesim":
         print("Gateware Simulation")
-        design = construct.simCPU(platform,asm_file=args.f)
+        design = construct.simCPU(platform,fw=args.p,asm_file=args.f)
         fragment = Fragment.get(design, platform)
         f = open("test.vcd", "w")
         dut = design.b.serial_port

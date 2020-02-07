@@ -46,8 +46,8 @@ def Construct(platform,fw=None,asm_file=None):
 # For FPGA
 class CPU(Elaboratable):
     has_pll = False 
-    def __init__(self, platform, asm_file=None):
-        self.b = Construct(platform, asm_file=asm_file)
+    def __init__(self, platform,fw=None,asm_file=None):
+        self.b = Construct(platform,fw=fw, asm_file=asm_file)
         self.platform = platform
 
     def elaborate(self, platform):
@@ -70,8 +70,8 @@ class CPU(Elaboratable):
 
 # For Simulation
 class simCPU(Elaboratable):
-    def __init__(self, platform, asm_file="asm/blink.asm"):
-        self.b = Construct(platform, asm_file=asm_file)
+    def __init__(self, platform,fw=None,asm_file="asm/blink.asm"):
+        self.b = Construct(platform,fw=fw, asm_file=asm_file)
         self.platform = platform
 
     def elaborate(self, platform):

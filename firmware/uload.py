@@ -65,16 +65,15 @@ class uLoader(Firmware):
         wm = WriteToMem()
         d = Depth3()
         return [
-            d(),
             #MOVI(w.counter,5),
             #ll('fnord'), 
             #bl.blink(w.counter),
             #ADDI(w.counter,w.counter,10),
             #J(ll.fnord),
-            s.read(ret=w.current_value),
-            s.write(w.current_value),
-            #s.readword(ret=w.current_value),
-            #s.writeword(w.current_value),
+            #s.read(ret=w.current_value),
+            #s.write(w.current_value),
+            s.readword(ret=w.current_value),
+            s.writeword(w.current_value),
         ]
         """
             Rem('load the starting address'),
