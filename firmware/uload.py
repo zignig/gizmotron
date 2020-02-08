@@ -15,7 +15,10 @@ class CheckSum(SubR):
 
     def instr(self):
         w = self.w
-        return [SRLI(w.data, w.data, 1), XOR(w.data, w.checksum, w.data)]
+        return [
+            SLLI(w.data, w.data, 1), 
+            XOR(w.checksum, w.checksum, w.data)
+        ]
 
 class WriteToMem(SubR):
     def setup(self):
@@ -42,7 +45,6 @@ class uLoader(Firmware):
     def instr(self):
         w = self.w
         w.req("current_value")
-        w.req("char")
         w.req("counter")
         w.req("checksum")
         w.req("address")
@@ -52,26 +54,17 @@ class uLoader(Firmware):
         cs = CheckSum()
         wm = WriteToMem()
         return [
-            #s.readword(ret=w.current_value),
-            MOVI(w.current_value,24930),
-            ll('again'),
-            s.writeword(w.current_value),
-            ADDI(w.current_value,w.current_value,1),
-            J(ll.again),
-        ]
-        """
-            Rem('load the starting address'),
-            MOVR(w.address,'program_start'),
-            ADDI(w.address,w.address,1),
             Rem('read the program length'),
+            MOVR(w.address,"program_start"),
+            ADDI(w.address,w.address,1),
             s.readword(ret=w.counter),
             s.writeword(w.counter),
             Rem('loop through the words'),
             ll('again'),
             [
                 s.readword(ret=w.current_value),
-                cs(w.char,w.checksum,ret=w.checksum),
                 wm(w.current_value,w.address,ret=w.address),
+                cs(w.current_value,w.checksum,ret=w.checksum),
                 s.writeword(w.checksum),
             ],
             SUBI(w.counter,w.counter,1),
@@ -84,7 +77,6 @@ class uLoader(Firmware):
             MOVR(w.ret,'program_start'),
             JR(w.ret,1),
         ]
-        """
 
 if __name__ == "__main__":
     ul = uLoader(io_map=FakeIO())

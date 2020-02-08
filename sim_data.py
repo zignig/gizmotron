@@ -17,12 +17,13 @@ def str_data(s):
     return data
 
 
-def test_rx(dut):
+def test_rx(data,dut):
     print("test RX")
 
     def wait():
-        for i in range(3*dut.RX.divisor):
-            yield
+        print('waiting')
+        for i in range(14):
+            yield from B(1) 
 
     def T():
         for i in range(dut.RX.divisor):
@@ -50,11 +51,7 @@ def test_rx(dut):
         for bit in bits:
             yield from D(bit)
         yield from E()
-        
-
     
-    s = 'this is a test'
-    data = str_data(s)
     yield dut.RX.rx.eq(1)
     for i in data:
         yield from O(i)

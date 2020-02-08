@@ -84,7 +84,9 @@ if __name__ == "__main__":
         f = open("test.vcd", "w")
         dut = design.b.serial_port
         print(dir(dut.RX))
+        st = "the quick brown fox jumps over the lazy dog"
+        data = sim_data.str_data(st)
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
             sim.add_clock(100e-6)
-            sim.add_sync_process(sim_data.test_rx(dut))
-            sim.run_until(100e-6 * 150000, run_passive=True)
+            sim.add_sync_process(sim_data.test_rx(data,dut))
+            sim.run_until(100e-6 * 300000, run_passive=True)

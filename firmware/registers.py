@@ -350,9 +350,10 @@ class SubR(metaclass=MetaSub):
             else:
                 raise ValueError("No return registers exist")
 
-        if False:#self.debug:
+        if self.debug:
+            " clean up the above frame " 
             instr += [MOVI(self.w.ret,0)]
-            for i in range(8,2,-1):
+            for i in range(8,0,-1):
                 instr += [ST(self.w.ret,self.w.fp,-i)]
         self.mark()
         return instr
