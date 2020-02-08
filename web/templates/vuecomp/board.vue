@@ -18,10 +18,17 @@ Vue.component('board-def',
   <p class="panel-heading">
     <b>{{item.name}}</b>
   </p>
+  <div class="box">
+  <div class="field is-grouped is-grouped-multiline">
+	<div v-for="(name,value) in item.info " class="control" v-bind:key="value">
+		<div class="tags has-addons">
+		  <a class="tag ">{{value}}</a>
+		  <a class="tag is-primary">{{name}}</a>
+		</div>
+	</div>
+  </div>
+  </div>
   <a class="panel-block"> <img :src="image"></img>  </a>
-  <a v-for="(name,value) in item.info" class="panel-block" v-bind:key="value">
-      <span class="tag is-info is-rounded"> {{name}} </span>&nbsp; {{value}}
-  </a>
 </nav>
     `, 
 }); 
