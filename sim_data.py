@@ -55,6 +55,7 @@ def test_rx(dut):
     
     s = 'this is a test'
     data = str_data(s)
+    yield dut.RX.rx.eq(1)
     for i in data:
         yield from O(i)
         yield from wait()

@@ -150,14 +150,14 @@ class UART(Elaboratable):
         return m
 
 
-class _TestPads(Module):
-    def __init__(self):
-        self.rx = Signal()
-        self.tx = Signal()
-
-    def elaborate(self, platform):
-        m = Module()
-        return m
+#class _TestPads(Module):
+#    def __init__(self):
+#        self.rx = Signal()
+#        self.tx = Signal()
+#
+#    def elaborate(self, platform):
+#        m = Module()
+#        return m
 
 
 def _test_rx(rx, dut):

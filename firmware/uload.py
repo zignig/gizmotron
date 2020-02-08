@@ -52,15 +52,12 @@ class uLoader(Firmware):
         cs = CheckSum()
         wm = WriteToMem()
         return [
-            #MOVI(w.counter,5),
-            #ll('fnord'), 
-            #bl.blink(w.counter),
-            #ADDI(w.counter,w.counter,10),
-            #J(ll.fnord),
-            #s.read(ret=w.current_value),
-            #s.write(w.current_value),
-            s.readword(ret=w.current_value),
+            #s.readword(ret=w.current_value),
+            MOVI(w.current_value,24930),
+            ll('again'),
             s.writeword(w.current_value),
+            ADDI(w.current_value,w.current_value,1),
+            J(ll.again),
         ]
         """
             Rem('load the starting address'),
