@@ -26,7 +26,7 @@ def Construct(platform,fw=None,asm_file=None):
     b.add_periph(l)
 
     s = Serial(
-        "serial_port", platform=platform, number=0, baud=115200#19200
+        "serial_port", platform=platform, number=0, baud=19200
     )
     b.add_periph(s)
 
@@ -71,6 +71,7 @@ class CPU(Elaboratable):
 # For Simulation
 class simCPU(Elaboratable):
     def __init__(self, platform,fw=None,asm_file="asm/blink.asm"):
+        self.fw = fw
         self.b = Construct(platform,fw=fw, asm_file=asm_file)
         self.platform = platform
 

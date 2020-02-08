@@ -1,39 +1,69 @@
 # loader program for the bootloader 
+import serial 
+import time 
+import struct
+
+def char(c):
+    d = '{:08b}'.format(c)
+    data = []
+    for i in d:
+        data.append(int(i))
+    data.reverse()
+    return data
+
+def str_data(s):
+    data = []
+    for i in s:
+        data.append(char(i))
+    return data
 
 def b16(i): return '{:016b}'.format(i)
 def b8(i): return '{:08b}'.format(i)
 
 cur_check = 0 
 
-def load(fw):
-    sendword(len(fw))
-    for i,j in enumerate(fw):
-        sendword(j)
-
-def sendword(w):
-    high = w >> 8
+def convert(fw):
+    data = []
+    print("firmware length ",len(fw))
+    w = len(fw)
     low = w & 0xFF
-    send(high)
-    send(low)
+    high = w >> 8
+    data.append(low)
+    data.append(high)
+    for w in fw:
+        print(w)
+        low = w & 0xFF
+        high = w >> 8
+        print(high,low)
+        data.append(low)
+        data.append(high)
+    print(data)
+    converted_data = str_data(data)
+    return converted_data 
 
-def send(c):
-    # should send to the serial port
-    print(c)
+def char_convert(fw):
+    data = []
+    w = len(fw)
+    low = w & 0xFF
+    high = w >> 8
+    data.append(low)
+    data.append(high)
+    for w in fw:
+        low = w & 0xFF
+        high = w >> 8
+        data.append(low)
+        data.append(high)
+    return data 
 
-def getword():
-    high = get()
-    low = get()
-    high_b = high << 8
-    val = high_b + low
-    return val
+def load(fwc,port="/dev/ttyUSB0",speed=19200):
+    #s = serial.Serial(port,speed,timeout=0.1)
+    for i in fwc:
+        #c = s.read()
+        val = struct.pack('!B',i)
+        print(i,val)
+        print('sending '+str(val))
+        #time.sleep(0.5)
+        #s.write(val) 
+    #s.close()
 
-def get():
-    # get a char from the serial port 
-    pass
-
-def checksum(cur,word):
-    new = ( cur << 1) ^ word
-    cur = new
-    return new 
-
-
+    

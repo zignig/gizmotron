@@ -16,9 +16,8 @@ class Echo(Firmware):
         ll = LocalLabels()
         s = Serial()
         return [
-            #s.read(ret=w.current_value),
-            #s.write(w.current_value),
-            s.readword(ret=w.current_value),
-            #MOVI(w.current_value,26740),
-            s.writeword(w.current_value),
+            s.read(ret=w.current_value),
+            s.write(w.current_value),
+            #s.readword(ret=w.current_value),
+            #s.writeword(w.current_value),
         ]

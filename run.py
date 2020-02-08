@@ -14,6 +14,9 @@ from sim import Simulator
 from utils.serial_write import writer
 import firmware
 
+from firmware.loader import convert,load,char_convert
+from firmware.registers import MetaSub
+
 import sim_data 
 
 if __name__ == "__main__":
@@ -37,6 +40,9 @@ if __name__ == "__main__":
 
     p.add_argument("-p",action="store",help="firmware to run , use list to show",default="uLoader")
 
+
+    p.add_argument("-l",action="store",help="firmware to load in the sim",default=None)
+
     args = p.parse_args()
 
     platform = BB()
@@ -56,20 +62,29 @@ if __name__ == "__main__":
 
     if args.action == "program":
         print("Program")
-        cpu = construct.CPU(platform,asm_file=args.f)
-        code = cpu.b.code
-        hex_out = ""
-        lines = []
-        for i in code:
-            hex_out += '{:04X}\n'.format(i)
-            lines.append('{:04X}\n'.format(i))
-        hex_out += '{:04X}\n'.format(0xFFFF)
-        lines.append('{:04X}\n'.format(0xFFFF))
-        print(lines)
-        writer(lines,'/dev/ttyUSB0')
-        f = open('utils/yay.hex','w')
-        f.write(hex_out)
-        f.close()
+        cpu = construct.CPU(platform,fw=args.p,asm_file=args.f)
+        io_map = cpu.b.io_map
+        load_ware = firmware.available[args.p](io_map)
+        print(load_ware.code())
+        fw = load_ware.assemble()
+        print(fw)
+        data = char_convert(fw)
+        print(data)
+        load(data)
+        #old 
+        #code = cpu.b.code
+        #hex_out = ""
+        #lines = []
+        #for i in code:
+        #    hex_out += '{:04X}\n'.format(i)
+        #    lines.append('{:04X}\n'.format(i))
+        #hex_out += '{:04X}\n'.format(0xFFFF)
+        #lines.append('{:04X}\n'.format(0xFFFF))
+        #print(lines)
+        #writer(lines,'/dev/ttyUSB0')
+        #f = open('utils/yay.hex','w')
+        #f.write(hex_out)
+        #f.close()
         
 
     if args.action == "simulate":
@@ -83,9 +98,25 @@ if __name__ == "__main__":
         fragment = Fragment.get(design, platform)
         f = open("test.vcd", "w")
         dut = design.b.serial_port
-        print(dir(dut.RX))
-        st = "the quick brown fox jumps over the lazy dog"
-        data = sim_data.str_data(st)
+        data = []
+        if args.l is None:
+            st = "the quick brown fox jumps over the lazy dog"
+            data = sim_data.str_data(st)
+        else:
+            # clean the meta sub
+            for i in MetaSub.subroutines:
+                print(i.__class__,i._called)
+                i._called = False
+            print(args.l)
+            io_map = design.b.io_map
+            load_ware = firmware.available[args.l](io_map)
+            print(load_ware.code())
+            for i in MetaSub.subroutines:
+                print(i.__class__,i._called)
+            fw = load_ware.assemble()
+            data = convert(fw)
+        print("data to load ",data)    
+            
         with pysim.Simulator(fragment, vcd_file=f, traces=()) as sim:
             sim.add_clock(100e-6)
             sim.add_sync_process(sim_data.test_rx(data,dut))

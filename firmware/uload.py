@@ -33,12 +33,20 @@ class WriteToMem(SubR):
         ]
 
 
+def zero_registers(w):
+    instr = []
+    instr += [MOVI(w.ret,0)]
+    for i in range(8,0,-1):
+        instr += [ST(w.ret,w.fp,-i)]
+    return instr
+
 class FakeIO:
     rx_data = 0
     rx_status = 1
     leds = 2
     tx_data = 3
     tx_status = 4
+    led = 5
 
 @register
 class uLoader(Firmware):
@@ -64,8 +72,8 @@ class uLoader(Firmware):
             [
                 s.readword(ret=w.current_value),
                 wm(w.current_value,w.address,ret=w.address),
-                cs(w.current_value,w.checksum,ret=w.checksum),
-                s.writeword(w.checksum),
+                #cs(w.current_value,w.checksum,ret=w.checksum),
+                s.writeword(w.current_value),
             ],
             SUBI(w.counter,w.counter,1),
             CMPI(w.counter,0),
@@ -73,6 +81,7 @@ class uLoader(Firmware):
             J(ll.again),
             ll('boot_into'),
             Rem('Boot into the new program'),
+            zero_registers(w),
             ADJW(-8),
             MOVR(w.ret,'program_start'),
             JR(w.ret,1),

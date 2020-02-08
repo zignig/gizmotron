@@ -307,6 +307,7 @@ class SubR(metaclass=MetaSub):
     @classmethod
     def mark(cls):
         " include code if the subroutine has been called "
+        print("marked",cls)
         cls._called = True
 
     def setup(self):
@@ -350,7 +351,7 @@ class SubR(metaclass=MetaSub):
             else:
                 raise ValueError("No return registers exist")
 
-        if self.debug:
+        if False:#self.debug:
             " clean up the above frame " 
             instr += [MOVI(self.w.ret,0)]
             for i in range(8,0,-1):
