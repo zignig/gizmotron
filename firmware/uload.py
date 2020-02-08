@@ -29,18 +29,6 @@ class WriteToMem(SubR):
                 ADDI(w.address,w.address,1)
         ]
 
-class Depth1(SubR):
-    def instr(self):
-        return [ADDI(R0,R0,1)]
-
-
-class Depth2(SubR):
-    def instr(self):
-        return [Depth1()()]
-
-class Depth3(SubR):
-    def instr(self):
-        return [Depth2()()]
 
 class FakeIO:
     rx_data = 0
@@ -63,7 +51,6 @@ class uLoader(Firmware):
         bl = Blinker()
         cs = CheckSum()
         wm = WriteToMem()
-        d = Depth3()
         return [
             #MOVI(w.counter,5),
             #ll('fnord'), 

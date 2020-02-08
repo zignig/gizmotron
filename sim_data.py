@@ -20,9 +20,14 @@ def str_data(s):
 def test_rx(dut):
     print("test RX")
 
+    def wait():
+        for i in range(3*dut.RX.divisor):
+            yield
+
     def T():
         for i in range(dut.RX.divisor):
             yield
+
     def B(bit):
         yield dut.RX.rx.eq(bit)
         yield from T()
@@ -52,8 +57,7 @@ def test_rx(dut):
     data = str_data(s)
     for i in data:
         yield from O(i)
-        yield from T()
-        yield from T()
+        yield from wait()
         
 if __name__ == "__main__":
     rx = Signal()

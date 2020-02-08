@@ -91,13 +91,14 @@ class Serial:
             rb = Serial.read
             return [
                 MOVI(w.holding,0),
-                rb(ret=w.first),
-                Rem('high byte'),
-                MOV(w.holding,w.first),
-                SRLI(w.holding,w.holding,8),
-                rb(ret=w.second),
                 Rem('low byte'),
-                OR(w.holding,w.holding,w.second)
+                rb(ret=w.first),
+                MOV(w.word,w.first),
+                Rem('high byte'),
+                rb(ret=w.second),
+                MOV(w.holding,w.second),
+                SLLI(w.holding,w.holding,8),
+                OR(w.word,w.word,w.holding)
             ]
 
 
@@ -110,11 +111,11 @@ class Serial:
             w = self.w
             ww = Serial.Write()
             return [
-                Rem('write high byte'),
-                SRLI(w.holding,w.word,8),
-                ww(w.holding),
                 Rem('write low byte'),
                 ANDI(w.holding,w.word,0x00FF),
+                ww(w.holding),
+                Rem('write high byte'),
+                SRLI(w.holding,w.word,8),
                 ww(w.holding),
             ]
 
