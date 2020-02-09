@@ -55,15 +55,21 @@ def char_convert(fw):
         data.append(high)
     return data 
 
-def load(fwc,port="/dev/ttyUSB0",speed=19200):
-    s = serial.Serial(port,speed,timeout=0.1)
-    for i in fwc:
-        c = s.read()
-        val = struct.pack('!B',i)
-        print(i,val)
-        print('sending '+str(val))
-        time.sleep(0.1)
+def load(fwc,port="/dev/ttyUSB0",speed=115200):
+    s  = serial.Serial(port,speed,timeout=0.018)
+    #fwc += fwc
+    last = 0
+    for i,j in enumerate(fwc):
+        val = struct.pack('!B',j)
+        #time.sleep(0.1)
         s.write(val) 
+        c = s.read(1)
+        print(i,'\t',struct.unpack('!B',c)[0],'\t',struct.unpack('!B',val)[0])
+        if i > 2:
+            if c != last:
+                print("FAIL")
+                break
+        last = val
     s.close()
 
     

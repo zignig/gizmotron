@@ -72,8 +72,8 @@ class uLoader(Firmware):
             [
                 s.readword(ret=w.current_value),
                 wm(w.current_value,w.address,ret=w.address),
-                #cs(w.current_value,w.checksum,ret=w.checksum),
-                s.writeword(w.current_value),
+                cs(w.current_value,w.checksum,ret=w.checksum),
+                s.writeword(w.checksum),
             ],
             SUBI(w.counter,w.counter,1),
             CMPI(w.counter,0),

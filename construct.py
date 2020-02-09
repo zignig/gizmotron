@@ -26,7 +26,7 @@ def Construct(platform,fw=None,asm_file=None):
     b.add_periph(l)
 
     s = Serial(
-        "serial_port", platform=platform, number=0, baud=19200
+        "serial_port", platform=platform, number=0, baud=115200
     )
     b.add_periph(s)
 
