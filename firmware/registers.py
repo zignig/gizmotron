@@ -369,6 +369,7 @@ class SubR(metaclass=MetaSub):
             data += [Rem(self.w._name)]
         data += [ADJW(-8)]  # window shift up
         data += [LDW(self.w.fp,0)]  # window shift up
+        #data += [LDW(self.w.fp,-8)]  # window shift up
         data += self.instr()
         data += [ADJW(8), JR(R7, 0)]
         return [data] 
@@ -396,7 +397,7 @@ class Firmware:
         fw = [
             Rem(self.w._name),
             L("init"),
-            #MOVI(w.fp, self.sw),
+            MOVI(w.fp, self.sw),
             LDW(w.fp,0),
             #SUBI(w.fp,w.fp,8),
             L("main"),

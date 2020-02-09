@@ -56,14 +56,14 @@ def char_convert(fw):
     return data 
 
 def load(fwc,port="/dev/ttyUSB0",speed=19200):
-    #s = serial.Serial(port,speed,timeout=0.1)
+    s = serial.Serial(port,speed,timeout=0.1)
     for i in fwc:
-        #c = s.read()
+        c = s.read()
         val = struct.pack('!B',i)
         print(i,val)
         print('sending '+str(val))
-        #time.sleep(0.5)
-        #s.write(val) 
-    #s.close()
+        time.sleep(0.1)
+        s.write(val) 
+    s.close()
 
     
