@@ -307,7 +307,7 @@ class SubR(metaclass=MetaSub):
     @classmethod
     def mark(cls):
         " include code if the subroutine has been called "
-        print("marked",cls)
+#        print("marked",cls)
         cls._called = True
 
     def setup(self):

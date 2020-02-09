@@ -6,6 +6,7 @@ from .uload import uLoader
 from .echo import Echo
 from .leds import Blinker
 from .call_test import Caller
+from .testing import Testing
 
 
 __all__ = ['registers','uart','leds']

@@ -3,6 +3,25 @@ import serial
 import time 
 import struct
 
+"""
+This is the serial interface for the bootloader
+
+~ singlc char echo works
+~ word echo works
+
+TODO
+
+- look into handshake and ID in uloader
+- running check sum and cross boot
+
+##next to try
+
+write to mem
+read back from mem
+see firmaware/uloader.py for TODOS
+
+
+"""
 def char(c):
     d = '{:08b}'.format(c)
     data = []

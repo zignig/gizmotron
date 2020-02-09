@@ -8,6 +8,8 @@ from .lister import register
 
 
 class CheckSum(SubR):
+    " running checksum code "
+    #TODO convert to proper checksum 
     def setup(self):
         self.params = ["data", "checksum"]
         self.locals = ["calc"]
@@ -21,6 +23,7 @@ class CheckSum(SubR):
         ]
 
 class WriteToMem(SubR):
+    " Write a data word to address and increment address"
     def setup(self):
         self.params = ["data","address"]
         self.ret = ['address']
@@ -34,6 +37,7 @@ class WriteToMem(SubR):
 
 
 def zero_registers(w):
+    " blank all the registers in the frame above"
     instr = []
     instr += [MOVI(w.ret,0)]
     for i in range(8,0,-1):
@@ -41,6 +45,7 @@ def zero_registers(w):
     return instr
 
 class FakeIO:
+    " fake io for testing" 
     rx_data = 0
     rx_status = 1
     leds = 2
@@ -50,6 +55,15 @@ class FakeIO:
 
 @register
 class uLoader(Firmware):
+    """
+    send word length
+    send words 
+    should boot into program 
+
+    
+    """
+    #TODO add in handshake , wait for "?" (63)
+    #TODO send ID , 2 words
     def instr(self):
         w = self.w
         w.req("current_value")
@@ -86,6 +100,7 @@ class uLoader(Firmware):
             MOVR(w.ret,'program_start'),
             JR(w.ret,1),
         ]
+
 
 if __name__ == "__main__":
     ul = uLoader(io_map=FakeIO())

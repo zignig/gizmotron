@@ -1,3 +1,5 @@
+" The main construct for the gizmotron"
+
 import itertools
 from nmigen import *
 
@@ -5,7 +7,7 @@ from processor import Boneless
 
 # Working periphs
 from cores.user_leds import UserLeds
-from cores.serial import Serial,Serial_nm
+from cores.serial import Serial, Serial_nm
 from cores.counter import Counter
 from cores.pwm import Pwm
 from cores.warm import WarmBoot
@@ -13,41 +15,40 @@ from cores.pll import pll
 from cores.csr_test import csrCounter
 from cores.multiply import Multiply
 
-Elaboratable._Elaboratable__silence = True 
+Elaboratable._Elaboratable__silence = True
 
 # The device construct
-def Construct(platform,fw=None,asm_file=None):
-    b = Boneless(fw=fw,asm_file=asm_file)
+def Construct(platform, fw=None, asm_file=None):
+    b = Boneless(fw=fw, asm_file=asm_file)
 
-    l = UserLeds("status_leds", platform=platform,source='blinky')
+    l = UserLeds("status_leds", platform=platform, source="blinky")
     b.add_periph(l)
 
-    l = UserLeds("status", platform=platform,source='led')
+    l = UserLeds("status", platform=platform, source="led")
     b.add_periph(l)
 
-    s = Serial(
-        "serial_port", platform=platform, number=0, baud=115200
-    )
+    s = Serial("serial_port", platform=platform, number=0, baud=115200)
     b.add_periph(s)
 
     wb = WarmBoot("warmboot")
-    b.wb_access = wb # for external warm booter 
+    b.wb_access = wb  # for external warm booter
     b.add_periph(wb)
 
-    #c = Counter('counter1')
-    #b.add_periph(c)
+    # c = Counter('counter1')
+    # b.add_periph(c)
 
-    #m = Multiply('multiply')
-    #b.add_periph(m)
+    # m = Multiply('multiply')
+    # b.add_periph(m)
     b.prepare()
     return b
 
 
 # For FPGA
 class CPU(Elaboratable):
-    has_pll = False 
-    def __init__(self, platform,fw=None,asm_file=None):
-        self.b = Construct(platform,fw=fw, asm_file=asm_file)
+    has_pll = False
+
+    def __init__(self, platform, fw=None, asm_file=None):
+        self.b = Construct(platform, fw=fw, asm_file=asm_file)
         self.platform = platform
 
     def elaborate(self, platform):
@@ -70,9 +71,9 @@ class CPU(Elaboratable):
 
 # For Simulation
 class simCPU(Elaboratable):
-    def __init__(self, platform,fw=None,asm_file="asm/blink.asm"):
+    def __init__(self, platform, fw=None, asm_file="asm/blink.asm"):
         self.fw = fw
-        self.b = Construct(platform,fw=fw, asm_file=asm_file)
+        self.b = Construct(platform, fw=fw, asm_file=asm_file)
         self.platform = platform
 
     def elaborate(self, platform):

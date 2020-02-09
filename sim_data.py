@@ -1,14 +1,16 @@
-# return simulator data 
-from nmigen import * 
+# return simulator data
+from nmigen import *
+
 
 def char(c):
-    d = '{:08b}'.format(ord(c))
-    print(c,ord(c))
+    d = "{:08b}".format(ord(c))
+    print(c, ord(c))
     data = []
     for i in d:
         data.append(int(i))
     data.reverse()
     return data
+
 
 def str_data(s):
     data = []
@@ -17,13 +19,13 @@ def str_data(s):
     return data
 
 
-def test_rx(data,dut):
+def test_rx(data, dut):
     print("test RX")
 
     def wait():
-        print('waiting')
+        print("waiting")
         for i in range(14):
-            yield from B(1) 
+            yield from B(1)
 
     def T():
         for i in range(dut.RX.divisor):
@@ -51,12 +53,13 @@ def test_rx(data,dut):
         for bit in bits:
             yield from D(bit)
         yield from E()
-    
+
     yield dut.RX.rx.eq(1)
     for i in data:
         yield from O(i)
         yield from wait()
-        
+
+
 if __name__ == "__main__":
     rx = Signal()
     a = test_rx(rx)
