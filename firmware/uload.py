@@ -35,6 +35,27 @@ class WriteToMem(SubR):
                 ADDI(w.address,w.address,1)
         ]
 
+class WaitForQ(SubR):
+    " wait for a question mark "
+    def setup(self):
+        self.ret = ["status"]
+        self.locals = ["char","id"]
+
+    def instr(self):
+        w = self.w
+        ll = LocalLabels()
+        s = Serial() 
+        return [
+                ll('wait'),
+                s.read(ret=w.char),
+                CMPI(w.char,ord('?')),
+                BEQ(ll.cont),
+                J(ll.wait),
+                ll('cont'),
+                MOVI(w.status,1),
+            ]
+
+
 
 def zero_registers(w):
     " blank all the registers in the frame above"
@@ -70,13 +91,17 @@ class uLoader(Firmware):
         w.req("counter")
         w.req("checksum")
         w.req("address")
+        w.req("prog_length")
+        w.req("status")
         ll = LocalLabels()
         s = Serial()
         bl = Blinker()
         cs = CheckSum()
         wm = WriteToMem()
+        wfq = WaitForQ()
         return [
             Rem('read the program length'),
+            wfq(ret=w.status),
             MOVR(w.address,"program_start"),
             ADDI(w.address,w.address,1),
             s.readword(ret=w.counter),
