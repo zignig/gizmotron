@@ -60,6 +60,8 @@ if __name__ == "__main__":
     if args.action == "info":
         print("Show info")
         cpu = construct.CPU(platform, fw=args.p, asm_file=args.f)
+        cpu.b.fw.show()
+        print("Length" , len(cpu.b.code))
 
     if args.action == "build":
         print("Build")

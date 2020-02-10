@@ -45,7 +45,7 @@ class ProgramDump(SubR):
         return [
                 ll('again'),
                 LD(w.value,w.address,0),
-                s.WriteWord(w.value),
+                s.writeword(w.value),
                 ADDI(w.address,w.address,1),
                 SUBI(w.count,w.count,1),
                 CMPI(w.count,0),
@@ -122,6 +122,7 @@ class uLoader(Firmware):
         cs = CheckSum()
         wm = WriteToMem()
         wfq = WaitForQ()
+        pd = ProgramDump()
         return [
             Rem("read the program length"),
             wfq(ret=w.status),
@@ -129,6 +130,8 @@ class uLoader(Firmware):
             ADDI(w.address, w.address, 1),
             s.readword(ret=w.counter),
             s.writeword(w.counter),
+            Rem("Copy the program length for later"),
+            MOV(w.counter,w.prog_length),
             Rem("loop through the words"),
             ll("again"),
             [
@@ -143,10 +146,14 @@ class uLoader(Firmware):
             J(ll.again),
             ll("boot_into"),
             Rem("Boot into the new program"),
-            zero_registers(w),
-            ADJW(-8),
-            MOVR(w.ret, "program_start"),
-            JR(w.ret, 1),
+
+            #zero_registers(w),
+            #ADJW(-8),
+            #MOVR(w.ret, "program_start"),
+            #JR(w.ret, 1),
+            Rem("dump the program for testing and debugging"),
+            MOVR(w.address, "program_start"),
+            pd(w.address,w.prog_length),
         ]
 
 

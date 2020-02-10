@@ -1,7 +1,7 @@
 # Gizmos auto attach to a the boneless IO
 from nmigen import *
 from collections import OrderedDict
-from boneless.arch.opcode import C
+from boneless.arch.mc import Constant as C
 
 # TODO gizmos need register maps and bit maps
 # that add their names into the assembler setup

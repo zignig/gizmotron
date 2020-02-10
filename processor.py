@@ -66,9 +66,9 @@ class Boneless(Elaboratable):
                 f = firmware.available[self.fw](io_map)
             else:
                 raise ValueError("Firmware does not exist")
-            f.show()
+            #f.show()
+            self.fw = f
             self.code = f.assemble()
-            # print(f.disassemble())
 
         self.memory.init = self.code
         self.devices = []
