@@ -19,6 +19,19 @@ from firmware.registers import MetaSub
 
 import sim_data
 
+def show_firmware():
+    fw_list = firmware.show()
+    for i, j in enumerate(fw_list):
+        print(i, " : ", j)
+
+def check_firmware(name):
+    " returns true if firmware does NOT exist"
+    if name not in firmware.available:
+        print("Firmware does not exist")
+        show_firmware()
+        return True
+    return False 
+
 if __name__ == "__main__":
     print("Gizmotronic Boneless")
     p = argparse.ArgumentParser()
@@ -53,23 +66,24 @@ if __name__ == "__main__":
 
     platform = BB()
     if args.action == "list":
-        fw_list = firmware.show()
-        for i, j in enumerate(fw_list):
-            print(i, " : ", j)
+        show_firmware()
 
     if args.action == "info":
         print("Show info")
+        if check_firmware(args.p): raise 
         cpu = construct.CPU(platform, fw=args.p, asm_file=args.f)
         cpu.b.fw.show()
         print("Length" , len(cpu.b.code))
 
     if args.action == "build":
         print("Build")
+        if check_firmware(args.p): raise 
         cpu = construct.CPU(platform, fw=args.p, asm_file=args.f)
         platform.build(cpu, do_program=True)
 
     if args.action == "program":
         print("Program")
+        if check_firmware(args.p): raise 
         cpu = construct.CPU(platform, fw=args.p, asm_file=args.f)
         io_map = cpu.b.io_map
         load_ware = firmware.available[args.p](io_map)
@@ -83,11 +97,13 @@ if __name__ == "__main__":
 
     if args.action == "simulate":
         print("Simulate")
-        s = Simulator(asm_file=args.f)
+        if check_firmware(args.p): raise 
+        s = Simulator(fw=args.p,asm_file=args.f)
         s.run()
 
     if args.action == "gatesim":
         print("Gateware Simulation")
+        if check_firmware(args.p): raise 
         design = construct.simCPU(platform, fw=args.p, asm_file=args.f)
         fragment = Fragment.get(design, platform)
         f = open("test.vcd", "w")
