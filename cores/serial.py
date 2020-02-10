@@ -44,7 +44,6 @@ class Serial(Gizmo):
 
     def build(self):
         serial = self.platform.request("uart", self.number)
-        print(serial)
         clock = self.platform.lookup(self.platform.default_clk).clock
         uart = UART(serial.tx, serial.rx, clock.frequency, self.baud)
         self.add_device(uart)

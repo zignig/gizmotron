@@ -44,7 +44,7 @@ class Boneless(Elaboratable):
         # Code
         if self.asm_file is not None:
             header = self.periph.asm_header()
-            print(header)
+            #print(header)
             asm = Assembler()
             self.asm = asm
             txt = open(self.asm_file).read()

@@ -1,6 +1,7 @@
 # Gizmos auto attach to a the boneless IO
 from nmigen import *
 from collections import OrderedDict
+from boneless.arch.opcode import C
 
 # TODO gizmos need register maps and bit maps
 # that add their names into the assembler setup
@@ -18,15 +19,14 @@ class IOMap:
 class GizmoCollection:
     " A collection of gizmos "
 
+    debug = False 
+
     def __init__(self, boneless):
         # object.__setattr__(self, "_modules", OrderedDict())
         self._modules = OrderedDict()
         self.addr = 0  # global address counter
         self.name_map = {}
         self.boneless = boneless
-
-    def __next__(self):
-        print("next")
 
     def __iadd__(self, mod):
         if type(mod) == type([]):
@@ -73,7 +73,8 @@ class GizmoCollection:
 
     def prepare(self):
         for i, j in self._modules.items():
-            print(i, j)
+            if self.debug:
+                print(i, j)
             j.prepare(self)
 
     def asm_header(self):
