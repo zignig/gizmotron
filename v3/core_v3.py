@@ -2,7 +2,7 @@
 from nmigen import *
 
 from boneless.gateware.alsru import ALSRU_4LUT
-from boneless.gateware.core import CoreFSM 
+from boneless.gateware.core import CoreFSM
 
 from boneless.arch.opcode import Instr
 from boneless.arch.asm import Assembler
@@ -16,7 +16,9 @@ from nmigen.build import Resource, Subsignal, Pins
 from nmigen_boards.tinyfpga_bx import *
 
 import itertools
+
 # My Current FPGA setup
+
 
 class BB(TinyFPGABXPlatform):
     resources = TinyFPGABXPlatform.resources + [
@@ -48,19 +50,19 @@ class BB(TinyFPGABXPlatform):
 
 
 class Boneless_v3(Elaboratable):
-    def __init__(self,platform, asm_file="blink.asm"):
+    def __init__(self, platform, asm_file="blink.asm"):
         self.memory = Memory(width=16, depth=2048)  # max of  8*1024 on the 8k
 
         self.platform = platform
         self.asm_file = asm_file
-        self.asm_text  = open(self.asm_file).read()
+        self.asm_text = open(self.asm_file).read()
         self.assem = Assembler()
         self.assem.parse_text(self.asm_text)
         self.prog = self.assem.assemble()
         print(self.prog)
-        for i,j in enumerate(self.assem.disassemble(self.prog)):
-            print('{:04X}'.format(i),j)
-        
+        for i, j in enumerate(self.assem.disassemble(self.prog)):
+            print("{:04X}".format(i), j)
+
         self.memory.init = self.prog
 
     def elaborate(self, platform):
@@ -71,19 +73,15 @@ class Boneless_v3(Elaboratable):
         m.domains.sync = ClockDomain()
         m.d.comb += ClockSignal().eq(clk16.i)
 
-        # Create the processor 
-        core = CoreFSM(
-            alsru_cls=ALSRU_4LUT,
-            memory=self.memory,
-            reset_pc=8
-        )
+        # Create the processor
+        core = CoreFSM(alsru_cls=ALSRU_4LUT, memory=self.memory, reset_pc=8)
         m.submodules.core = core
-    
+
         leds = platform.blinky()
         with m.If(core.o_bus_addr == 0):
             with m.If(core.o_ext_we == 1):
                 m.d.sync += leds.eq(core.o_ext_data)
-            
+
         return m
 
 

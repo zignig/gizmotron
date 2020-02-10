@@ -4,11 +4,11 @@ from boneless.arch.asm import Assembler
 
 __all__ = ["Serial"]
 
-class Serial:
 
+class Serial:
     class ReadBlock(SubR):
         def setup(self):
-            self.locals = ["rx_status","counter","leds"]
+            self.locals = ["rx_status", "counter", "leds"]
             self.ret = ["char"]
 
         def instr(self):
@@ -17,40 +17,40 @@ class Serial:
             rx_status = self.io_map.rx_status
             rx_data = self.io_map.rx_data
             return [
-                MOVI(w.leds,1),
-                MOVI(w.counter,0xFFFF),
+                MOVI(w.leds, 1),
+                MOVI(w.counter, 0xFFFF),
                 ll("checkrx"),
                 Rem("load the RX status from the serial port"),
                 [
-                    SUBI(w.counter,w.counter,1),
-                    CMPI(w.counter,0),
+                    SUBI(w.counter, w.counter, 1),
+                    CMPI(w.counter, 0),
                     BEQ(ll.blink),
                     J(ll.next),
-                    ll('blink'),
-                    STXA(w.leds,self.io_map.led),
-                    MOVI(w.counter,0xFFFF),
-                    XORI(w.leds,w.leds,0xFFFF),
-                    ll('next'),
+                    ll("blink"),
+                    STXA(w.leds, self.io_map.led),
+                    MOVI(w.counter, 0xFFFF),
+                    XORI(w.leds, w.leds, 0xFFFF),
+                    ll("next"),
                 ],
                 LDXA(w.rx_status, rx_status),  # load the RX status from the serial port
                 CMPI(w.rx_status, 1),  # compare the register to 1
                 BEQ(ll.rxnext),  # if it is equal to zero continue
                 J(ll.checkrx),
-                ll("rxnext"), # wait for the serial port to be ready
-                LDXA(w.char, rx_data), # load the rx data into w.char
-                MOVI(w.rx_status,1),
-                STXA(w.rx_status,rx_status), # ack the char
+                ll("rxnext"),  # wait for the serial port to be ready
+                LDXA(w.char, rx_data),  # load the rx data into w.char
+                MOVI(w.rx_status, 1),
+                STXA(w.rx_status, rx_status),  # ack the char
                 ll("rxwait"),
-                LDXA(w.rx_status,rx_status),
-                CMPI(w.rx_status,0),
+                LDXA(w.rx_status, rx_status),
+                CMPI(w.rx_status, 0),
                 BEQ(ll.rxack),
                 J(ll.rxwait),
                 ll("rxack"),
-                MOVI(w.rx_status,0),
-                STXA(w.rx_status,rx_status), # ack the char
-                MOVI(w.leds,0),
-                MOVI(w.counter,0),
-                STXA(w.leds,self.io_map.led),
+                MOVI(w.rx_status, 0),
+                STXA(w.rx_status, rx_status),  # ack the char
+                MOVI(w.leds, 0),
+                MOVI(w.counter, 0),
+                STXA(w.leds, self.io_map.led),
             ]
 
     class Write(SubR):
@@ -80,32 +80,30 @@ class Serial:
                 BEQ(ll.waitdown),
             ]
 
-
     class ReadWord(SubR):
         def setup(self):
-            self.locals = ["first","second","holding"]
+            self.locals = ["first", "second", "holding"]
             self.ret = ["word"]
 
         def instr(self):
             w = self.w
             rb = Serial.read
             return [
-                MOVI(w.holding,0),
-                Rem('low byte'),
+                MOVI(w.holding, 0),
+                Rem("low byte"),
                 rb(ret=w.first),
-                MOV(w.word,w.first),
-                Rem('high byte'),
+                MOV(w.word, w.first),
+                Rem("high byte"),
                 rb(ret=w.second),
-                MOV(w.holding,w.second),
-                SLLI(w.holding,w.holding,8),
-                OR(w.word,w.word,w.holding)
+                MOV(w.holding, w.second),
+                SLLI(w.holding, w.holding, 8),
+                OR(w.word, w.word, w.holding),
             ]
-
 
     class WriteWord(SubR):
         def setup(self):
             self.params = ["word"]
-            self.locals = ["holding","extra"]
+            self.locals = ["holding", "extra"]
 
         def instr(self):
             w = self.w
@@ -113,18 +111,17 @@ class Serial:
             return [
                 NOP(0),
                 NOP(0),
-                Rem('write low byte'),
-                ANDI(w.holding,w.word,0x00FF),
+                Rem("write low byte"),
+                ANDI(w.holding, w.word, 0x00FF),
                 ww(w.holding),
                 NOP(0),
                 NOP(0),
-                Rem('write high byte'),
-                SRLI(w.holding,w.word,8),
+                Rem("write high byte"),
+                SRLI(w.holding, w.word, 8),
                 ww(w.holding),
             ]
-
 
     read = ReadBlock()
     write = Write()
     writeword = WriteWord()
-    readword =  ReadWord()
+    readword = ReadWord()

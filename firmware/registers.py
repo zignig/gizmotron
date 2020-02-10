@@ -5,7 +5,7 @@ import pprint
 
 from boneless.arch.asm import Assembler
 
-__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware", "Rem", "Block" ]
+__all__ = ["LocalLabels", "SubR", "Window", "MetaSub", "Firmware", "Rem", "Block"]
 
 """
 ideas
@@ -45,6 +45,7 @@ If you need to pass variables up and down
 
     LD(var1,fp,1) # load the first register of the prevuis frame into var1 
     LD(var2,fp,2) # second register
+    ADJW(-8) # move the window up 
     LDW(fp,-8) # put the previous window address into R6
 
     # other code
@@ -112,7 +113,8 @@ class Rem:
 
 class Block:
     " A Block of code "
-    pass 
+    pass
+
 
 class LocalLabels:
     """ Local random labels for inside subr
@@ -189,7 +191,7 @@ class Window:
 
 
 class VectorTable:
-    
+
     " Vector Table "
 
     _size = 8
@@ -275,7 +277,7 @@ class SubR(metaclass=MetaSub):
 
     """
 
-    debug = True 
+    debug = True
 
     _called = False
 
@@ -307,7 +309,7 @@ class SubR(metaclass=MetaSub):
     @classmethod
     def mark(cls):
         " include code if the subroutine has been called "
-#        print("marked",cls)
+        #        print("marked",cls)
         cls._called = True
 
     def setup(self):
@@ -322,7 +324,7 @@ class SubR(metaclass=MetaSub):
             source = j
             target = self.w[self.params[i]].value
             if self.debug:
-                instr += [Rem("Load "+self.params[i])]
+                instr += [Rem("Load " + self.params[i])]
             instr += [ST(source, self.w.fp, -8 + target)]
 
         instr += [JAL(self.w.ret, self.name)]
@@ -345,17 +347,17 @@ class SubR(metaclass=MetaSub):
                     source = vals
                     target = self.w[self.ret[0]].value
                     if self.debug:
-                        instr += [Rem("Return "+self.ret[0])]
+                        instr += [Rem("Return " + self.ret[0])]
                     instr += [LD(source, self.w.fp, -8 + target)]
 
             else:
                 raise ValueError("No return registers exist")
 
-        if False:#self.debug:
-            " clean up the above frame " 
-            instr += [MOVI(self.w.ret,0)]
-            for i in range(8,0,-1):
-                instr += [ST(self.w.ret,self.w.fp,-i)]
+        if False:  # self.debug:
+            " clean up the above frame "
+            instr += [MOVI(self.w.ret, 0)]
+            for i in range(8, 0, -1):
+                instr += [ST(self.w.ret, self.w.fp, -i)]
         self.mark()
         return instr
 
@@ -368,11 +370,11 @@ class SubR(metaclass=MetaSub):
         if self.debug:
             data += [Rem(self.w._name)]
         data += [ADJW(-8)]  # window shift up
-        data += [LDW(self.w.fp,0)]  # window shift up
-        #data += [LDW(self.w.fp,-8)]  # window shift up
+        data += [LDW(self.w.fp, 0)]  # window shift up
+        # data += [LDW(self.w.fp,-8)]  # window shift up
         data += self.instr()
         data += [ADJW(8), JR(R7, 0)]
-        return [data] 
+        return [data]
 
 
 class Firmware:
@@ -382,7 +384,7 @@ class Firmware:
     does initialization , main loop and library code
     """
 
-    def __init__(self,io_map=None, start_window=512):
+    def __init__(self, io_map=None, start_window=512):
         self.w = Window()
         self.sw = start_window
         self.io_map = io_map
@@ -398,8 +400,8 @@ class Firmware:
             Rem(self.w._name),
             L("init"),
             MOVI(w.fp, self.sw),
-            LDW(w.fp,0),
-            #SUBI(w.fp,w.fp,8),
+            LDW(w.fp, 0),
+            # SUBI(w.fp,w.fp,8),
             L("main"),
             self.instr(),
             J("main"),
@@ -422,8 +424,7 @@ class Firmware:
         c = self.assemble()
         a = Assembler()
         return a.disassemble(c)
-         
-        
+
 
 # Test Objects
 """

@@ -11,16 +11,18 @@ class pll(Elaboratable):
 
     def elaborate(self, platform):
         m = Module()
-        m.submodules.pl = Instance("SB_PLL40_CORE",
-                p_FEEDBACK_PATH = "SIMPLE",
-                p_DIVR= Const(0),
-                p_DIVF = Const(47),
-                p_DIVQ = Const(4),
-                i_REFERENCECLK = self.clock,
-                o_LOCK = self.lock,
-                o_PLLOUTCORE = self.out,
+        m.submodules.pl = Instance(
+            "SB_PLL40_CORE",
+            p_FEEDBACK_PATH="SIMPLE",
+            p_DIVR=Const(0),
+            p_DIVF=Const(47),
+            p_DIVQ=Const(4),
+            i_REFERENCECLK=self.clock,
+            o_LOCK=self.lock,
+            o_PLLOUTCORE=self.out,
         )
         return m
+
 
 """
 FEEDBACK: SIMPLE
@@ -70,7 +72,7 @@ SB_PLL40_CORE #(
                 .REFERENCECLK(clock_in),
                 .PLLOUTCORE(clock_out)
                 );
-"""	
+"""
 
 if __name__ == "__main__":
     print("PLL")

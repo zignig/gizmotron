@@ -6,6 +6,7 @@ from collections import OrderedDict
 # that add their names into the assembler setup
 # rework address map so it can pre cacluate
 
+
 class EpicFail(BaseException):
     pass
 
@@ -13,18 +14,19 @@ class EpicFail(BaseException):
 class IOMap:
     pass
 
+
 class GizmoCollection:
     " A collection of gizmos "
 
-    def __init__(self,boneless):
-        #object.__setattr__(self, "_modules", OrderedDict())
+    def __init__(self, boneless):
+        # object.__setattr__(self, "_modules", OrderedDict())
         self._modules = OrderedDict()
         self.addr = 0  # global address counter
-        self.name_map  =  {}
+        self.name_map = {}
         self.boneless = boneless
 
     def __next__(self):
-        print('next')
+        print("next")
 
     def __iadd__(self, mod):
         if type(mod) == type([]):
@@ -34,13 +36,13 @@ class GizmoCollection:
             self._modules[mod.name] = mod
         return self
 
-    #def __setattr__(self, name, submodule):
+    # def __setattr__(self, name, submodule):
     #    self._modules[name] = submodule
 
     def __setitem__(self, name, value):
         return self.__setattr__(name, value)
 
-    def __getitem__(self,value):
+    def __getitem__(self, value):
         return self._modules[value]
 
     def map(self):
@@ -48,40 +50,41 @@ class GizmoCollection:
             print(i)
 
     def io_map(self):
-        # TODO make a io map object 
+        # TODO make a io map object
         iom = IOMap()
-        for i,j in self._modules.items():
+        for i, j in self._modules.items():
             for k in j.registers:
-                setattr(iom,k.name,k.addr)
+                setattr(iom, k.name, k.addr)
         return iom
 
     def addr_map(self):
         " return an address map to (gizmo,register) tuple"
-        m = {} 
-        for i,j in self._modules.items():
-            #print('addrs>',i,j)
+        m = {}
+        for i, j in self._modules.items():
+            # print('addrs>',i,j)
             for k in j.registers:
-                m[k.addr] = (j,k)
+                m[k.addr] = (j, k)
         return m
 
-    def attach(self,m):
+    def attach(self, m):
         " attach all the gizmos to boneless from the platform"
-        for i,j in self._modules.items():
-            j.attach(m,self.boneless)
+        for i, j in self._modules.items():
+            j.attach(m, self.boneless)
 
     def prepare(self):
-        for i,j in self._modules.items():
-            print(i,j)
+        for i, j in self._modules.items():
+            print(i, j)
             j.prepare(self)
 
     def asm_header(self):
-        txt = '; automatic gizmo headers\n'
+        txt = "; automatic gizmo headers\n"
         m = self.addr_map()
-        for i in m: 
+        for i in m:
             reg_id = i
             reg_name = m[i][1].name
-            txt += '.equ '+reg_name+','+str(reg_id)+'\n'
+            txt += ".equ " + reg_name + "," + str(reg_id) + "\n"
         return txt
+
 
 # TODO create asm definitions named correctly
 class BIT:
@@ -129,17 +132,25 @@ class IO:
             return False
 
     def dump(self):
-        #for bit in self.bits:
+        # for bit in self.bits:
         #    bit.dump(self.name)
-        return (self.name,self.addr)
+        return (self.name, self.addr)
 
     def __repr__(self):
-        return str(self.addr) + "\n\t"+ self.name+ "\n\t\tin  : " + str(self.sig_in) + "\n\t\tout : " + str(self.sig_out)
+        return (
+            str(self.addr)
+            + "\n\t"
+            + self.name
+            + "\n\t\tin  : "
+            + str(self.sig_in)
+            + "\n\t\tout : "
+            + str(self.sig_out)
+        )
 
 
 class Gizmo:
     " A gizmo is a wrapper around an Elaboratable module that binds to the external interface of the Boneless-CPU"
-    debug = True 
+    debug = True
 
     def __init__(self, name, platform=None, **kwargs):
         for i, j in kwargs.items():
@@ -185,18 +196,18 @@ class Gizmo:
             for reg in self.registers:
                 if not reg.assigned:
                     reg.set_addr(gizc.addr)
-                    reg.assigned = True 
+                    reg.assigned = True
                     gizc.addr += 1
                     if self.name not in self.__dir__():
-                        setattr(self,reg.name,reg)
+                        setattr(self, reg.name, reg)
 
-    def attach(self,m, boneless):
+    def attach(self, m, boneless):
         " Generate and bind the gateway to the Boneless "
         if self.debug:
             print("<< " + self.name + " >>")
         if len(self.registers) > 0:
             for reg in self.registers:
-                with m.If(boneless.o_bus_addr== reg.addr):
+                with m.If(boneless.o_bus_addr == reg.addr):
                     if reg.has_input():
                         if self.debug:
                             print("Binding Input " + str(reg.addr))
@@ -215,14 +226,12 @@ class Gizmo:
         if len(self.devices) > 0:
             for dev in self.devices:
                 print(dev)
-                #m.submodules += dev
-                setattr(m.submodules,self.name,dev)
-                setattr(boneless,self.name,dev)
+                # m.submodules += dev
+                setattr(m.submodules, self.name, dev)
+                setattr(boneless, self.name, dev)
 
     def __repr__(self):
-        return (
-            self.name + str(self.devices) + "|" + str(self.registers)
-        )
+        return self.name + str(self.devices) + "|" + str(self.registers)
 
 
 class TestGizmo(Gizmo):

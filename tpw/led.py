@@ -14,7 +14,7 @@ class Leds(Elaboratable):
         self.i_wdata = Signal(16)
         self.val = Signal(16)
 
-    def elaborate(self,platform):
+    def elaborate(self, platform):
         m = Module()
 
         def get_all_resources(name):

@@ -11,25 +11,49 @@
 #######################################################################
 
 from __future__ import unicode_literals, print_function
-try:
-    text=unicode
-except:
-    text=str
 
-from arpeggio import Optional, ZeroOrMore, OneOrMore, EOF, \
-    ParserPython, PTNodeVisitor, visit_parse_tree
+try:
+    text = unicode
+except:
+    text = str
+
+from arpeggio import (
+    Optional,
+    ZeroOrMore,
+    OneOrMore,
+    EOF,
+    ParserPython,
+    PTNodeVisitor,
+    visit_parse_tree,
+)
 from arpeggio import RegExMatch as _
 
-def number():     return _(r'\d*\.\d*|\d+')
-def symbol():           return _(r"\w+")
-def factor():     return Optional(["+","-"]), [number,symbol,("(", expression, ")")]
-def term():       return factor, ZeroOrMore(["*","/"], factor)
-def expression(): return term, ZeroOrMore(["+", "-"], term)
-def calc():       return OneOrMore(expression), EOF
+
+def number():
+    return _(r"\d*\.\d*|\d+")
+
+
+def symbol():
+    return _(r"\w+")
+
+
+def factor():
+    return Optional(["+", "-"]), [number, symbol, ("(", expression, ")")]
+
+
+def term():
+    return factor, ZeroOrMore(["*", "/"], factor)
+
+
+def expression():
+    return term, ZeroOrMore(["+", "-"], term)
+
+
+def calc():
+    return OneOrMore(expression), EOF
 
 
 class CalcVisitor(PTNodeVisitor):
-
     def visit_number(self, node, children):
         """
         Converts node value to float.
@@ -38,8 +62,8 @@ class CalcVisitor(PTNodeVisitor):
             print("Converting {}.".format(node.value))
         return float(node.value)
 
-    def visit_symbol(self,node,children):
-        return 
+    def visit_symbol(self, node, children):
+        return
 
     def visit_factor(self, node, children):
         """
@@ -49,7 +73,7 @@ class CalcVisitor(PTNodeVisitor):
             print("Factor {}".format(children))
         if len(children) == 1:
             return children[0]
-        sign = -1 if children[0] == '-' else 1
+        sign = -1 if children[0] == "-" else 1
         return sign * children[-1]
 
     def visit_term(self, node, children):
@@ -61,7 +85,7 @@ class CalcVisitor(PTNodeVisitor):
             print("Term {}".format(children))
         term = children[0]
         for i in range(2, len(children), 2):
-            if children[i-1] == "*":
+            if children[i - 1] == "*":
                 term *= children[i]
             else:
                 term /= children[i]
@@ -91,17 +115,18 @@ def main(debug=False):
     # First we will make a parser - an instance of the calc parser model.
     # Parser model is given in the form of python constructs therefore we
     # are using ParserPython class.
-    parser = ParserPython(calc)#, debug=debug)
+    parser = ParserPython(calc)  # , debug=debug)
 
     # An expression we want to evaluate
     input_expr = "bob-(4-1)*5+(2+4.67)+5.89/(.2+7)"
 
     # We create a parse tree out of textual input_expr
-    while(True):
+    while True:
         t = input(">")
         parse_tree = parser.parse(t)
         result = visit_parse_tree(parse_tree, CalcVisitor(debug=debug))
         print(result)
+
 
 if __name__ == "__main__":
     # In debug mode dot (graphviz) files for parser model

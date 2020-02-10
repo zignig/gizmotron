@@ -80,7 +80,7 @@ class Arbiter:
 
 
 class Decoder:
-    IMM3_AL_TABLE = Array([0x0000, 0x0001, 0, 0, 0, 0x00ff, 0xff00, 0xffff])
+    IMM3_AL_TABLE = Array([0x0000, 0x0001, 0, 0, 0, 0x00FF, 0xFF00, 0xFFFF])
     IMM3_SR_TABLE = Array([1, 2, 3, 4, 5, 6, 7, 8])
 
     CTRL_CI_ZERO = 0b00
@@ -371,7 +371,7 @@ if __name__ == "__main__":
         import random
 
         random.seed(0)
-        mem.init = [random.randint(0x0000, 0xffff) for _ in range(256)]
+        mem.init = [random.randint(0x0000, 0xFFFF) for _ in range(256)]
         dut = CoreFSM(
             mem_rdport=mem.read_port(transparent=False),
             mem_wrport=mem.write_port(),

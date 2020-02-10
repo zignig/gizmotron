@@ -1,5 +1,4 @@
-
-from nmigen.build import Resource, Subsignal, Pins,Attrs
+from nmigen.build import Resource, Subsignal, Pins, Attrs
 from boneless_base import Top
 from nmigen_boards.resources import *
 from nmigen_boards.icebreaker import ICEBreakerPlatform
@@ -27,7 +26,7 @@ class ICEBreakerBoneless(ICEBreakerPlatform):
     user_flash = (0x20000, 0xFFFFF)
 
 
-deploy_platform = TinyBoneless #ICEBreakerBoneless
+deploy_platform = TinyBoneless  # ICEBreakerBoneless
 
 if __name__ == "__main__":
     from cli import main

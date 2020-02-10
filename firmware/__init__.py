@@ -1,4 +1,4 @@
-# Firmware infrastructure for boneless 
+# Firmware infrastructure for boneless
 
 from .lister import register
 
@@ -9,11 +9,13 @@ from .call_test import Caller
 from .testing import Testing
 
 
-__all__ = ['registers','uart','leds']
+__all__ = ["registers", "uart", "leds"]
+
 
 def get_bootloader(io=None):
     " get a bootloader image"
-    from .uload import uLoader,FakeIO
+    from .uload import uLoader, FakeIO
+
     if io is None:
         io = FakeIO()
     ul = uLoader(io)
@@ -22,6 +24,9 @@ def get_bootloader(io=None):
 
 available = lister.available
 
+
 def show():
     return lister.show()
+
+
 available

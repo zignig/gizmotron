@@ -2,21 +2,21 @@ from nmigen import *
 
 
 class UART(Elaboratable):
-    def __init__(self,tx,rx, clock,baud, data_bits=8):
+    def __init__(self, tx, rx, clock, baud, data_bits=8):
         self.data_bits = data_bits
-        self.divisor   = round(2 ** 32 * baud / clock)
-        self.tx_o    = tx 
-        self.rx_i    = rx 
+        self.divisor = round(2 ** 32 * baud / clock)
+        self.tx_o = tx
+        self.rx_i = rx
 
         self.tx_data = Signal(data_bits)
-        self.tx_rdy  = Signal()
-        self.tx_ack  = Signal()
+        self.tx_rdy = Signal()
+        self.tx_ack = Signal()
 
         self.rx_data = Signal(data_bits)
-        self.rx_err  = Signal()
-        self.rx_ovf  = Signal()
-        self.rx_rdy  = Signal()
-        self.rx_ack  = Signal()
+        self.rx_err = Signal()
+        self.rx_ovf = Signal()
+        self.rx_rdy = Signal()
+        self.rx_ack = Signal()
 
     def elaborate(self, platform):
         m = Module()
@@ -79,11 +79,18 @@ class UART(Elaboratable):
 if __name__ == "__main__":
     tx = Signal()
     rx = Signal()
-    uart = UART(tx,rx,9600,300)
+    uart = UART(tx, rx, 9600, 300)
     ports = [
-        uart.tx_o, uart.rx_i,
-        uart.tx_data, uart.tx_rdy, uart.tx_ack,
-        uart.rx_data, uart.rx_rdy, uart.rx_err, uart.rx_ovf, uart.rx_ack
+        uart.tx_o,
+        uart.rx_i,
+        uart.tx_data,
+        uart.tx_rdy,
+        uart.tx_ack,
+        uart.rx_data,
+        uart.rx_rdy,
+        uart.rx_err,
+        uart.rx_ovf,
+        uart.rx_ack,
     ]
 
     import argparse
@@ -98,10 +105,12 @@ if __name__ == "__main__":
         from nmigen.hdl.ast import Passive
         from nmigen.back import pysim
 
-        with pysim.Simulator(uart,
-                vcd_file=open("uart.vcd", "w"),
-                gtkw_file=open("uart.gtkw", "w"),
-                traces=ports) as sim:
+        with pysim.Simulator(
+            uart,
+            vcd_file=open("uart.vcd", "w"),
+            gtkw_file=open("uart.gtkw", "w"),
+            traces=ports,
+        ) as sim:
             sim.add_clock(1e-6)
 
             def loopback_proc():
@@ -109,6 +118,7 @@ if __name__ == "__main__":
                 while True:
                     yield uart.rx_i.eq((yield uart.tx_o))
                     yield
+
             sim.add_sync_process(loopback_proc())
 
             def transmit_proc():
@@ -122,7 +132,7 @@ if __name__ == "__main__":
                 yield
                 assert not (yield uart.tx_ack)
 
-                for _ in range(uart.divisor * 12): 
+                for _ in range(uart.divisor * 12):
                     print(uart.tx_o)
                     yield
 
@@ -133,6 +143,7 @@ if __name__ == "__main__":
 
                 yield uart.rx_ack.eq(1)
                 yield
+
             sim.add_sync_process(transmit_proc())
 
             sim.run()

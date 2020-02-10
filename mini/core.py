@@ -24,7 +24,6 @@ class ProgramCounter(Elaboratable):
 
 
 class MetaInstr(type):
-
     class tree:
         def __init__(self, cls):
             self.name = cls
@@ -53,10 +52,10 @@ class MetaInstr(type):
         return newclass
 
     def register(cls):
-        if not hasattr(cls,"_registry"):
-            setattr(cls,"_registry",set())
-        if not hasattr(cls,"_heirachy"):
-            setattr(cls,"_heirachy",MetaInstr.tree(object))
+        if not hasattr(cls, "_registry"):
+            setattr(cls, "_registry", set())
+        if not hasattr(cls, "_heirachy"):
+            setattr(cls, "_heirachy", MetaInstr.tree(object))
 
         if cls.__qualname__ == "Instr":
             # Don't add root subclass

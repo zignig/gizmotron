@@ -1,4 +1,3 @@
-
 from .simi import SimInstr
 
 
@@ -8,43 +7,44 @@ class Missing(BaseException):
 
 class s_AND(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav & self.rbv)
+        self.set_reg(self.rsd, self.rav & self.rbv)
 
 
 class s_ANDI(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav & self.imm)
+        self.set_reg(self.rsd, self.rav & self.imm)
 
 
 class s_OR(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav | self.rbv )
+        self.set_reg(self.rsd, self.rav | self.rbv)
 
 
 class s_ORI(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rbv | self.imm)
+        self.set_reg(self.rsd, self.rbv | self.imm)
 
 
 class s_XOR(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav ^ self.rbv)
+        self.set_reg(self.rsd, self.rav ^ self.rbv)
 
 
 class s_XORI(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rbv | self.imm)
+        self.set_reg(self.rsd, self.rbv | self.imm)
+
 
 class s_CMP(SimInstr):
     def run(self):
-        val =  self.rav - self.rbv
+        val = self.rav - self.rbv
         # TODO set flags
         raise Missing(self)
 
 
 class s_CMPI(SimInstr):
     def run(self):
-        val = self.rav  - self.imm
+        val = self.rav - self.imm
         if val == 0:
             self.sim.z = True
         else:
@@ -54,7 +54,7 @@ class s_CMPI(SimInstr):
 
 class s_ADD(SimInstr):
     def run(self):
-        self.set_reg(self.rsd,self.rav + self.rbv)
+        self.set_reg(self.rsd, self.rav + self.rbv)
 
 
 class s_ADDI(SimInstr):
@@ -187,6 +187,7 @@ class s_MOVR(SimInstr):
         val = self.pc + self.imm + 1
         self.set_reg(self.rsd, val)
 
+
 class s_STW(SimInstr):
     def run(self):
         self.window = self.rbv
@@ -242,7 +243,7 @@ class s_JNZ(SimInstr):
 class s_JZ(SimInstr):
     def run(self):
         if self.sim.z == True:
-            self.sim.pc = self.pc + self.imm 
+            self.sim.pc = self.pc + self.imm
 
 
 class s_JNS(SimInstr):

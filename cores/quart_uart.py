@@ -1,6 +1,6 @@
 from nmigen import *
 from nmigen.lib.cdc import MultiReg
-from nmigen.lib.fifo import SyncFIFO 
+from nmigen.lib.fifo import SyncFIFO
 from nmigen.tools import bits_for
 
 
@@ -8,31 +8,23 @@ __all__ = ["AsyncSerialRX", "AsyncSerialTX", "AsyncSerial"]
 
 
 def _wire_layout(data_bits):
-    return [
-        ("start", 1),
-        ("data",  data_bits),
-        ("stop",  1),
-    ]
+    return [("start", 1), ("data", data_bits), ("stop", 1)]
 
 
 class AsyncSerialRX(Elaboratable):
-    def __init__(self, *, divisor, divisor_bits=None, data_bits=8, pins=None,depth=0):
+    def __init__(self, *, divisor, divisor_bits=None, data_bits=8, pins=None, depth=0):
         self.divisor = Signal(divisor_bits or bits_for(divisor), reset=divisor)
 
         self.data = Signal(data_bits)
-        self.err  = Record([
-            ("overflow", 1),
-            ("frame",    1),
-        ])
-        self.rdy  = Signal()
-        self.ack  = Signal()
+        self.err = Record([("overflow", 1), ("frame", 1)])
+        self.rdy = Signal()
+        self.ack = Signal()
 
-        self.i    = Signal()
+        self.i = Signal()
 
         self._pins = pins
-        self.depth = depth 
+        self.depth = depth
 
-        
     def elaborate(self, platform):
         m = Module()
 
@@ -41,7 +33,7 @@ class AsyncSerialRX(Elaboratable):
         bitno = Signal(max=len(shreg))
 
         if self.depth > 0:
-            self._fifo = SyncFifo(len(self.data),self.depth)
+            self._fifo = SyncFifo(len(self.data), self.depth)
             m.d.submodules += self._fifo
 
         if self._pins is not None:
@@ -50,10 +42,7 @@ class AsyncSerialRX(Elaboratable):
         with m.FSM():
             with m.State("IDLE"):
                 with m.If(~self.i):
-                    m.d.sync += [
-                        bitno.eq(len(shreg) - 1),
-                        timer.eq(self.divisor >> 1),
-                    ]
+                    m.d.sync += [bitno.eq(len(shreg) - 1), timer.eq(self.divisor >> 1)]
                     m.next = "BUSY"
 
             with m.State("BUSY"):
@@ -89,10 +78,10 @@ class AsyncSerialTX(Elaboratable):
         self.divisor = Signal(divisor_bits or bits_for(divisor), reset=divisor)
 
         self.data = Signal(data_bits)
-        self.rdy  = Signal()
-        self.ack  = Signal()
+        self.rdy = Signal()
+        self.ack = Signal()
 
-        self.o    = Signal()
+        self.o = Signal()
 
         self._pins = pins
 
@@ -113,8 +102,8 @@ class AsyncSerialTX(Elaboratable):
                 with m.If(self.ack):
                     m.d.sync += [
                         shreg.start.eq(0),
-                        shreg.data .eq(self.data),
-                        shreg.stop .eq(~0),
+                        shreg.data.eq(self.data),
+                        shreg.stop.eq(~0),
                         bitno.eq(len(shreg) - 1),
                         timer.eq(self.divisor),
                     ]
@@ -146,8 +135,5 @@ class AsyncSerial(Elaboratable):
         m = Module()
         m.submodules.rx = self.rx
         m.submodules.tx = self.tx
-        m.d.comb += [
-            self.rx.divisor.eq(self.divisor),
-            self.tx.divisor.eq(self.divisor),
-        ]
+        m.d.comb += [self.rx.divisor.eq(self.divisor), self.tx.divisor.eq(self.divisor)]
         return m

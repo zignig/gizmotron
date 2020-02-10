@@ -1,6 +1,6 @@
 import asyncio
 import serial_asyncio
-import pty,os
+import pty, os
 
 
 class Reader(asyncio.Protocol):
@@ -10,23 +10,23 @@ class Reader(asyncio.Protocol):
         self.transport = transport
         self.buf = bytes()
         self.msgs_recvd = 0
-        print('Reader connection created')
+        print("Reader connection created")
 
     def data_received(self, data):
         """Store characters until a newline is received.
         """
         self.buf += data
-        if b'\n' in self.buf:
-            lines = self.buf.split(b'\n')
+        if b"\n" in self.buf:
+            lines = self.buf.split(b"\n")
             self.buf = lines[-1]  # whatever was left over
             for line in lines[:-1]:
-                print(f'Reader received: {line.decode()}')
+                print(f"Reader received: {line.decode()}")
                 self.msgs_recvd += 1
         if self.msgs_recvd == 4:
             self.transport.close()
 
     def connection_lost(self, exc):
-        print('Reader closed')
+        print("Reader closed")
 
 
 class Writer(asyncio.Protocol):
@@ -34,34 +34,38 @@ class Writer(asyncio.Protocol):
         """Store the serial transport and schedule the task to send data.
         """
         self.transport = transport
-        print('Writer connection created')
+        print("Writer connection created")
         asyncio.ensure_future(self.send())
-        print('Writer.send() scheduled')
+        print("Writer.send() scheduled")
 
     def connection_lost(self, exc):
-        print('Writer closed')
+        print("Writer closed")
 
     async def send(self):
         """Send four newline-terminated messages, one byte at a time.
         """
-        message = b'foo\nbar\nbaz\nqux\n'
+        message = b"foo\nbar\nbaz\nqux\n"
         for b in message:
             await asyncio.sleep(0.5)
             self.transport.serial.write(bytes([b]))
-            print(f'Writer sent: {bytes([b])}')
+            print(f"Writer sent: {bytes([b])}")
         self.transport.close()
 
 
 loop = asyncio.get_event_loop()
-master , slave = pty.openpty()
+master, slave = pty.openpty()
 s_name = os.ttyname(slave)
 print(s_name)
-reader = serial_asyncio.create_serial_connection(loop, Reader, 'reader', baudrate=115200)
-writer = serial_asyncio.create_serial_connection(loop, Writer, 'writer', baudrate=115200)
+reader = serial_asyncio.create_serial_connection(
+    loop, Reader, "reader", baudrate=115200
+)
+writer = serial_asyncio.create_serial_connection(
+    loop, Writer, "writer", baudrate=115200
+)
 asyncio.ensure_future(reader)
-print('Reader scheduled')
+print("Reader scheduled")
 asyncio.ensure_future(writer)
-print('Writer scheduled')
+print("Writer scheduled")
 loop.call_later(10, loop.stop)
 loop.run_forever()
-print('Done')
+print("Done")

@@ -17,7 +17,7 @@ class Adder(SubR):
 class Short(Firmware):
     def instr(self):
         adder = Adder()
-        w = self.w 
+        w = self.w
         w.req(["a", "b", "c"])
         return [adder(w.a, w.b, ret=w.c)]
 
@@ -27,4 +27,5 @@ if __name__ == "__main__":
     fw = ul.assemble()
     ul.show()
     from loader import load
+
     load(fw)

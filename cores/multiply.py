@@ -10,7 +10,7 @@ class _multiply(Elaboratable):
 
     def elaborate(self, platform):
         m = Module()
-        m.d.comb += self.o.eq(self.a*self.b)
+        m.d.comb += self.o.eq(self.a * self.b)
         return m
 
 

@@ -28,7 +28,7 @@ class RX(Elaboratable):
         self.rx_ack = Signal()
         self.rx_error = Signal()
         self.divisor = _divisor(freq_in=clk_freq, freq_out=baud_rate, max_ppm=50000)
-        print("divisor :",self.divisor)
+        print("divisor :", self.divisor)
 
     def elaborate(self, platform):
         m = Module()
@@ -150,7 +150,7 @@ class UART(Elaboratable):
         return m
 
 
-#class _TestPads(Module):
+# class _TestPads(Module):
 #    def __init__(self):
 #        self.rx = Signal()
 #        self.tx = Signal()

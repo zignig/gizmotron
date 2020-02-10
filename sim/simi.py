@@ -1,6 +1,5 @@
-
 class SimInstr(object):
-    def __init__(self,instr,sim):
+    def __init__(self, instr, sim):
         self.instr = instr
         self.sim = sim
         self.exti_tmp = 0
@@ -14,13 +13,13 @@ class SimInstr(object):
             self.run()
             self.exti = False
             self.sim.has_exti = False
-            #TODO fix this
+            # TODO fix this
         else:
             self.run()
 
     def __repr__(self):
         return self.instr.__repr__()
-    
+
     # short name access
     @property
     def rsd(self):
@@ -35,7 +34,7 @@ class SimInstr(object):
 
     @property
     def ra(self):
-        return self.instr.ra.value 
+        return self.instr.ra.value
 
     @property
     def rb(self):
@@ -51,14 +50,13 @@ class SimInstr(object):
     def rbv(self):
         return self.get_reg(self.rb)
 
-    def set_reg(self,reg,val):
-        self.sim.set_reg(reg,val)
+    def set_reg(self, reg, val):
+        self.sim.set_reg(reg, val)
 
-    def get_reg(self,reg):
+    def get_reg(self, reg):
         return self.sim.get_reg(reg)
 
     # simulator function
     @property
     def pc(self):
         return self.sim.pc
-

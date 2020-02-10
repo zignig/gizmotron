@@ -23,7 +23,7 @@ import led
 
 
 class BonelessBase(Elaboratable):
-    def __init__(self, platform,debug=True):
+    def __init__(self, platform, debug=True):
         self.platform = platform
         self.debug = debug
         if self.platform.device == "iCE40UP5K":
@@ -41,14 +41,12 @@ class BonelessBase(Elaboratable):
             print("setting test firmware")
             init_data = firm_test.fw()
         else:
-            init_data = boneload.boneload_fw(platform.user_flash, uart_addr=0, spi_addr=16),
+            init_data = (
+                boneload.boneload_fw(platform.user_flash, uart_addr=0, spi_addr=16),
+            )
 
         # generate the default memory
-        self.cpu_rom = Memory(
-            width=16,
-            depth=self.depth,
-            init=init_data
-        )
+        self.cpu_rom = Memory(width=16, depth=self.depth, init=init_data)
 
         # create the core
         # TODO fix reset_c,_w
@@ -56,7 +54,9 @@ class BonelessBase(Elaboratable):
 
         # add a uart
         self.uart = uart.SimpleUART(
-            default_divisor=uart.calculate_divisor(platform.default_clk_frequency, 115200)
+            default_divisor=uart.calculate_divisor(
+                platform.default_clk_frequency, 115200
+            )
         )
 
         # add the spi flash
@@ -181,7 +181,7 @@ class BonelessBase(Elaboratable):
         m.d.comb += [
             led.i_re.eq(cpu_core.o_ext_re & led_en),
             led.i_we.eq(cpu_core.o_ext_we & led_en),
-            #led.i_addr.eq(ext_addr[:1]),
+            # led.i_addr.eq(ext_addr[:1]),
             led.i_wdata.eq(cpu_core.o_ext_data),
         ]
         with m.If(led_was_en):
@@ -191,18 +191,18 @@ class BonelessBase(Elaboratable):
 
 # super top domain to manage clock stuff
 class Top(Elaboratable):
-    def __init__(self, platform, system_freq_mhz=12,debug=True):
+    def __init__(self, platform, system_freq_mhz=12, debug=True):
         self.system_freq_mhz = system_freq_mhz
         self.platform = platform
         self.debug = debug
         if debug:
-            print("Create boneless for ",self.platform)
+            print("Create boneless for ", self.platform)
 
     def elaborate(self, platform):
         m = Module()
-        if self.system_freq_mhz != platform.default_clk_frequency/1e6:
+        if self.system_freq_mhz != platform.default_clk_frequency / 1e6:
             if self.debug:
-                print("Add PLL at ",str(self.system_freq_mhz))
+                print("Add PLL at ", str(self.system_freq_mhz))
             # we need a PLL so we can boost the clock. reserve the clock pin
             # before it gets switched to the default domain.
             clk_pin = platform.request(platform.default_clk, dir="-")
@@ -227,7 +227,7 @@ class Top(Elaboratable):
 
         # create the actual processor and tell it to run in the domain we made
         # for it above
-        boneless_base = BonelessBase(platform,debug=self.debug)
+        boneless_base = BonelessBase(platform, debug=self.debug)
 
         # remap the default sync domain to the CPU domain, since most logic
         # should run there.
