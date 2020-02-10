@@ -32,6 +32,29 @@ class WriteToMem(SubR):
         return [ST(w.data, w.address, 0), ADDI(w.address, w.address, 1)]
 
 
+class ProgramDump(SubR):
+    "Dump a memory block onto the serial port"
+    def setup(self):
+        self.params = ["address","count"]
+        self.locals = ["value"]
+
+    def instr(self):
+        w = self.w
+        ll = LocalLabels()
+        s = Serial()
+        return [
+                ll('again'),
+                LD(w.value,w.address,0),
+                s.WriteWord(w.value),
+                ADDI(w.address,w.address,1),
+                SUBI(w.count,w.count,1),
+                CMPI(w.count,0),
+                BEQ(ll.exit),
+                J(ll.again),
+                ll("exit"),
+            ]
+
+                
 class WaitForQ(SubR):
     " wait for a question mark "
 

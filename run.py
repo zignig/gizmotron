@@ -71,26 +71,12 @@ if __name__ == "__main__":
         cpu = construct.CPU(platform, fw=args.p, asm_file=args.f)
         io_map = cpu.b.io_map
         load_ware = firmware.available[args.p](io_map)
-        print(load_ware.code())
+        #print(load_ware.code())
         fw = load_ware.assemble()
-        print(fw)
+        #print(fw)
         data = char_convert(fw)
-        print(data)
+        #print(data)
         load(data)
-        # old
-        # code = cpu.b.code
-        # hex_out = ""
-        # lines = []
-        # for i in code:
-        #    hex_out += '{:04X}\n'.format(i)
-        #    lines.append('{:04X}\n'.format(i))
-        # hex_out += '{:04X}\n'.format(0xFFFF)
-        # lines.append('{:04X}\n'.format(0xFFFF))
-        # print(lines)
-        # writer(lines,'/dev/ttyUSB0')
-        # f = open('utils/yay.hex','w')
-        # f.write(hex_out)
-        # f.close()
 
     if args.action == "simulate":
         print("Simulate")
