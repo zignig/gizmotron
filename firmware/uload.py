@@ -56,7 +56,7 @@ class ProgramDump(SubR):
 
                 
 class WaitForQ(SubR):
-    " wait for a question mark "
+    " wait for a question mark and write iD"
 
     def setup(self):
         self.ret = ["status"]
@@ -74,6 +74,10 @@ class WaitForQ(SubR):
             J(ll.wait),
             ll("cont"),
             MOVI(w.status, 1),
+            MOVI(w.id,0xDEAD),
+            s.writeword(w.id),
+            MOVI(w.id,0xBEEF),
+            s.writeword(w.id),
         ]
 
 
@@ -124,8 +128,9 @@ class uLoader(Firmware):
         wfq = WaitForQ()
         pd = ProgramDump()
         return [
-            Rem("read the program length"),
+            Rem('Wait for a question mark'),
             wfq(ret=w.status),
+            Rem("read the program length"),
             MOVR(w.address, "program_start"),
             ADDI(w.address, w.address, 1),
             s.readword(ret=w.counter),
@@ -136,9 +141,9 @@ class uLoader(Firmware):
             ll("again"),
             [
                 s.readword(ret=w.current_value),
-                wm(w.current_value, w.address, ret=w.address),
-                cs(w.current_value, w.checksum, ret=w.checksum),
-                s.writeword(w.checksum),
+                wm(w.current_value,w.address, ret=w.address),
+                #cs(w.current_value, w.checksum, ret=w.checksum),
+                s.writeword(w.counter),
             ],
             SUBI(w.counter, w.counter, 1),
             CMPI(w.counter, 0),
@@ -154,6 +159,7 @@ class uLoader(Firmware):
             Rem("dump the program for testing and debugging"),
             MOVR(w.address, "program_start"),
             pd(w.address,w.prog_length),
+            J('init'),
         ]
 
 
