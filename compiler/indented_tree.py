@@ -101,15 +101,24 @@ menu main:
             step -> step
         test
     help:
-        introduction 
-        about
+        introduction -> help_intro
+        about -> help_about
 
     setting:
-        serial
-        blinky
-        flash -> flash_edit 
-    stuff:
-    thanks:
+        serial:
+            baud
+            bits
+            stop
+        blinky:
+            demo
+        switches
+        buttons
+        flash:
+            edit -> flash_edit 
+            firmware -> firmware_edit
+            erase -> firmware_erase
+    thanks -> help_thanks
+
 """
 
 def test():
