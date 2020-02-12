@@ -8,8 +8,9 @@
 # the spaces (and tabs) after the newline.
 #
 
-from lark import Lark
+from lark import Lark,v_args
 from lark.indenter import Indenter
+from lark import Transformer
 
 tree_grammar = r"""
     ?start: _NL* task* func* menu*
@@ -36,28 +37,38 @@ class TreeIndenter(Indenter):
     DEDENT_type = '_DEDENT'
     tab_len = 8
 
-parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter())
+class Base:
+    def __init__(self,name,children=None):
+        self.name = name.value
+        self.children = children
+
+    def show(self):
+        print(self.name)
+        if self.children is not None:
+            for i in self.children:
+                i.show()
+
+class Menu(Base):
+    pass
+
+class Tree(Base):
+    pass
+
+class AutoBot(Transformer):
+    def menu(self,items):
+        return Menu(items[0],children=items[1:])
+
+
+    def tree(self,items):
+        return Tree(items[0],children=items[1:])
+
+    def task(self,items):
+        print("task",items)
+        pass 
+
+parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter(),transformer=AutoBot())
 
 test_tree = """
-task bob:
-    one
-    two
-    three
-
-task error:
-    abc
-    def
-    asdf
-    asdf
-    asdf
-
-func run:
-    a
-        b
-        b
-        b
-    asdf
-
 menu main:
     config
         boot
@@ -65,6 +76,12 @@ menu main:
         test
     doc
         howto
+            one
+                blah
+                balh
+                asdf
+            two
+            three
         testing
     demo
         blinky
@@ -77,7 +94,7 @@ def test():
     return t
 
 if __name__ == '__main__':
-    t  = test()
-    print(t.pretty())
-    print(t)
+    m  = test()
+    m.show()
+    
     
