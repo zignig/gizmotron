@@ -13,13 +13,11 @@ from lark.indenter import Indenter
 from lark import Transformer
 
 tree_grammar = r"""
-    ?start: _NL* task* func* menu*
+    ?start: _NL* menu*
 
-    menu : "menu" NAME ":"  _NL [_INDENT tree+ _DEDENT]
-    func: "func" NAME ":" _NL [_INDENT tree+ _DEDENT]
-    task: "task" NAME ":" _NL [_INDENT tree+ _DEDENT] 
-
-    tree: NAME _NL [_INDENT tree+ _DEDENT]
+    menu : "menu" NAME ":"  _NL [_INDENT heading+ _DEDENT]
+    heading: NAME ":" _NL [_INDENT (heading*|item*) _DEDENT]
+    item: NAME ("->" NAME)? _NL
 
     %import common.CNAME -> NAME
     %import common.WS_INLINE
@@ -43,50 +41,50 @@ class Base:
         self.children = children
 
     def show(self):
-        print(self.name)
+        self._show(0)
+
+    def _show(self,depth):
+        print(depth*2*' ' ,self.name)
         if self.children is not None:
+            depth += 1
             for i in self.children:
-                i.show()
+                i._show(depth)
 
 class Menu(Base):
     pass
 
-class Tree(Base):
+class Heading(Base):
+    pass
+
+class Item(Base):
     pass
 
 class AutoBot(Transformer):
     def menu(self,items):
         return Menu(items[0],children=items[1:])
 
+    def heading(self,items):
+        return Heading(items[0],children=items[1:])
 
-    def tree(self,items):
-        return Tree(items[0],children=items[1:])
+    def item(self,items):
+        return Item(items[0],children=items[1:])
 
-    def task(self,items):
-        print("task",items)
-        pass 
-
-parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter(),transformer=AutoBot())
+parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter())#,transformer=AutoBot())
 
 test_tree = """
 menu main:
-    config
-        boot
+    config:
+        boot -> booter 
         run
         test
-    doc
-        howto
-            one
-                blah
-                balh
-                asdf
-            two
-            three
-        testing
-    demo
-        blinky
-        screen
-        abc
+    help:
+        two
+        three
+    setting:
+        asdf
+        asdf
+    stuff:
+    thanks:
 """
 
 def test():
@@ -95,6 +93,7 @@ def test():
 
 if __name__ == '__main__':
     m  = test()
-    m.show()
+    print(m)
+    #m.show()
     
     
