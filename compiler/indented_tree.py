@@ -103,7 +103,6 @@ menu main:
     help:
         introduction -> help_intro
         about -> help_about
-
     setting:
         serial:
             baud
@@ -121,12 +120,13 @@ menu main:
 
 """
 
-def test():
-    t = parser.parse(test_tree)
-    return t
+def Build(file_name="base.menu"):
+    with open(file_name) as file:
+        t = parser.parse(file.read())
+        return t
 
 if __name__ == '__main__':
-    m  = test()
+    m  = Build()
     print(m.pretty())
     m.show()
     
