@@ -13,11 +13,13 @@ from lark.indenter import Indenter
 from lark import Transformer
 
 tree_grammar = r"""
-    ?start: _NL* menu*
+    ?start: _NL* menu
 
-    menu : "menu" NAME ":"  _NL [_INDENT heading+ _DEDENT]
-    heading: NAME ":" _NL [_INDENT (heading*|item*) _DEDENT]
-    item: NAME ("->" NAME)? _NL
+    menu : "menu" NAME ":"  _NL [_INDENT line+ _DEDENT]
+    ?line : heading? | item? 
+    heading: NAME ":" _NL [_INDENT line+  _DEDENT]
+    item: NAME ("->" func )? _NL
+    func: NAME
 
     %import common.CNAME -> NAME
     %import common.WS_INLINE
@@ -40,6 +42,9 @@ class Base:
         self.name = name.value
         self.children = children
 
+    def pretty(self):
+        print(self.name,self.children)
+
     def show(self):
         self._show(0)
 
@@ -57,7 +62,15 @@ class Heading(Base):
     pass
 
 class Item(Base):
-    pass
+    def __init__(self,name,func=None):
+        self.children = None
+        self.name = name 
+        self.func = func
+    def _show(self,depth):
+        print(depth*2*' ',self.name,"-->",self.func)
+
+class Func(Base):
+    pass 
 
 class AutoBot(Transformer):
     def menu(self,items):
@@ -67,22 +80,34 @@ class AutoBot(Transformer):
         return Heading(items[0],children=items[1:])
 
     def item(self,items):
-        return Item(items[0],children=items[1:])
+        if len(items) < 2:
+            return Item(items[0])
+        else:
+            return Item(items[0],items[1])
 
-parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter())#,transformer=AutoBot())
+    def func(self,items):
+        return Func(items[0]) 
+
+parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter(),transformer=AutoBot())
 
 test_tree = """
 menu main:
     config:
         boot -> booter 
-        run
+        state:
+            start
+            stop
+            pause
+            step -> step
         test
     help:
-        two
-        three
+        introduction 
+        about
+
     setting:
-        asdf
-        asdf
+        serial
+        blinky
+        flash -> flash_edit 
     stuff:
     thanks:
 """
@@ -93,7 +118,7 @@ def test():
 
 if __name__ == '__main__':
     m  = test()
-    print(m)
-    #m.show()
+    print(m.pretty())
+    m.show()
     
     
