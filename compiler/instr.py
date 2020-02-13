@@ -13,16 +13,15 @@ json_grammar = r"""
     ?start: main 
     
     main : (start_tag content+ end_tag)+
-    start_tag: bs "begin(" NAME "}"  
+    start_tag: bs "begin" br
     bs: "\\"
-    end_tag: "\\end(" NAME ")"
+    end_tag: bs "end" br
     br: "{" str "}" 
-    tag: "\\" NAME (br)?
+    tag: bs str (br)?
     !ampersand: "&"
     !str: /./s
     content: br | ampersand | tag | str 
 
-    %import common.CNAME -> NAME
     %import common.WS_INLINE
 """
 
@@ -30,9 +29,8 @@ json_grammar = r"""
 json_parser = Lark(json_grammar, parser='lalr')
 
 parse = json_parser.parse
-file_name = ""
+file_name = "/opt/FPGA/Boneless-CPU/doc/manual/insns/ADD.tex"
 
 if __name__ == '__main__':
-    # test()
-    with open(sys.argv[1]) as f:
-        print(parse(f.read()))
+    f = open(file_name)
+    print(parse(f.read()))
