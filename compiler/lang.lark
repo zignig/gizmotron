@@ -1,1 +1,18 @@
+?start: _NL* menu
 
+// menu stuff
+menu : "menu" NAME ":"  _NL [_INDENT line+ _DEDENT]
+?line : heading? | item? 
+heading: NAME ":" _NL [_INDENT line+  _DEDENT]
+item: NAME ("->" func )? _NL
+func: NAME
+
+
+
+// common references 
+%import common.CNAME -> NAME
+%import common.WS_INLINE
+%declare _INDENT _DEDENT
+%ignore WS_INLINE
+
+_NL: /(\r?\n[\t ]*)+/

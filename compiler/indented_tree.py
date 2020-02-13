@@ -15,6 +15,7 @@ from lark import Transformer
 tree_grammar = r"""
     ?start: _NL* menu
 
+    // menu stuff
     menu : "menu" NAME ":"  _NL [_INDENT line+ _DEDENT]
     ?line : heading? | item? 
     heading: NAME ":" _NL [_INDENT line+  _DEDENT]
@@ -88,37 +89,7 @@ class AutoBot(Transformer):
     def func(self,items):
         return Func(items[0]) 
 
-parser = Lark(tree_grammar, parser='lalr', postlex=TreeIndenter(),transformer=AutoBot())
-
-test_tree = """
-menu main:
-    config:
-        boot -> booter 
-        state:
-            start
-            stop
-            pause
-            step -> step
-        test
-    help:
-        introduction -> help_intro
-        about -> help_about
-    setting:
-        serial:
-            baud
-            bits
-            stop
-        blinky:
-            demo
-        switches
-        buttons
-        flash:
-            edit -> flash_edit 
-            firmware -> firmware_edit
-            erase -> firmware_erase
-    thanks -> help_thanks
-
-"""
+parser = Lark.open('lang.lark', parser='lalr', postlex=TreeIndenter(),transformer=AutoBot())
 
 def Build(file_name="base.menu"):
     with open(file_name) as file:
