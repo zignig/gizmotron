@@ -10,19 +10,24 @@ import sys
 from lark import Lark, Transformer, v_args
 
 json_grammar = r"""
-    ?start: main 
+    ?start: _NL* main 
     
-    main : (start_tag content+ end_tag)+
-    start_tag: bs "begin" br
+    main: tag content+ tag
     bs: "\\"
-    end_tag: bs "end" br
-    br: "{" str "}" 
-    tag: bs str (br)?
-    !ampersand: "&"
-    !str: /./s
-    content: br | ampersand | tag | str 
+    brac: "{" content+ "}" 
+    str: /./+
+    tag: bs NAME
+    dbs: "\\\\" 
+    comma: ","
+    ampersand: "&"
+    content: str| tag | brac | NAME | comma  | ampersand | dbs
 
-    %import common.WS_INLINE
+    _NL: /[\r\n]+/
+
+    %import common.WS 
+    %ignore WS
+    %ignore _NL
+    %import common.CNAME -> NAME
 """
 
 
