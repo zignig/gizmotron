@@ -56,6 +56,15 @@ class Base:
             for i in self.children:
                 i._show(depth)
 
+    def _rec(self,fn):
+        if self.children is None:
+            fn(self.name)
+        else:
+            for i in self.children:
+                i._rec(fn)
+            fn(self.name)
+
+
 class Menu(Base):
     pass
 
@@ -100,5 +109,6 @@ if __name__ == '__main__':
     m  = Build()
     print(m.pretty())
     m.show()
-    
+    def p(name): print('visit ',name)
+    m._rec(p)
     
