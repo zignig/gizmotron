@@ -10,17 +10,16 @@ import sys
 from lark import Lark, Transformer, v_args
 
 json_grammar = r"""
-    ?start: _NL* main 
+    ?start: _NL* content*
     
-    main: tag content+ tag
-    bs: "\\"
-    brac: "{" content+ "}" 
+    bs: /\\/                  
+    brac: "{" content* "}" 
     str: /./+
-    tag: bs NAME
+    tag: bs NAME brac? -> tag
     dbs: "\\\\" 
     comma: ","
     ampersand: "&"
-    content: str| tag | brac | NAME | comma  | ampersand | dbs
+    content: tag | brac | NAME | comma | ampersand | dbs | str
 
     _NL: /[\r\n]+/
 
@@ -31,11 +30,30 @@ json_grammar = r"""
 """
 
 
+_json_grammar = r"""
+    ?start: _NL* main 
+    
+    main: tag 
+    bs: /\\/
+    tag: bs NAME brac?
+    _NL: /[\r\n]+/
+    brac: "{" content+ "}" 
+    content: str
+    str: /./
+
+    %import common.WS 
+    %ignore WS
+    %ignore _NL
+    %import common.CNAME -> NAME
+"""
 json_parser = Lark(json_grammar, parser='lalr')
 
 parse = json_parser.parse
 file_name = "/opt/FPGA/Boneless-CPU/doc/manual/insns/ADD.tex"
+#file_name = "ADD.tex"
 
 if __name__ == '__main__':
     f = open(file_name)
-    print(parse(f.read()))
+    t = parse(f.read())
+    print(t.pretty())
+
