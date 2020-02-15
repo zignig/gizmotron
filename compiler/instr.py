@@ -8,23 +8,26 @@
 import sys
 
 from lark import Lark, Transformer, v_args
+import pprint
 
 json_grammar = r"""
-    ?start: _NL* content+
+    ?start: _NL* begin_tag content+ end_tag
     
-    bs: "\\"
-    ?brac: "{" content* "}" 
-    ?tag: bs NAME brac? -> tag
+    _brac: "{" content* "}" 
+    ?tag: "\\" NAME _brac? -> tag
     ?dbs: "\\\\" 
+    begin_tag: "\\" "begin" _brac
+    end_tag: "\\" "end" _brac
     COMMA: ","
     MINUS: "-"
-    DOT: "." | "+"
+    DOT: "." | "+" | ":"
     AMP: "&"
     AST:"*"
     WWA: WORD  AST 
     ARR: "←"
-    ?text: ARR | WWA | WORD | NUMBER | COMMA | MINUS | DOT |  AMP 
-    ?content:  tag | brac | dbs | text+ 
+    SQB: "[" | "]"
+    ?text: ARR | WWA | WORD | NUMBER | COMMA | MINUS | DOT |  AMP  | SQB -> text
+    ?content:  begin_tag | end_tag | tag | _brac | dbs | text+ 
 
     _NL: /[\r\n]+/
 
@@ -35,6 +38,20 @@ json_grammar = r"""
     %ignore _NL
     %import common.CNAME -> NAME
 """
+class Base:
+    pass
+
+class Tag(Base):
+    def __init__(self,items):
+        self.name = items[1]
+        if len(items) > 2:
+            print(dir(items[2]))
+            self.value = items[2]
+        else:
+            self.value = ""
+
+    def __repr__(self): 
+        return "Tag: " + self.name
 
 class tr(Transformer):
     def content(self,items):
@@ -43,18 +60,20 @@ class tr(Transformer):
             d += str(i)+' '
         return d
     
-#    def text(self,items):
+    def tag(self,items):
         print(items)
+        return items
+        #return Tag(items)
 
 json_parser = Lark(json_grammar, parser='lalr',transformer=tr())
 
 parse = json_parser.parse
-file_name = "/opt/FPGA/Boneless-CPU/doc/manual/insns/CMPI.tex"
+file_name = "/opt/FPGA/Boneless-CPU/doc/manual/insns/ADJW.tex"
 #file_name = "ADD.tex"
 
 if __name__ == '__main__':
     print(file_name)
     f = open(file_name)
     t = parse(f.read())
-    print(t)
+    print(t.pretty())
 
