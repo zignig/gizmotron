@@ -13,6 +13,7 @@ class Missing(BaseException):
     pass
 
 {% for name in names -%}
+# --8<-- {{name}}
 class s_{{name}}(SimInstr):
     def run(self):
         raise Missing(self)

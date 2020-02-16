@@ -27,7 +27,7 @@ json_grammar = r"""
     ARR: "←"
     SQB: "[" | "]"
     ?text: ARR | WWA | WORD | NUMBER | COMMA | MINUS | DOT |  AMP  | SQB -> text
-    ?content:  begin_tag | end_tag | tag | _brac | dbs | text+ 
+    ?content:  begin_tag | tag | _brac | dbs | text+ | end_tag
 
     _NL: /[\r\n]+/
 
@@ -38,20 +38,28 @@ json_grammar = r"""
     %ignore _NL
     %import common.CNAME -> NAME
 """
+
+class TreeIndenter(Indenter):
+    NL_type = '_NL'
+    OPEN_PAREN_types = []
+    CLOSE_PAREN_types = []
+    INDENT_type = '_INDENT'
+    DEDENT_type = '_DEDENT'
+    tab_len = 8
+
 class Base:
     pass
 
 class Tag(Base):
     def __init__(self,items):
-        self.name = items[1]
-        if len(items) > 2:
-            print(dir(items[2]))
-            self.value = items[2]
+        self.name = items[0]
+        if len(items) > 1:
+            self.value = items[1]
         else:
             self.value = ""
 
     def __repr__(self): 
-        return "Tag: " + self.name
+        return "Tag: " + self.name + "->" + str(self.value)
 
 class tr(Transformer):
     def content(self,items):
@@ -62,8 +70,7 @@ class tr(Transformer):
     
     def tag(self,items):
         print(items)
-        return items
-        #return Tag(items)
+        return Tag(items)
 
 json_parser = Lark(json_grammar, parser='lalr',transformer=tr())
 
