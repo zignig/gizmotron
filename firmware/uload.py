@@ -136,6 +136,7 @@ class uLoader(Firmware):
             s.readword(ret=w.counter),
             s.writeword(w.counter),
             Rem("Copy the program length for later"),
+            MOVI(w.counter,10),
             MOV(w.counter,w.prog_length),
             Rem("loop through the words"),
             ll("again"),
