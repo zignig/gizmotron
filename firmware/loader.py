@@ -53,22 +53,25 @@ def load(fwc, port="/dev/ttyUSB0", speed=115200):
     # fwc += fwc
     last = 0
     fwc += [ord('?')] + fwc
-    for i, j in enumerate(fwc):
+    for i, j in enumerate(fwc[0:20]):
         val = struct.pack("!B", j)
         # time.sleep(0.1)
         s.write(val)
         c = s.read(1)
-        try:
-            print(i, "\t", struct.unpack("!B", c)[0], "\t", struct.unpack("!B", val)[0])
-        except:
-            print(i,c,val)
+        print(i,c,val)
+        #try:
+        #    print(i, "\t", struct.unpack("!B", c)[0])
+        #except:
+        #print(i,c,val)
         #if i > 2:
         #    if c != last:
         #        print("FAIL")
         #        break
         last = val
-    for i in range(len(fwc)):
-        print(s.read(1))
+    print("BACK")
+    for i in range(20):
+        c = s.read(1)
+        print(i,c)
 
     s.close()
 # ===== Simulator loader and format 

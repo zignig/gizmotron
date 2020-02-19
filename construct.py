@@ -23,8 +23,8 @@ Elaboratable._Elaboratable__silence = True
 def Construct(platform, fw=None, asm_file=None):
     b = Boneless(fw=fw, asm_file=asm_file)
 
-    l = UserLeds("status_leds", platform=platform, source="blinky")
-    b.add_periph(l)
+    #l = UserLeds("status_leds", platform=platform, source="blinky")
+    #b.add_periph(l)
 
     l = UserLeds("status", platform=platform, source="led")
     b.add_periph(l)
@@ -63,7 +63,8 @@ class CPU(Elaboratable):
 
         # attach the external reset 
         cts = platform.request('reset_pin')
-        st = platform.request('status')
+        #st = platform.request('status')
+        st = None
         wb = self.b.wb_access.ext
         er = ExternalReset(wb.select,wb.ext_image,wb.ext_boot,cts,st)
         m.submodules.reseter = er

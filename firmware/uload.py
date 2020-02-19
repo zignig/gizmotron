@@ -133,8 +133,8 @@ class uLoader(Firmware):
             Rem("read the program length"),
             MOVR(w.address, "program_start"),
             ADDI(w.address, w.address, 1),
-            s.readword(ret=w.counter),
-            s.writeword(w.counter),
+            #s.readword(ret=w.counter),
+            #s.writeword(w.counter),
             Rem("Copy the program length for later"),
             MOVI(w.counter,10),
             MOV(w.counter,w.prog_length),
@@ -158,8 +158,9 @@ class uLoader(Firmware):
             #MOVR(w.ret, "program_start"),
             #JR(w.ret, 1),
             Rem("dump the program for testing and debugging"),
-            MOVR(w.address, "program_start"),
+            MOVR(w.address, "init"),
             pd(w.address,w.prog_length),
+            zero_registers(w),
             J('init'),
         ]
 

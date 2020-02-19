@@ -21,8 +21,8 @@ class _warmboot(Elaboratable):
             i_BOOT=boot_internal,
         )
         m.d.comb += [
-            image_internal.eq(Mux(self.select,self.image,self.ext_image)),
-            boot_internal.eq(Mux(self.select,self.boot,self.ext_boot)),
+            image_internal.eq(Mux(self.select,self.ext_image,self.image)),
+            boot_internal.eq(Mux(self.select,self.ext_boot,self.boot)),
         ] 
         return m
 
