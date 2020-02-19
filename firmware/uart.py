@@ -109,15 +109,11 @@ class Serial:
             w = self.w
             ww = Serial.Write()
             return [
-                NOP(0),
-                NOP(0),
-                Rem("write low byte"),
-                ANDI(w.holding, w.word, 0x00FF),
-                ww(w.holding),
-                NOP(0),
-                NOP(0),
                 Rem("write high byte"),
                 SRLI(w.holding, w.word, 8),
+                ww(w.holding),
+                Rem("write low byte"),
+                ANDI(w.holding, w.word, 0x00FF),
                 ww(w.holding),
             ]
 
