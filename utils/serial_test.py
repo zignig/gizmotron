@@ -1,19 +1,15 @@
 import serial, time
 
-bl = serial.Serial("/dev/ttyUSB0", 9600)
-bl.timeout = 0.01
-lines = open("utils/yay.hex").readlines()
-v = bl.readall()
-print(v)
+bl = serial.Serial("/dev/ttyUSB0", 115200,timeout=0.5,dsrdtr=False)
 
+def toggle():
+    print('toggle 0')
+    bl.dtr = 0
+    #time.sleep(1)
+    print('toggle 1')
+    bl.dtr = 1
+    #time.sleep(0.1)
+    bl.close()
 
-def load():
-    for i in lines:
-        val = i.strip().encode("ascii") + str("\r").encode("ascii")
-        # print(val)
-        bl.write(val)
-        v = bl.readall()
-        print(v)
+toggle()
 
-
-load()

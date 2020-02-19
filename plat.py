@@ -14,9 +14,11 @@ class BB(TinyFPGABXPlatform):
             0, rx="A8", tx="B8", attrs=Attrs(IO_STANDARD="SB_LVCMOS", PULLUP=1)
         ),
         *LEDResources(
-            "blinky", pins="J1 H2 H9 D9", attrs=Attrs(IO_STANDARD="SB_LVCMOS")
+            "blinky", pins="H2 H9 D9", attrs=Attrs(IO_STANDARD="SB_LVCMOS")
         ),
-        Resource("reset", 0, Pins("21", conn=("gpio", 0), dir="i")),
+        # CTS on the board ued as reset
+        Resource("status", 0, Pins("12", conn=("gpio", 0), dir="o")),
+        Resource("reset_pin", 0, Pins("18", conn=("gpio", 0), dir="i")),
         Resource("pwm", 0, Pins("5", conn=("gpio", 0), dir="o")),
     ]
 

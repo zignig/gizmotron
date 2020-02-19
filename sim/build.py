@@ -23,7 +23,7 @@ class s_{{name}}(SimInstr):
 
 # dict 
 d = {
-{% for name in names %} "{{name}}" : s_{{name}},
+{% for name in names %} \t"{{name}}" : s_{{name}},
 {% endfor %}
 }
 """

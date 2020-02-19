@@ -15,6 +15,8 @@ from cores.pll import pll
 from cores.csr_test import csrCounter
 from cores.multiply import Multiply
 
+from cores.ext_reset import ExternalReset
+
 Elaboratable._Elaboratable__silence = True
 
 # The device construct
@@ -40,6 +42,7 @@ def Construct(platform, fw=None, asm_file=None):
     # m = Multiply('multiply')
     # b.add_periph(m)
     b.prepare()
+
     return b
 
 
@@ -56,6 +59,14 @@ class CPU(Elaboratable):
 
         m = Module()
         m.domains.sync = ClockDomain()
+
+
+        # attach the external reset 
+        cts = platform.request('reset_pin')
+        st = platform.request('status')
+        wb = self.b.wb_access.ext
+        er = ExternalReset(wb.select,wb.ext_image,wb.ext_boot,cts,st)
+        m.submodules.reseter = er
 
         if self.has_pll:
             pl = pll()

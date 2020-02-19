@@ -42,12 +42,14 @@ def char_convert(fw):
 
 
 def load(fwc, port="/dev/ttyUSB0", speed=115200):
-    try:
-        s = serial.Serial(port, speed, timeout=0.018)
-    except:
-        print("Serial port ", port ," not available")
-        return
+#    try:
+    s = serial.Serial(port, speed, timeout=0.018,dsrdtr=False,rtscts=False)
+    #s.dtr =  1
+#    except:
+#        print("Serial port ", port ," not available")
+#        return
 
+    #s.dts = 1 
     # fwc += fwc
     last = 0
     fwc += [ord('?')] + fwc

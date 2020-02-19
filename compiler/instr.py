@@ -5,10 +5,19 @@
 # For an explanation, check out the JSON parser tutorial at /docs/json_tutorial.md
 #
 
-import sys
+import sys,os
 
 from lark import Lark, Transformer, v_args
 import pprint
+
+
+from boneless.arch import opcode
+
+from jinja2 import Template
+# get the dict of instructiosn
+
+d = opcode.J.mnemonics
+opcodes = list(d.keys())
 
 json_grammar = r"""
     ?start: _NL* begin_tag content+ end_tag
@@ -39,14 +48,6 @@ json_grammar = r"""
     %import common.CNAME -> NAME
 """
 
-class TreeIndenter(Indenter):
-    NL_type = '_NL'
-    OPEN_PAREN_types = []
-    CLOSE_PAREN_types = []
-    INDENT_type = '_INDENT'
-    DEDENT_type = '_DEDENT'
-    tab_len = 8
-
 class Base:
     pass
 
@@ -75,12 +76,15 @@ class tr(Transformer):
 json_parser = Lark(json_grammar, parser='lalr',transformer=tr())
 
 parse = json_parser.parse
-file_name = "/opt/FPGA/Boneless-CPU/doc/manual/insns/ADJW.tex"
-#file_name = "ADD.tex"
+path = "/opt/FPGA/Boneless-CPU/doc/manual/insns"
 
-if __name__ == '__main__':
+def parse_file(file_name,path=path):
     print(file_name)
-    f = open(file_name)
+    f = open(path+os.sep+file_name)
     t = parse(f.read())
     print(t.pretty())
 
+if __name__ == '__main__':
+    parse_file("J.tex",path=path)
+    #for i in  opcodes:
+    #    print(i)
