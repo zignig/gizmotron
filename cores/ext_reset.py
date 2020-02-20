@@ -8,13 +8,12 @@ from nmigen.build import ResourceError
 # warm boot based on count
 
 class ExternalReset(Elaboratable):
-    def __init__(self,select,image,boot,pin,status):
+    def __init__(self,select,image,boot,pin):
         self.select = select
         self.image = image
         self.boot = boot
         self.pin = pin
         self.timeout = int(8e6)
-        self.status = status 
 
     def elaborate(self,platform):
         m = Module()

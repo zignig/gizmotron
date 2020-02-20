@@ -76,11 +76,11 @@ def load(fwc, port="/dev/ttyUSB0", speed=115200):
         ser_read(ser,10)
     except:
         pass
-    warm(ser)
+    #warm(ser)
     time.sleep(0.2)
-    for i in range(10000):
+    for i in range(500):
         write_word(ser,i)
-        time.sleep(0.01)
+        #time.sleep(0.02)
         val = read_word(ser)
         time.sleep(0.01)
         #print(i,val)

@@ -7,7 +7,7 @@ from processor import Boneless
 
 # Working periphs
 from cores.user_leds import UserLeds
-from cores.serial import Serial, Serial_nm
+from cores.serial import Serial
 from cores.counter import Counter
 from cores.pwm import Pwm
 from cores.warm import WarmBoot
@@ -62,11 +62,9 @@ class CPU(Elaboratable):
 
 
         # attach the external reset 
-        cts = platform.request('reset_pin')
-        #st = platform.request('status')
-        st = None
+        dtr = platform.request('reset_pin')
         wb = self.b.wb_access.ext
-        er = ExternalReset(wb.select,wb.ext_image,wb.ext_boot,cts,st)
+        er = ExternalReset(wb.select,wb.ext_image,wb.ext_boot,dtr)
         m.submodules.reseter = er
 
         if self.has_pll:
