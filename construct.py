@@ -16,6 +16,7 @@ from cores.csr_test import csrCounter
 from cores.multiply import Multiply
 
 from cores.ext_reset import ExternalReset
+from cores.fifo_uart import FIFOUart
 
 Elaboratable._Elaboratable__silence = True
 
@@ -29,8 +30,10 @@ def Construct(platform, fw=None, asm_file=None):
     l = UserLeds("status", platform=platform, source="led")
     b.add_periph(l)
 
-    s = Serial("serial_port", platform=platform, number=0, baud=115200)
-    b.add_periph(s)
+    #s = Serial("serial_port", platform=platform, number=0, baud=115200)
+    #b.add_periph(s)
+    fs = FIFOUart("fifo_uart",platform=platform ,number=0 , baud=115200,depth=32)
+    b.add_periph(fs)
 
     wb = WarmBoot("warmboot")
     b.wb_access = wb  # for external warm booter

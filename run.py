@@ -7,6 +7,7 @@ from nmigen.hdl.ir import Fragment
 from nmigen.back import pysim, rtlil, verilog
 
 
+from cores.gizmo import Gizmo
 from boneless.arch.asm import Assembler
 import array
 import intelhex
@@ -62,9 +63,16 @@ if __name__ == "__main__":
         "-l", action="store", help="firmware to load in the sim", default=None
     )
 
+    p.add_argument(
+        "-d", action="store_true", help="activate debugging ", default=False
+    )
+
     args = p.parse_args()
 
     platform = BB()
+    if args.d:
+        Gizmo.debug = True 
+
     if args.action == "list":
         show_firmware()
 
