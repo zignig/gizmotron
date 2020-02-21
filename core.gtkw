@@ -1,22 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Sat Feb  8 07:52:42 2020
+[*] Fri Feb 21 06:20:41 2020
 [*]
 [dumpfile] "/opt/FPGA/gizmotron/test.vcd"
-[dumpfile_mtime] "Sat Feb  8 07:52:42 2020"
-[dumpfile_size] 84158905
+[dumpfile_mtime] "Fri Feb 21 06:20:41 2020"
+[dumpfile_size] 44496091
 [savefile] "/opt/FPGA/gizmotron/core.gtkw"
-[timestart] 0
+[timestart] 2492000000000
 [size] 1920 1035
 [pos] -1 -1
-*-39.982529 1141986000000 2799463000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-37.787514 3224400000000 2799463000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.boneless.
 [treeopen] top.boneless.core.
 [treeopen] top.boneless.core.dec.
 [treeopen] top.boneless.core.memwr.
 [treeopen] top.boneless.serial_port.
-[treeopen] top.boneless.serial_port.tx.
 [sst_width] 228
 [signals_width] 364
 [sst_expanded] 1
@@ -425,10 +424,10 @@ top.boneless.core.memwr.memory(503)[15:0]
 -group_end
 @200
 -
-@c00024
+@c00821
 [color] 7
 +{w1-r0} top.boneless.core.memwr.memory(504)[15:0]
-@28
+@29
 [color] 7
 (0)top.boneless.core.memwr.memory(504)[15:0]
 [color] 7
@@ -461,7 +460,7 @@ top.boneless.core.memwr.memory(503)[15:0]
 (14)top.boneless.core.memwr.memory(504)[15:0]
 [color] 7
 (15)top.boneless.core.memwr.memory(504)[15:0]
-@1401200
+@1401201
 -group_end
 @24
 [color] 7
@@ -493,27 +492,9 @@ top.boneless.core.i_addr[15:0]
 top.boneless.core.fsm_state
 @200
 -
-@28
-+{TX state machine} top.boneless.serial_port.tx.fsm_state
-@821
-top.boneless.tx_data[7:0]
-@28
-top.boneless.serial_port.tx.uart_0__tx__o
-top.boneless.tx_ready
-top.boneless.serial_port.tx.tx_ack
-top.boneless.serial_port.tx.tx_strobe
-@200
 -
 @28
-+{rx_state} top.boneless.serial_port.rx.fsm_state
-@820
-top.boneless.serial_port.rx.rx_data[7:0]
-@28
-top.boneless.serial_port.rx.uart_0__rx__i
 top.boneless.clk
-top.boneless.serial_port.rx.rx_strobe
-top.boneless.rx_ack
-top.boneless.serial_port.rx.rx_ready
 @24
 top.boneless.core.memwr.memory(107)[15:0]
 top.boneless.core.memwr.memory(108)[15:0]

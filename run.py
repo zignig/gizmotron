@@ -80,6 +80,8 @@ if __name__ == "__main__":
         print("Show info")
         if check_firmware(args.p): raise 
         cpu = construct.CPU(platform, fw=args.p, asm_file=args.f)
+        if args.d:
+            print(cpu.b.periph.asm_header())
         cpu.b.fw.show()
         print("Length" , len(cpu.b.code))
 

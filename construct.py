@@ -32,7 +32,7 @@ def Construct(platform, fw=None, asm_file=None):
 
     #s = Serial("serial_port", platform=platform, number=0, baud=115200)
     #b.add_periph(s)
-    fs = FIFOUart("fifo_uart",platform=platform ,number=0 , baud=115200,depth=32)
+    fs = FIFOUart("serial_port",platform=platform ,number=0 , baud=115200,depth=64)
     b.add_periph(fs)
 
     wb = WarmBoot("warmboot")
