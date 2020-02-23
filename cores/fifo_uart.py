@@ -119,12 +119,30 @@ class _FIFOUart(Elaboratable):
         m.submodules.TX_FIFO  = self.TX_FIFO
         return m
 
+
+class FIFOLoopback(Elaboratable):
+    def __init__(self,rx,tx,clk_freq,baud_rate,depth=128):
+        self.TX_FIFO = _FIFOTX(tx,clk_freq,baud_rate,depth=depth)
+        self.RX_FIFO = _FIFORX(rx,clk_freq,baud_rate,depth=depth)
+
+    def elaborate(self,platform):
+        m = Module()
+        m.submodules.RX_FIFO  = self.RX_FIFO
+        m.submodules.TX_FIFO  = self.TX_FIFO
+        
+        m.d.comb += [
+            self.TX_FIFO.w_data.eq(self.RX_FIFO.r_data),
+            self.TX_FIFO.r_en.eq(self.RX_FIFO.r_rdy)
+        ]
+
+        return m
+
 class FIFOUart(Gizmo):
     def build(self, **kwargs):
         serial = self.platform.request("uart", self.number)
         clock = self.platform.lookup(self.platform.default_clk).clock
 
-        u = _FIFOUart(serial.rx,serial.tx,clock.frequency,self.baud,depth=self.depth)
+        u = _fifouart(serial.rx,serial.tx,clock.frequency,self.baud,depth=self.depth)
         self.add_device(u)
 
         # TX
@@ -141,3 +159,16 @@ class FIFOUart(Gizmo):
         rx_data = IO(sig_in=u.RX_FIFO.rx_data,name="rx_data")
         self.add_reg(rx_data)
 
+
+if __name__ == "__main__":
+    from ..sim_data import test_rx
+    from nmigen.back import pysim, rtlil, verilog
+    st = "the quick brown fox jumps over the lazy dog"
+    data = sim_data.str_data(st)
+    tx = Signal()
+    rx = Signal(reset=1)
+    fragment = FIFOLoopback(rx,tx,int(16e6),115200)
+    with pysim.Simulator(fragment, vcd_file="fifo_loop.vcd", traces=()) as sim:
+        sim.add_clock(100e-6)
+        sim.add_sync_process(test_rx(data, dut))
+        sim.run_until(100e-6 * 300000, run_passive=True)
