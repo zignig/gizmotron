@@ -55,6 +55,9 @@ class _FIFORX(Elaboratable):
  
         return m
 
+# This is still broken , fills the FIFO 
+# the logic to empty it is broken 
+
 class _FIFOTX(Elaboratable):
     def __init__(self,tx,clk_freq,baud_rate,depth=128):
         # create the components
@@ -79,7 +82,8 @@ class _FIFOTX(Elaboratable):
         # TX
         m.d.comb += [
             self.TX_FIFO.r_en.eq(self.TX.tx_ready),
-            #self.TX.tx_ack.eq(self.TX_FIFO.r_rdy),
+            #self.TX.tx_ready.eq(self.TX_FIFO.r_rdy),
+            self.TX.tx_ready.eq(self.TX_FIFO.r_rdy),
             self.TX.tx_data.eq(self.TX_FIFO.r_data),
         ]
 
@@ -96,18 +100,18 @@ class _FIFOTX(Elaboratable):
 
             with m.State("WAIT"):
                 with m.If(self.tx_strobe == 0):
-                   m.next = "START"
+                    m.next = "START"
  
         return m
-        return m
+
 
 
 class _FIFOUart(Elaboratable):
     def __init__(self,rx,tx,clk_freq,baud_rate,depth=128):
         self.TX_FIFO = _FIFOTX(tx,clk_freq,baud_rate,depth=depth)
+        self.TX = self.TX_FIFO.TX
         self.RX_FIFO = _FIFORX(rx,clk_freq,baud_rate,depth=depth)
         self.RX = self.RX_FIFO.RX
-        self.TX = self.TX_FIFO.TX
 
     def elaborate(self,platform):
         m = Module()

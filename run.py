@@ -56,7 +56,7 @@ if __name__ == "__main__":
         "-p",
         action="store",
         help="firmware to run , use list to show",
-        default="uLoader",
+        default="Echo",
     )
 
     p.add_argument(

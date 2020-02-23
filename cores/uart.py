@@ -400,7 +400,7 @@ if __name__ == "__main__":
         ) as sim:
             sim.add_clock(freq)
             sim.add_sync_process(_test(tx, rx, tb))
-            # sim.run_until(100e-6, run_passive=True)
+            #sim.run_until(100e-6, run_passive=True)
             sim.run()
 
     if args.type == "uart":

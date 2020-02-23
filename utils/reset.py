@@ -12,7 +12,7 @@ def toggle(count):
         bl.dtr = 0
     bl.dtr = 1
 
-#toggle(2) #bootloader
-toggle(4) # warm boot into image
+toggle(2) #bootloader
+#toggle(4) # warm boot into image
 bl.close()
 
