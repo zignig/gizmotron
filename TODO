@@ -1,3 +1,7 @@
 - fix up reader to deal with two char character returns
 - need to add , warmboot and processor init, to the serial port
 - convert to CSR  !! tried, failed
+
+- add write strobe to IO 
+  - need to add option to IO
+  - neet to add to gizmo to attach code
