@@ -105,9 +105,14 @@ class IO:
     maps ext_port inside a boneless processor 
     """
 
-    def __init__(self, sig_in=None, sig_out=None, name=None):
+    def __init__(self, sig_in=None, sig_out=None, name=None,we=None,re=None):
+        # the signals to bind
         self.sig_in = sig_in
         self.sig_out = sig_out
+        # bind write/read enable for the memory transaction
+        self.we = we
+        self.re = re
+        # assign the address for the register
         self.addr = -1
         self.bits = []
         self.assigned = False
@@ -204,6 +209,8 @@ class Gizmo:
 
     def attach(self, m, boneless):
         " Generate and bind the gateway to the Boneless "
+        #TODO add the re we signals to the binding
+
         if self.debug:
             print("<< " + self.name + " >>")
         if len(self.registers) > 0:
