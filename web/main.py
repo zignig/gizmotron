@@ -2,6 +2,7 @@ from quart import Quart, render_template, jsonify, session
 import os
 import uuid
 import hardware
+import mem_graph
 
 
 def vue_comp(path):
@@ -44,6 +45,10 @@ async def list_boards():
 @app.route("/widget.js")
 async def widget():
     return vc
+
+@app.route("/mem.svg")
+async def mem():
+    return mem_graph.get_mem(None)
 
 
 app.run("0.0.0.0", 5002)
