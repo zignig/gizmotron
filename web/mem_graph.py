@@ -9,7 +9,8 @@ def get_mem(mem):
     d = svgwrite.Drawing()
     # add stuff
     d.defs.add(d.style(CSS_STYLES))
-    d.add(d.rect(insert=(10,10),size=(20,20),class_="whitesquare"))
+    for i in range(40):
+        d.add(d.rect(insert=(21*i,10),size=(20,20),class_="whitesquare"))
 
     return d.tostring()
 
