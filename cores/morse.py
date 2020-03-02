@@ -2,6 +2,8 @@
 
 from nmigen import *
 from nmigen.cli import pysim
+from nmigen.hdl.rec import Layout
+import stream 
 
 # coding is 16 bits
 # XXXXXX.....ngyyy
@@ -201,61 +203,140 @@ class Morse(Elaboratable):
         self.enc = Memory(width=16,depth=128,init=mapping)
         self.current = Signal(16) # current signal to process
         self.read = self.enc.read_port()
+        # incoming char
+        self.input = stream.StreamSink(Layout([('data',8)]))
+        # output bitstream 
+        self.output = stream.StreamSource(Layout([('bitstrem',1)]))
 
     def elaborate(self,platform):
         m = Module()
         # bind the memory
         m.submodules.mem = self.read
 
+        # input
+        char = Signal(7) # 7 bit char
+
         # internals
-        data = Signal(6)
+        bits = Signal(6)
         length = Signal(3)
         space = Signal()
         nop = Signal()
         
-        # temp counter 
-        counter = Signal(8)
-        next_c = Signal(8)
-        m.d.sync += [
-            counter.eq(counter+1),
-            next_c.eq(counter),
-        ]
-        m.d.comb += [
-            self.read.addr.eq(counter),
-            self.current.eq(self.read.data),
-        ]
-
         # bind the internals 
         m.d.comb += [
-            data.eq(self.current[10:16]),
+            bits.eq(self.current[10:16]),
             length.eq(self.current[0:3]),
             space.eq(self.current[3]),
             nop.eq(self.current[4]),
+            self.read.addr.eq(char),
+            self.current.eq(self.read.data),
         ]
 
+        # fsm variables 
+        bit_count = Signal(3)
+        finished = Signal(reset=1)
+        shreg = Signal(6)
+        bit = Signal()
+
+        m.d.comb += [
+            bit.eq(shreg[0]),
+        ]
+
+        # testing
+        dit = Signal()
+        dah = Signal()
         with m.FSM() as fsm:
             with m.State("IDLE"):
-                pass        
+               m.d.comb += self.input.ready.eq(1)
+               with m.If(self.input.valid == 1):
+                    m.d.comb += self.input.ready.eq(0),
+                    m.d.sync += [
+                        char.eq(self.input.data), # 8 to 7 bits
+                        finished.eq(0),
+                    ]
+                    m.d.sync += char.eq(self.input.data)
+                    m.next = "START"
+
+            with m.State("START"):
+                m.d.sync += [
+                    bit_count.eq(length),
+                    shreg.eq(bits),
+                ]
+                m.next = "START_BIT"
+        
+            with m.State("START_BIT"):
+                with m.If(nop == 1):
+                    m.next = "IDLE"
+                with m.If(space == 1):
+                    m.next = "WORD_SPACE"
+                with m.Else():  
+                    m.next = "BIT"
+
+            with m.State("BIT"):
+                with m.If(bit == 0):
+                    m.next = "DIT"
+                with m.If(bit == 1):
+                    m.next = "DAH"
+
+            with m.State("DIT"):
+                # TODO output dit 
+                m.d.comb += dit.eq(1)
+                m.next = "INTER_SPACE"
+
+            with m.State("DAH"):
+                # TODO output dah
+                m.d.comb += dah.eq(1)
+                m.next = "INTER_SPACE"
+
+            with m.State("INTER_SPACE"):
+                # TODO add a bit to the ouput 
+                m.d.sync += [
+                    shreg.eq(shreg << 1),
+                    bit_count.eq(bit_count - 1),
+                ]
+                with m.If(bit_count == 0):
+                    m.d.comb += self.input.ready.eq(1)
+                    m.next = "IDLE"
+                with m.Else():
+                    m.next = "BIT"
+
+            with m.State("WORD_SPACE"):
+                # TODO add 7 zeros to the feed
+                m.next = "IDLE"
+
+                
         return m
 
 
+def sim_data(s,dut):
 
+    def b(val):
+        print(val,ord(val))
+        yield dut.data.eq(ord(val))
+        yield dut.valid.eq(1)
+        yield
+        yield dut.valid.eq(0)
+        while ( yield dut.ready ) == 0:
+            yield
+ 
+    for i in s:
+        yield from b(i)
+    
 if __name__ == "__main__":
     alpha , mem = build_mem(coding)
-    test = "SOS"
-    decode_str(test,alpha)
+    test_string = " HELP ME "
+    #decode_str(test,alpha)
 
     mo = Morse(mem)
     if debug:
         print(alpha)
         print(mem)
-    else:
-        with pysim.Simulator(
-            mo,
-            vcd_file=open("morse.vcd", "w"),
-            # gtkw_file=open("trig.gtkw", "w"),
-            #traces=[tb.o, tb.counter],
-        ) as sim:
-            sim.add_clock(1)
-            #sim.add_sync_process(runner())
-            sim.run_until(5000, run_passive=True)
+    with pysim.Simulator(
+        mo,
+        vcd_file=open("morse.vcd", "w"),
+        # gtkw_file=open("trig.gtkw", "w"),
+        #traces=[tb.o, tb.counter],
+    ) as sim:
+        sim.add_clock(10)
+        sim.add_sync_process(sim_data(test_string,mo.input))
+        sim.run_until(5000, run_passive=True)
