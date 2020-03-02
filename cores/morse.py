@@ -165,6 +165,7 @@ def decode_str(s,d):
 def layout(d):
     # memory layout
     # duplicate into lower case
+    empty = 0 | 16
     k = list(d.keys())
     for i in k:
         c = chr(i)
@@ -173,12 +174,22 @@ def layout(d):
             # add lower case
             d[ord(lc)] = d[i]
     for i in range(128):
-        if i in d:
-            print(i,chr(i),as_bits(d[i]))
-        else:
-            print(i,chr(i),"empty")
+        if i not in d:
+            d[i] = empty
+        print(i,chr(i),as_bits(d[i]))
+    return d
+
+def covert_to_init(d):
+    data = []
+    for i in range(128):
+        data.append(d[i])
+    return data 
+
 alpha = info()
 layout(alpha)
+mem = covert_to_init(alpha)
 print(alpha)
+print(mem)
+
 test = "SOS"
 decode_str(test,alpha)
