@@ -1,5 +1,8 @@
 # morse encoder
 
+from nmigen import *
+from nmigen.cli import pysim
+
 # coding is 16 bits
 # XXXXXX.....ngyyy
 # X : dots and dashes
@@ -9,7 +12,7 @@
 # y : length of code
 import math
 
-debug = True 
+debug = False 
 
 def power_of_2(x):
     return 1 if x == 0 else math.ceil(math.log2(x))
@@ -64,7 +67,7 @@ coding = {
     " ": "_",
 }
 # morse constants
-class morse:
+class morse_const:
     dit_length = 1
     dah_length = 3
     symbol_gap = 1
@@ -74,7 +77,7 @@ class morse:
 
 # encode the morse into binary
 
-def info():
+def convert(coding):
     max = 0
     min_c = 10000 
     max_c = 0 
@@ -176,7 +179,8 @@ def layout(d):
     for i in range(128):
         if i not in d:
             d[i] = empty
-        print(i,chr(i),as_bits(d[i]))
+        if debug:
+            print(i,chr(i),as_bits(d[i]))
     return d
 
 def covert_to_init(d):
@@ -185,11 +189,73 @@ def covert_to_init(d):
         data.append(d[i])
     return data 
 
-alpha = info()
-layout(alpha)
-mem = covert_to_init(alpha)
-print(alpha)
-print(mem)
+def build_mem(coding):
+    alpha = convert(coding)
+    layout(alpha)
+    mem = covert_to_init(alpha)
+    return alpha,mem
 
-test = "SOS"
-decode_str(test,alpha)
+# elaboratable morse encoder
+class Morse(Elaboratable):
+    def __init__(self,mapping):
+        self.enc = Memory(width=16,depth=128,init=mapping)
+        self.current = Signal(16) # current signal to process
+        self.read = self.enc.read_port()
+
+    def elaborate(self,platform):
+        m = Module()
+        # bind the memory
+        m.submodules.mem = self.read
+
+        # internals
+        data = Signal(6)
+        length = Signal(3)
+        space = Signal()
+        nop = Signal()
+        
+        # temp counter 
+        counter = Signal(8)
+        next_c = Signal(8)
+        m.d.sync += [
+            counter.eq(counter+1),
+            next_c.eq(counter),
+        ]
+        m.d.comb += [
+            self.read.addr.eq(counter),
+            self.current.eq(self.read.data),
+        ]
+
+        # bind the internals 
+        m.d.comb += [
+            data.eq(self.current[10:16]),
+            length.eq(self.current[0:3]),
+            space.eq(self.current[3]),
+            nop.eq(self.current[4]),
+        ]
+
+        with m.FSM() as fsm:
+            with m.State("IDLE"):
+                pass        
+        return m
+
+
+
+if __name__ == "__main__":
+    alpha , mem = build_mem(coding)
+    test = "SOS"
+    decode_str(test,alpha)
+
+    mo = Morse(mem)
+    if debug:
+        print(alpha)
+        print(mem)
+    else:
+        with pysim.Simulator(
+            mo,
+            vcd_file=open("morse.vcd", "w"),
+            # gtkw_file=open("trig.gtkw", "w"),
+            #traces=[tb.o, tb.counter],
+        ) as sim:
+            sim.add_clock(1)
+            #sim.add_sync_process(runner())
+            sim.run_until(5000, run_passive=True)
