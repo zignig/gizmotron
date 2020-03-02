@@ -1,4 +1,4 @@
-from quart import Quart, render_template, jsonify, session
+from quart import Quart, render_template, jsonify, session, Response
 import os
 import uuid
 import hardware
@@ -48,7 +48,8 @@ async def widget():
 
 @app.route("/mem.svg")
 async def mem():
-    return mem_graph.get_mem(None)
+    data = mem_graph.get_mem(None)
+    return Response(data,content_type="image/svg+xml")
 
 
 app.run("0.0.0.0", 5002)

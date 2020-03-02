@@ -2,4 +2,5 @@
     float: right;
     width: 80%;
 }
-
+.whitesquare { fill: skyblue ; stroke: black ; stroke-width: 0.2px ; transition: fill 1s ;}
+.whitesquare:hover { fill: green ; } 
