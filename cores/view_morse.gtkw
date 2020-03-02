@@ -1,0 +1,82 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Mon Mar  2 14:37:10 2020
+[*]
+[dumpfile] "/opt/FPGA/gizmotron/cores/morse.vcd"
+[dumpfile_mtime] "Mon Mar  2 14:35:14 2020"
+[dumpfile_size] 32059
+[savefile] "/opt/FPGA/gizmotron/cores/view_morse.gtkw"
+[timestart] 0
+[size] 1920 1035
+[pos] -1 -1
+*-46.216454 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[sst_width] 228
+[signals_width] 276
+[sst_expanded] 1
+[sst_vpaned_height] 305
+@28
+top.clk
+top.\source.ready
+top.\source.valid
+@820
+[color] 2
+top.data__data[7:0]
+[color] 3
+top.char[6:0]
+@c00820
+top.enc_r_addr[6:0]
+@28
+(0)top.enc_r_addr[6:0]
+(1)top.enc_r_addr[6:0]
+(2)top.enc_r_addr[6:0]
+(3)top.enc_r_addr[6:0]
+(4)top.enc_r_addr[6:0]
+(5)top.enc_r_addr[6:0]
+(6)top.enc_r_addr[6:0]
+@1401200
+-group_end
+@24
+top.enc_r_data[15:0]
+@c00024
+top.length[2:0]
+@28
+(0)top.length[2:0]
+(1)top.length[2:0]
+(2)top.length[2:0]
+@1401200
+-group_end
+@24
+top.bit_count[2:0]
+@29
+top.fsm_state
+@28
+top.space
+top.nop
+@800022
+top.bits[5:0]
+@28
+(0)top.bits[5:0]
+(1)top.bits[5:0]
+(2)top.bits[5:0]
+(3)top.bits[5:0]
+(4)top.bits[5:0]
+(5)top.bits[5:0]
+@800022
+top.shreg[5:0]
+@28
+(0)top.shreg[5:0]
+(1)top.shreg[5:0]
+(2)top.shreg[5:0]
+(3)top.shreg[5:0]
+(4)top.shreg[5:0]
+(5)top.shreg[5:0]
+@1001200
+-group_end
+-group_end
+@28
+top.dit
+top.dah
+top.bit
+[pattern_trace] 1
+[pattern_trace] 0
