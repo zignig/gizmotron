@@ -248,6 +248,11 @@ class Morse(Elaboratable):
         shreg = Signal(6)
         bit = Signal()
 
+        symbol_count = Signal(6)
+        symbol_incr = Signal(6)
+        out_bit = Signal()
+
+        # current bit is the head of the shift register
         m.d.comb += [bit.eq(shreg[-1])]
 
         # testing
@@ -277,17 +282,46 @@ class Morse(Elaboratable):
             with m.State("START_BIT"):
                 with m.If(nop == 1):
                     m.next = "IDLE"
-                with m.If(space == 1):
-                    m.next = "WORD_SPACE"
                 with m.Else():
                     m.next = "BIT"
 
             with m.State("BIT"):
                 m.d.sync += [shreg.eq(shreg << 1), bit_count.eq(bit_count - 1)]
+                m.d.sync += symbol_incr.eq(0)
+                # SPACE
+                with m.If(space == 1):
+                    m.d.sync+= [
+                            symbol_count.eq(morse_const.word_gap) ,
+                            out_bit.eq(0),
+                            ]
+                # DIT
                 with m.If(bit == 0):
-                    m.next = "DIT"
+                    m.d.sync += [
+                                symbol_count.eq(morse_const.dit_length),
+                                out_bit.eq(1),
+                                ]
+                # DAH
                 with m.If(bit == 1):
-                    m.next = "DAH"
+                    m.d.sync += [
+                                symbol_count.eq(morse_const.dah_length),
+                                out_bit.eq(1)
+                                ]
+                m.next = "SYMBOL"
+                
+
+            with m.State("SYMBOL"):
+                with m.If(symbol_incr == symbol_count):
+                        m.next = "BIT"
+                m.next = "SYMBOL_NEXT"
+
+            with m.State("SYMBOL_NEXT"):
+                m.d.sync += symbol_incr.eq(symbol_incr + 1)
+                m.next = "SYMBOL" 
+
+            # change this to a symbol count
+            # counting up to symbol lenth
+            # generate valid signals for output stream 
+            # use morse_conf class
 
             with m.State("DIT"):
                 # TODO output dit
@@ -330,7 +364,7 @@ def sim_data(s, dut):
 
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
-    test_string = " sms "
+    test_string = " sphinx of black quartz judge my vow"
     # decode_str(test,alpha)
 
     mo = Morse(mem)
