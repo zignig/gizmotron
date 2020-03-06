@@ -251,6 +251,7 @@ class Morse(Elaboratable):
         symbol_count = Signal(6)
         symbol_incr = Signal(6)
         out_bit = Signal()
+        out_data = Signal()
 
         # current bit is the head of the shift register
         m.d.comb += [bit.eq(shreg[-1])]
@@ -306,44 +307,51 @@ class Morse(Elaboratable):
                                 symbol_count.eq(morse_const.dah_length),
                                 out_bit.eq(1)
                                 ]
-                m.next = "SYMBOL"
+                with m.If(bit_count == 0):
+                    m.d.comb += self.input.ready.eq(1)
+                    m.next = "IDLE"
+                with m.Else():
+                    m.next = "SYMBOL"
                 
 
             with m.State("SYMBOL"):
-                with m.If(symbol_incr == symbol_count):
-                        m.next = "BIT"
+                m.d.sync += out_data.eq(out_bit)
                 m.next = "SYMBOL_NEXT"
 
             with m.State("SYMBOL_NEXT"):
-                m.d.sync += symbol_incr.eq(symbol_incr + 1)
-                m.next = "SYMBOL" 
+                with m.If( symbol_incr ==  symbol_count):
+                    m.d.sync += out_data.eq(0)
+                    m.next = "BIT"
+                with m.Else():
+                    m.d.sync += symbol_incr.eq(symbol_incr + 1)
+                    m.next = "SYMBOL" 
 
             # change this to a symbol count
             # counting up to symbol lenth
             # generate valid signals for output stream 
             # use morse_conf class
 
-            with m.State("DIT"):
+            #with m.State("DIT"):
                 # TODO output dit
-                m.d.comb += dit.eq(1)
-                m.next = "INTER_SPACE"
+            #   m.d.comb += dit.eq(1)
+            #   m.next = "INTER_SPACE"
 
-            with m.State("DAH"):
-                # TODO output dah
-                m.d.comb += dah.eq(1)
-                m.next = "INTER_SPACE"
+            #ith m.State("DAH"):
+            #   # TODO output dah
+            #   m.d.comb += dah.eq(1)
+            #   m.next = "INTER_SPACE"
 
-            with m.State("INTER_SPACE"):
-                # TODO add a bit to the ouput
-                with m.If(bit_count == 0):
-                    m.d.comb += self.input.ready.eq(1)
-                    m.next = "IDLE"
-                with m.Else():
-                    m.next = "BIT"
+            #ith m.State("INTER_SPACE"):
+            #   # TODO add a bit to the ouput
+            #   with m.If(bit_count == 0):
+            #       m.d.comb += self.input.ready.eq(1)
+            #       m.next = "IDLE"
+            #   with m.Else():
+            #       m.next = "BIT"
 
-            with m.State("WORD_SPACE"):
-                # TODO add 7 zeros to the feed
-                m.next = "IDLE"
+            #ith m.State("WORD_SPACE"):
+            #   # TODO add 7 zeros to the feed
+            #   m.next = "IDLE"
 
         return m
 
@@ -364,7 +372,8 @@ def sim_data(s, dut):
 
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
-    test_string = " sphinx of black quartz judge my vow"
+    #test_string = " sphinx of black quartz judge my vow "
+    test_string = "MORSE CODE"
     # decode_str(test,alpha)
 
     mo = Morse(mem)
