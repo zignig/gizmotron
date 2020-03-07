@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri Mar  6 13:22:21 2020
+[*] Sat Mar  7 03:11:58 2020
 [*]
 [dumpfile] "/opt/FPGA/gizmotron/cores/morse.vcd"
-[dumpfile_mtime] "Fri Mar  6 13:21:39 2020"
-[dumpfile_size] 40728
+[dumpfile_mtime] "Sat Mar  7 03:08:59 2020"
+[dumpfile_size] 39182
 [savefile] "/opt/FPGA/gizmotron/cores/view_morse.gtkw"
 [timestart] 0
 [size] 1920 1035
 [pos] -1 -1
-*-43.489113 13000000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-50.115734 262000000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [sst_width] 228
 [signals_width] 276
@@ -19,9 +19,29 @@
 top.clk
 top.\source.ready
 top.\source.valid
-@820
+@c00820
 [color] 2
 top.data__data[7:0]
+@28
+[color] 2
+(0)top.data__data[7:0]
+[color] 2
+(1)top.data__data[7:0]
+[color] 2
+(2)top.data__data[7:0]
+[color] 2
+(3)top.data__data[7:0]
+[color] 2
+(4)top.data__data[7:0]
+[color] 2
+(5)top.data__data[7:0]
+[color] 2
+(6)top.data__data[7:0]
+[color] 2
+(7)top.data__data[7:0]
+@1401200
+-group_end
+@820
 [color] 3
 top.char[6:0]
 @c00820
@@ -36,8 +56,27 @@ top.enc_r_addr[6:0]
 (6)top.enc_r_addr[6:0]
 @1401200
 -group_end
-@24
+@c00024
 top.enc_r_data[15:0]
+@28
+(0)top.enc_r_data[15:0]
+(1)top.enc_r_data[15:0]
+(2)top.enc_r_data[15:0]
+(3)top.enc_r_data[15:0]
+(4)top.enc_r_data[15:0]
+(5)top.enc_r_data[15:0]
+(6)top.enc_r_data[15:0]
+(7)top.enc_r_data[15:0]
+(8)top.enc_r_data[15:0]
+(9)top.enc_r_data[15:0]
+(10)top.enc_r_data[15:0]
+(11)top.enc_r_data[15:0]
+(12)top.enc_r_data[15:0]
+(13)top.enc_r_data[15:0]
+(14)top.enc_r_data[15:0]
+(15)top.enc_r_data[15:0]
+@1401200
+-group_end
 @c00024
 top.length[2:0]
 @28
@@ -82,8 +121,6 @@ top.\source.valid
 @820
 [color] 2
 top.data__data[7:0]
-[color] 3
-top.char[6:0]
 @c00820
 top.enc_r_addr[6:0]
 @28
@@ -109,8 +146,67 @@ top.length[2:0]
 @24
 top.bit_count[2:0]
 @28
-top.fsm_state
 top.space
 top.nop
+top.fsm_state
+@c00820
+[color] 3
+top.char[6:0]
+@28
+[color] 3
+(0)top.char[6:0]
+[color] 3
+(1)top.char[6:0]
+[color] 3
+(2)top.char[6:0]
+[color] 3
+(3)top.char[6:0]
+[color] 3
+(4)top.char[6:0]
+[color] 3
+(5)top.char[6:0]
+[color] 3
+(6)top.char[6:0]
+@1401200
+-group_end
+@22
+top.symbol_count[5:0]
+top.symbol_incr[5:0]
+top.gap_count[5:0]
+top.gap_incr[5:0]
+@24
+top.bit_count[2:0]
+@28
+top.out_data
+top.out_valid
+@22
+top.letter_gap_incr[5:0]
+top.letter_gap_incr[5:0]
+@200
+-
+@c00820
+[color] 3
+top.char[6:0]
+@28
+[color] 3
+(0)top.char[6:0]
+[color] 3
+(1)top.char[6:0]
+[color] 3
+(2)top.char[6:0]
+[color] 3
+(3)top.char[6:0]
+[color] 3
+(4)top.char[6:0]
+[color] 3
+(5)top.char[6:0]
+[color] 3
+(6)top.char[6:0]
+@1401200
+-group_end
+@28
+top.out_data
+@29
+top.out_valid
 [pattern_trace] 1
 [pattern_trace] 0

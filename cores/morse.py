@@ -14,7 +14,7 @@ import stream
 # y : length of code
 import math
 
-debug = True 
+debug = True
 
 
 def power_of_2(x):
@@ -76,7 +76,7 @@ class morse_const:
     dah_length = 3
     symbol_gap = 1
     letter_gap = 3
-    word_gap = 7
+    word_gap = 3 # actually 7 has a letter gap
 
 
 # encode the morse into binary
@@ -130,7 +130,7 @@ def encode(letter, code, max):
         if i == "-":
             s += "1"
         if i == "_":
-            l = 5
+            l = 1
             gap = True
     # pad to max length
     pad = "".join(["0" for j in range(max - l)])
@@ -242,25 +242,41 @@ class Morse(Elaboratable):
             self.read.addr.eq(char),
             current.eq(self.read.data),
         ]
+
         # fsm variables
         bit_count = Signal(3)
         finished = Signal(reset=1)
         shreg = Signal(6)
         bit = Signal()
 
-        symbol_count = Signal(6)
-        symbol_incr = Signal(6)
-        out_bit = Signal()
-        out_data = Signal()
-
         # current bit is the head of the shift register
         m.d.comb += [bit.eq(shreg[-1])]
 
-        # testing
-        dit = Signal()
-        dah = Signal()
+        # symbol counter
+        symbol_count = Signal(6)
+        symbol_incr = Signal(6)
+
+        # gap counter
+
+        gap_count = Signal(6)
+        gap_incr = Signal(6)
+
+        # letter gap counter
+
+        letter_gap_count = Signal(6)
+        letter_gap_incr = Signal(6)
+
+        # output signals
+        out_bit = Signal()
+        out_data = Signal()
+        out_valid = Signal()
+
+
+        # debug
+        letter_gap = Signal()
 
         with m.FSM() as fsm:
+            # wait for somthing to happed
             with m.State("IDLE"):
                 m.d.comb += self.input.ready.eq(1)
                 with m.If(self.input.valid == 1):
@@ -272,87 +288,94 @@ class Morse(Elaboratable):
                     m.d.sync += char.eq(self.input.data)
                     m.next = "RWAIT"
 
+            # delay for memory read
             with m.State("RWAIT"):
                 m.next = "START"
 
+            # load the bit data , switch on nop
             with m.State("START"):
                 m.d.sync += [bit_count.eq(length), shreg.eq(bits)]
-                m.next = "START_BIT"
-            
-
-            with m.State("START_BIT"):
                 with m.If(nop == 1):
                     m.next = "IDLE"
                 with m.Else():
-                    m.next = "BIT"
+                    m.next = "CHAR"
 
-            with m.State("BIT"):
-                m.d.sync += [shreg.eq(shreg << 1), bit_count.eq(bit_count - 1)]
-                m.d.sync += symbol_incr.eq(0)
+            # run through encoding for a character
+            with m.State("CHAR"):
+                m.d.sync += [
+                    shreg.eq(shreg << 1),
+                    bit_count.eq(bit_count - 1),
+                    symbol_incr.eq(0),
+                    gap_incr.eq(0),
+                    out_data.eq(0),
+                ]
                 # SPACE
                 with m.If(space == 1):
-                    m.d.sync+= [
-                            symbol_count.eq(morse_const.word_gap) ,
-                            out_bit.eq(0),
-                            ]
-                # DIT
-                with m.If(bit == 0):
-                    m.d.sync += [
-                                symbol_count.eq(morse_const.dit_length),
-                                out_bit.eq(1),
-                                ]
-                # DAH
-                with m.If(bit == 1):
-                    m.d.sync += [
-                                symbol_count.eq(morse_const.dah_length),
-                                out_bit.eq(1)
-                                ]
-                with m.If(bit_count == 0):
-                    m.d.comb += self.input.ready.eq(1)
-                    m.next = "IDLE"
-                with m.Else():
+                    m.d.sync += [symbol_count.eq(morse_const.word_gap), out_bit.eq(0)]
                     m.next = "SYMBOL"
-                
+                with m.Else():
+                    # DIT
+                    with m.If(bit == 0):
+                        m.d.sync += [
+                            symbol_count.eq(morse_const.dit_length),
+                            out_bit.eq(1),
+                        ]
+                        m.next = "SYMBOL"
+                    # DAH
+                    with m.If(bit == 1):
+                        m.d.sync += [
+                            symbol_count.eq(morse_const.dah_length),
+                            out_bit.eq(1),
+                        ]
+                        m.next = "SYMBOL"
+                with m.If(bit_count == 0):
+                    m.d.sync += [
+                        letter_gap_count.eq(morse_const.letter_gap),
+                        letter_gap_incr.eq(0)
+                    ]
+                    m.next = "LETTER_GAP"
 
+            # spool out the symbol
             with m.State("SYMBOL"):
-                m.d.sync += out_data.eq(out_bit)
-                m.next = "SYMBOL_NEXT"
+                with m.If(symbol_incr == symbol_count):
+                    m.d.sync += [
+                        gap_count.eq(morse_const.symbol_gap),
+                    ]
+                    m.next = "GAP"
+                with m.Else():
+                    m.d.sync += [out_data.eq(out_bit)]
+                    m.next = "SYMBOL_NEXT"
 
             with m.State("SYMBOL_NEXT"):
-                with m.If( symbol_incr ==  symbol_count):
-                    m.d.sync += out_data.eq(0)
-                    m.next = "BIT"
+                m.d.comb += out_valid.eq(1)
+                m.d.sync += symbol_incr.eq(symbol_incr + 1)
+                m.next = "SYMBOL"
+
+            # spool out the gap
+            with m.State("GAP"):
+                with m.If(gap_incr == gap_count):
+                    m.next = "CHAR"
                 with m.Else():
-                    m.d.sync += symbol_incr.eq(symbol_incr + 1)
-                    m.next = "SYMBOL" 
+                    m.d.sync += [out_data.eq(0)]
+                    m.next = "GAP_NEXT"
 
-            # change this to a symbol count
-            # counting up to symbol lenth
-            # generate valid signals for output stream 
-            # use morse_conf class
+            with m.State("GAP_NEXT"):
+                m.d.comb += out_valid.eq(1)
+                m.d.sync += gap_incr.eq(gap_incr + 1)
+                m.next = "GAP"
 
-            #with m.State("DIT"):
-                # TODO output dit
-            #   m.d.comb += dit.eq(1)
-            #   m.next = "INTER_SPACE"
+            # spool out the letter gap
+            with m.State("LETTER_GAP"):
+                with m.If(letter_gap_incr == letter_gap_count):
+                    m.next = "IDLE"
+                with m.Else():
+                    m.d.sync += [out_data.eq(0)]
+                    m.next = "LETTER_GAP_NEXT"
 
-            #ith m.State("DAH"):
-            #   # TODO output dah
-            #   m.d.comb += dah.eq(1)
-            #   m.next = "INTER_SPACE"
-
-            #ith m.State("INTER_SPACE"):
-            #   # TODO add a bit to the ouput
-            #   with m.If(bit_count == 0):
-            #       m.d.comb += self.input.ready.eq(1)
-            #       m.next = "IDLE"
-            #   with m.Else():
-            #       m.next = "BIT"
-
-            #ith m.State("WORD_SPACE"):
-            #   # TODO add 7 zeros to the feed
-            #   m.next = "IDLE"
-
+            with m.State("LETTER_GAP_NEXT"):
+                m.d.comb += out_valid.eq(1)
+                m.d.sync += letter_gap_incr.eq(letter_gap_incr + 1)
+                m.next = "LETTER_GAP"
         return m
 
 
@@ -372,7 +395,7 @@ def sim_data(s, dut):
 
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
-    #test_string = " sphinx of black quartz judge my vow "
+    # test_string = " sphinx of black quartz judge my vow "
     test_string = "MORSE CODE"
     # decode_str(test,alpha)
 
