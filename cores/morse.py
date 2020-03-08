@@ -259,7 +259,8 @@ class Morse(Elaboratable):
 
         # streaming interface 
         # input 
-        m.d.comb += self.sink.ready.eq(self.source.ready & ready)
+        #m.d.comb += self.sink.ready.eq(self.source.ready & ready)
+        m.d.comb += self.sink.ready.eq(ready)
         # output 
         m.d.comb += [
             self.source.valid.eq(out_valid),
@@ -292,14 +293,15 @@ class Morse(Elaboratable):
         with m.FSM() as fsm:
             # wait for somthing to happen
             with m.State("IDLE"):
-                m.d.comb += ready.eq(1)
-                with m.If(self.sink.valid & self.source.ready ):
+                with m.If(self.sink.valid):
                     m.d.sync += [
                         char.eq(self.sink.data),  # 8 to 7 bits
                     ]
-                    m.d.comb += ready.eq(0)
                     m.d.sync += char.eq(self.sink.data)
                     m.next = "RWAIT"
+                with m.Else():
+                    m.d.comb += ready.eq(1)
+    
 
             # delay for memory read
             with m.State("RWAIT"):
@@ -307,6 +309,7 @@ class Morse(Elaboratable):
 
             # load the bit data , switch on nop
             with m.State("START"):
+                m.d.comb += ready.eq(0)
                 m.d.sync += [
                     bit_count.eq(length), shreg.eq(bits),
                 ]
@@ -358,43 +361,56 @@ class Morse(Elaboratable):
                     ]
                     m.next = "GAP"
                 with m.Else():
+                    m.d.comb += out_valid.eq(1)
                     m.d.sync += [out_data.eq(out_bit)]
                     m.next = "SYMBOL_NEXT"
 
             with m.State("SYMBOL_NEXT"):
-                m.d.comb += out_valid.eq(1)
-                m.d.sync += symbol_incr.eq(symbol_incr + 1)
-                m.next = "SYMBOL"
+                with m.If(self.source.ready):
+                    m.d.comb += out_valid.eq(0)
+                    m.d.sync += symbol_incr.eq(symbol_incr + 1)
+                    m.next = "SYMBOL"
+
 
             # spool out the gap
             with m.State("GAP"):
                 with m.If(gap_incr == gap_count):
                     m.next = "CHAR"
                 with m.Else():
+                    m.d.comb += out_valid.eq(1)
                     m.d.sync += [out_data.eq(0)]
                     m.next = "GAP_NEXT"
 
             with m.State("GAP_NEXT"):
-                m.d.comb += out_valid.eq(1)
-                m.d.sync += gap_incr.eq(gap_incr + 1)
-                m.next = "GAP"
+                with m.If(self.source.ready):
+                    m.d.comb += out_valid.eq(0)
+                    m.d.sync += gap_incr.eq(gap_incr + 1)
+                    m.next = "GAP"
 
             # spool out the letter gap
             with m.State("LETTER_GAP"):
                 with m.If(letter_gap_incr == letter_gap_count):
                     m.next = "IDLE"
                 with m.Else():
+                    m.d.comb += out_valid.eq(1)
                     m.d.sync += [out_data.eq(0)]
                     m.next = "LETTER_GAP_NEXT"
 
             with m.State("LETTER_GAP_NEXT"):
-                m.d.comb += out_valid.eq(1)
-                m.d.sync += letter_gap_incr.eq(letter_gap_incr + 1)
-                m.next = "LETTER_GAP"
+                with m.If(self.source.ready):
+                    m.d.comb += out_valid.eq(0)
+                    m.d.sync += letter_gap_incr.eq(letter_gap_incr + 1)
+                    m.next = "LETTER_GAP"
+
         return m
 
 class BlinkOut(Elaboratable):
-    def __init__(self,interval=20):
+    """ 
+    Takes a bitstream 
+    bitstream = Layout([("bitstream",1)])
+    and clock streches it by interval
+    """
+    def __init__(self,interval=50):
         self.sink = stream.StreamSink(bitstream)
         self.interval = interval
         self.out = Signal()
@@ -403,7 +419,7 @@ class BlinkOut(Elaboratable):
         m = Module()
     
         # bit interval
-        interval_counter  = Signal(range(self.interval))
+        interval_counter  = Signal(range(self.interval+1))
         with m.If(interval_counter == self.interval):
             m.d.sync += interval_counter.eq(0)
             m.d.comb += self.sink.ready.eq(1)
@@ -413,20 +429,23 @@ class BlinkOut(Elaboratable):
         
         with m.If(self.sink.valid == 1):
             m.d.comb += self.out.eq(self.sink.data)
+
         return m
 
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
     def __init__(self,mapping):
-        self.input = stream.SyncFIFOStream(char_incoming,16)
-        self.output = stream.SyncFIFOStream(bitstream,128)
+        self.input = stream.SyncFIFOStream(char_incoming,2)
         self.morse = Morse(mapping)
+        self.blink = BlinkOut()
+
+        self.output = stream.SyncFIFOStream(bitstream,2)
+
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
+        #self.sink = self.input.sink
         self.sink = self.morse.sink
         self.source = self.output.source
-        # Blinky output 
-        self.blink = BlinkOut()
 
     def elaborate(self,platform):
         m = Module()
@@ -435,11 +454,12 @@ class MorseWrap(Elaboratable):
         m.submodules.output = self.output
         m.submodules.morse = self.morse
         m.submodules.blink = self.blink
+
         # bind the streams
         
         m.d.comb += [
+        #     self.morse.sink.connect(self.input.source),
              self.output.sink.connect(self.morse.source),
-#             self.morse.sink.connect(self.input.source),
              self.blink.sink.connect(self.output.source),
         ]
         
@@ -451,6 +471,7 @@ def sim_data(s, sink,source):
             yield
         print(val, ord(val))
         yield sink.data.eq(ord(val))
+        yield
         yield sink.valid.eq(1)
         yield
         yield sink.valid.eq(0)
@@ -463,7 +484,8 @@ def sim_data(s, sink,source):
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
     #test_string = " sphinx of black quartz judge my vow "
-    test_string = "SOS SOS SOS"
+    #test_string = "SOS SOS SOS"
+    test_string = "SOS"
     # decode_str(test,alpha)
 
     #mo = Morse(mem)
@@ -478,4 +500,4 @@ if __name__ == "__main__":
     ) as sim:
         sim.add_clock(10)
         sim.add_sync_process(sim_data(test_string, mo.sink ,mo.source))
-        sim.run_until(50000, run_passive=True)
+        sim.run_until(100000, run_passive=True)
