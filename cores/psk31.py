@@ -3,6 +3,7 @@
 # liberated from
 # https://github.com/dawsonjon/FPGA-TX/blob/master/psk31_encode.py#L65
 
+__working__ = False
 
 class psk31:
     varicodes = [
