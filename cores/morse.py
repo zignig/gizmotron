@@ -248,7 +248,7 @@ class Morse(Elaboratable):
         # streaming interface
         # input
         # m.d.comb += self.sink.ready.eq(self.source.ready & ready)
-        m.d.comb += self.sink.ready.eq(ready)
+        #m.d.comb += self.sink.ready.eq(ready)
         # output
         m.d.comb += [self.source.valid.eq(out_valid), self.source.data.eq(out_data)]
 
@@ -271,12 +271,11 @@ class Morse(Elaboratable):
         with m.FSM() as fsm:
             # wait for somthing to happen
             with m.State("IDLE"):
+                m.d.comb += self.sink.ready.eq(1)
                 with m.If(self.sink.valid):
                     m.d.sync += [char.eq(self.sink.data)]  # 8 to 7 bits
                     m.d.sync += char.eq(self.sink.data)
                     m.next = "RWAIT"
-                with m.Else():
-                    m.d.comb += ready.eq(1)
 
             # delay for memory read
             with m.State("RWAIT"):
@@ -284,7 +283,7 @@ class Morse(Elaboratable):
 
             # load the bit data , switch on nop
             with m.State("START"):
-                m.d.comb += ready.eq(0)
+                m.d.comb += self.sink.ready.eq(0)
                 m.d.sync += [bit_count.eq(length), shreg.eq(bits)]
                 with m.If(nop == 1):
                     m.next = "IDLE"
@@ -383,7 +382,7 @@ class BlinkOut(Elaboratable):
     and clock streches it by interval
     """
 
-    def __init__(self, interval=50):
+    def __init__(self, interval=20):
         self.sink = stream.StreamSink(bitstream)
         self.interval = interval
         self.out = Signal()
@@ -409,16 +408,16 @@ class BlinkOut(Elaboratable):
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
     def __init__(self, mapping):
-        self.input = stream.SyncFIFOStream(char_incoming, 2)
+        self.input = stream.SyncFIFOStream(char_incoming,16) 
         self.morse = Morse(mapping)
         self.blink = BlinkOut()
 
-        self.output = stream.SyncFIFOStream(bitstream, 2)
+        self.output = stream.SyncFIFOStream(bitstream,2)
 
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
-        # self.sink = self.input.sink
-        self.sink = self.morse.sink
+        self.sink = self.input.sink
+        #self.sink = self.morse.sink
         self.source = self.output.source
 
     def elaborate(self, platform):
@@ -432,7 +431,7 @@ class MorseWrap(Elaboratable):
         # bind the streams
 
         m.d.comb += [
-            #     self.morse.sink.connect(self.input.source),
+            self.morse.sink.connect(self.input.source),
             self.output.sink.connect(self.morse.source),
             self.blink.sink.connect(self.output.source),
         ]
@@ -458,9 +457,9 @@ def sim_data(s, sink, source):
 
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
-    # test_string = " sphinx of black quartz judge my vow "
-    # test_string = "SOS SOS SOS"
-    test_string = "SOS"
+    #test_string = " sphinx of black quartz judge my vow "
+    test_string = "SOS SOS SOS"
+    #test_string = "SOS"
 
     # mo = Morse(mem)
     mo = MorseWrap(mem)
