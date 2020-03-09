@@ -2,6 +2,8 @@
 # Simon Kirkby 20200309
 # obeygiantrobot@gmail.com
 
+__working__ = False
+
 from nmigen import *
 from nmigen.cli import pysim
 from nmigen.hdl.rec import Layout
