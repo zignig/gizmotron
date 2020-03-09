@@ -1,26 +1,29 @@
 # morse encoder
+# Simon Kirkby 20200309
+# obeygiantrobot@gmail.com
 
 from nmigen import *
 from nmigen.cli import pysim
 from nmigen.hdl.rec import Layout
-import stream
+import stream, math
 
-# coding is 16 bits
-# XXXXXX.....ngyyy
-# X : dots and dashes
-# . : undefined ( as yet )
-# n : no encoding
-# g : word gap
-# y : length of code
-import math
+debug = False  # True
 
-debug = False #True
-
-
+# Util Functions
 def power_of_2(x):
     return 1 if x == 0 else math.ceil(math.log2(x))
 
 
+def as_bits(i):
+    return "{:016b}".format(i)
+
+
+def zero_pad(l):
+    pad = "".join(["0" for j in range(l)])
+    return pad
+
+
+# Primary Coding Map
 coding = {
     "A": ".-",
     "B": "-...",
@@ -75,14 +78,15 @@ class morse_const:
     dit_length = 1
     dah_length = 3
     symbol_gap = 1
-    letter_gap = 2 # actually 3 has a symbol gap
-    word_gap = 1 # actually 7 has a letter gap
+    letter_gap = 2  # actually 3 has a symbol gap
+    word_gap = 1  # actually 7 has a letter gap
 
 
 # encode the morse into binary
 
 
 def convert(coding):
+    " take a key:value dictionary and convert it "
     max = 0
     min_c = 10000
     max_c = 0
@@ -109,13 +113,13 @@ def convert(coding):
     return d
 
 
-def as_bits(i):
-    return "{:016b}".format(i)
-
-
-def zero_pad(l):
-    pad = "".join(["0" for j in range(l)])
-    return pad
+# coding is 16 bits
+# XXXXXX.....ngyyy
+# X : dots and dashes
+# . : undefined ( as yet )
+# n : no encoding
+# g : word gap
+# y : length of code
 
 
 def encode(letter, code, max):
@@ -149,43 +153,19 @@ def encode(letter, code, max):
     return num
 
 
-# decode test for checking
-def expand(code):
-    # print('{:016b}'.format(code))
-    l = code & 7  # bottom 3 bits
-    # print('{:016b}'.format(l))
-    # print(l)
-    bits = code >> 10
-    print("{:06b}".format(bits), l)
-    for i in range(l):
-        print("!")
-
-
-def decode(letter, d):
-    n = ord(letter)
-    if n in d:
-        print(letter, d[n])
-        expand(d[n])
-    else:
-        print("NO LETTER")
-
-
-def decode_str(s, d):
-    for i in s:
-        decode(i, d)
-
-
 def layout(d):
+    " Fill out the lookup table "
     # memory layout
-    # duplicate into lower case
-    empty = 0 | 16
+    empty = 0 | 16  # only has the NOP bit set
     k = list(d.keys())
+    # duplicate into lower case
     for i in k:
         c = chr(i)
         if c.isupper():
             lc = c.lower()
             # add lower case
             d[ord(lc)] = d[i]
+    # everything else is a NOP
     for i in range(128):
         if i not in d:
             d[i] = empty
@@ -195,6 +175,7 @@ def layout(d):
 
 
 def covert_to_init(d):
+    " remove keys and return a init map for Memory"
     data = []
     for i in range(128):
         data.append(d[i])
@@ -202,18 +183,23 @@ def covert_to_init(d):
 
 
 def build_mem(coding):
+    " Build the map and a memory block"
     alpha = convert(coding)
     layout(alpha)
     mem = covert_to_init(alpha)
     return alpha, mem
 
+
 # define layouts
-char_incoming = Layout([("data",8)])
-bitstream = Layout([("bitstream",1)])
+char_incoming = Layout([("data", 8)])
+bitstream = Layout([("bitstream", 1)])
 
 # elaboratable morse encoder
 class Morse(Elaboratable):
+    " takes a byte stream and converts it to a morse bitstream "
+
     def __init__(self, mapping):
+        # memory for the lookup table
         self.enc = Memory(width=16, depth=128, init=mapping)
         self.read = self.enc.read_port()
         # incoming char
@@ -257,16 +243,12 @@ class Morse(Elaboratable):
         out_data = Signal()
         out_valid = Signal()
 
-        # streaming interface 
-        # input 
-        #m.d.comb += self.sink.ready.eq(self.source.ready & ready)
+        # streaming interface
+        # input
+        # m.d.comb += self.sink.ready.eq(self.source.ready & ready)
         m.d.comb += self.sink.ready.eq(ready)
-        # output 
-        m.d.comb += [
-            self.source.valid.eq(out_valid),
-            self.source.data.eq(out_data),
-        ]
-
+        # output
+        m.d.comb += [self.source.valid.eq(out_valid), self.source.data.eq(out_data)]
 
         # current bit is the head of the shift register
         m.d.comb += [bit.eq(shreg[-1])]
@@ -276,32 +258,23 @@ class Morse(Elaboratable):
         symbol_incr = Signal(6)
 
         # gap counter
-
         gap_count = Signal(6)
         gap_incr = Signal(6)
 
         # letter gap counter
-
         letter_gap_count = Signal(6)
         letter_gap_incr = Signal(6)
 
-
-
-        # debug
-        letter_gap = Signal()
-
+        # Main FSM for processing
         with m.FSM() as fsm:
             # wait for somthing to happen
             with m.State("IDLE"):
                 with m.If(self.sink.valid):
-                    m.d.sync += [
-                        char.eq(self.sink.data),  # 8 to 7 bits
-                    ]
+                    m.d.sync += [char.eq(self.sink.data)]  # 8 to 7 bits
                     m.d.sync += char.eq(self.sink.data)
                     m.next = "RWAIT"
                 with m.Else():
                     m.d.comb += ready.eq(1)
-    
 
             # delay for memory read
             with m.State("RWAIT"):
@@ -310,9 +283,7 @@ class Morse(Elaboratable):
             # load the bit data , switch on nop
             with m.State("START"):
                 m.d.comb += ready.eq(0)
-                m.d.sync += [
-                    bit_count.eq(length), shreg.eq(bits),
-                ]
+                m.d.sync += [bit_count.eq(length), shreg.eq(bits)]
                 with m.If(nop == 1):
                     m.next = "IDLE"
                 with m.Else():
@@ -346,19 +317,18 @@ class Morse(Elaboratable):
                             out_bit.eq(1),
                         ]
                         m.next = "SYMBOL"
+                # End of the char , add the gap
                 with m.If(bit_count == 0):
                     m.d.sync += [
                         letter_gap_count.eq(morse_const.letter_gap),
-                        letter_gap_incr.eq(0)
+                        letter_gap_incr.eq(0),
                     ]
                     m.next = "LETTER_GAP"
 
             # spool out the symbol
             with m.State("SYMBOL"):
                 with m.If(symbol_incr == symbol_count):
-                    m.d.sync += [
-                        gap_count.eq(morse_const.symbol_gap),
-                    ]
+                    m.d.sync += [gap_count.eq(morse_const.symbol_gap)]
                     m.next = "GAP"
                 with m.Else():
                     m.d.comb += out_valid.eq(1)
@@ -370,7 +340,6 @@ class Morse(Elaboratable):
                     m.d.comb += out_valid.eq(0)
                     m.d.sync += symbol_incr.eq(symbol_incr + 1)
                     m.next = "SYMBOL"
-
 
             # spool out the gap
             with m.State("GAP"):
@@ -404,50 +373,53 @@ class Morse(Elaboratable):
 
         return m
 
+
 class BlinkOut(Elaboratable):
     """ 
     Takes a bitstream 
     bitstream = Layout([("bitstream",1)])
     and clock streches it by interval
     """
-    def __init__(self,interval=50):
+
+    def __init__(self, interval=50):
         self.sink = stream.StreamSink(bitstream)
         self.interval = interval
         self.out = Signal()
 
-    def elaborate(self,platform):
+    def elaborate(self, platform):
         m = Module()
-    
+
         # bit interval
-        interval_counter  = Signal(range(self.interval+1))
+        interval_counter = Signal(range(self.interval + 1))
         with m.If(interval_counter == self.interval):
             m.d.sync += interval_counter.eq(0)
             m.d.comb += self.sink.ready.eq(1)
         with m.Else():
-            m.d.sync += interval_counter.eq(interval_counter +1)
+            m.d.sync += interval_counter.eq(interval_counter + 1)
             m.d.comb += self.sink.ready.eq(0)
-        
+
         with m.If(self.sink.valid == 1):
             m.d.comb += self.out.eq(self.sink.data)
 
         return m
 
+
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
-    def __init__(self,mapping):
-        self.input = stream.SyncFIFOStream(char_incoming,2)
+    def __init__(self, mapping):
+        self.input = stream.SyncFIFOStream(char_incoming, 2)
         self.morse = Morse(mapping)
         self.blink = BlinkOut()
 
-        self.output = stream.SyncFIFOStream(bitstream,2)
+        self.output = stream.SyncFIFOStream(bitstream, 2)
 
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
-        #self.sink = self.input.sink
+        # self.sink = self.input.sink
         self.sink = self.morse.sink
         self.source = self.output.source
 
-    def elaborate(self,platform):
+    def elaborate(self, platform):
         m = Module()
         # add the submodules
         m.submodules.input = self.input
@@ -456,16 +428,17 @@ class MorseWrap(Elaboratable):
         m.submodules.blink = self.blink
 
         # bind the streams
-        
+
         m.d.comb += [
-        #     self.morse.sink.connect(self.input.source),
-             self.output.sink.connect(self.morse.source),
-             self.blink.sink.connect(self.output.source),
+            #     self.morse.sink.connect(self.input.source),
+            self.output.sink.connect(self.morse.source),
+            self.blink.sink.connect(self.output.source),
         ]
-        
+
         return m
 
-def sim_data(s, sink,source):
+
+def sim_data(s, sink, source):
     def b(val):
         while (yield sink.ready) == 0:
             yield
@@ -476,28 +449,23 @@ def sim_data(s, sink,source):
         yield
         yield sink.valid.eq(0)
 
-    #yield source.ready.eq(1)
+    # yield source.ready.eq(1)
     for i in s:
         yield from b(i)
 
 
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
-    #test_string = " sphinx of black quartz judge my vow "
-    #test_string = "SOS SOS SOS"
+    # test_string = " sphinx of black quartz judge my vow "
+    # test_string = "SOS SOS SOS"
     test_string = "SOS"
-    # decode_str(test,alpha)
 
-    #mo = Morse(mem)
+    # mo = Morse(mem)
     mo = MorseWrap(mem)
     if debug:
         print(alpha)
         print(mem)
-    with pysim.Simulator(
-        mo,
-        vcd_file=open("morse.vcd", "w"),
-        #gtkw_file=open("trig.gtkw", "w"),
-    ) as sim:
+    with pysim.Simulator(mo, vcd_file=open("morse.vcd", "w")) as sim:
         sim.add_clock(10)
-        sim.add_sync_process(sim_data(test_string, mo.sink ,mo.source))
+        sim.add_sync_process(sim_data(test_string, mo.sink, mo.source))
         sim.run_until(100000, run_passive=True)
