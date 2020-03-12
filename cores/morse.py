@@ -271,19 +271,20 @@ class Morse(Elaboratable):
         with m.FSM() as fsm:
             # wait for somthing to happen
             with m.State("IDLE"):
-                m.d.comb += ready.eq(1)
                 with m.If(self.sink.valid):
                     m.d.sync += [char.eq(self.sink.data)]  # 8 to 7 bits
                     m.d.sync += char.eq(self.sink.data)
                     m.next = "RWAIT"
+                m.d.comb += ready.eq(1)
+
 
             # delay for memory read
             with m.State("RWAIT"):
+                m.d.comb += ready.eq(0)
                 m.next = "START"
 
             # load the bit data , switch on nop
             with m.State("START"):
-                m.d.comb += ready.eq(0)
                 m.d.sync += [bit_count.eq(length), shreg.eq(bits)]
                 with m.If(nop == 1):
                     m.next = "IDLE"
@@ -408,11 +409,11 @@ class BlinkOut(Elaboratable):
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
     def __init__(self, mapping):
-        self.input = stream.SyncFIFOStream(char_incoming,100) 
+        self.input = stream.SyncFIFOStream(char_incoming,10) 
         self.morse = Morse(mapping)
         self.blink = BlinkOut()
 
-        self.output = stream.SyncFIFOStream(bitstream,200)
+        self.output = stream.SyncFIFOStream(bitstream,20)
 
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
@@ -441,18 +442,21 @@ class MorseWrap(Elaboratable):
 
 def sim_data(s, sink, source):
     def b(val):
-        while (yield sink.ready) == 0:
-            yield
+        while not (yield sink.ready):
+            yield 
         print(val, ord(val))
         yield sink.data.eq(ord(val))
         yield
         yield sink.valid.eq(1)
-        yield
-        yield sink.valid.eq(0)
 
-    # yield source.ready.eq(1)
+    for i in range(100):
+        yield
     for i in s:
         yield from b(i)
+    yield
+    yield sink.valid.eq(0)
+
+
 
 
 if __name__ == "__main__":
