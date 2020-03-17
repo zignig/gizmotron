@@ -6,6 +6,7 @@ __working__ = False
 
 from nmigen import *
 from nmigen.cli import pysim
+from nmigen.back.pysim import Tick
 from nmigen.hdl.rec import Layout
 import stream, math
 
@@ -271,11 +272,11 @@ class Morse(Elaboratable):
         with m.FSM() as fsm:
             # wait for somthing to happen
             with m.State("IDLE"):
-                with m.If(self.sink.valid):
+                m.d.comb += ready.eq(1)
+                with m.If(self.sink.valid & ready ):
                     m.d.sync += [char.eq(self.sink.data)]  # 8 to 7 bits
                     m.d.sync += char.eq(self.sink.data)
                     m.next = "RWAIT"
-                m.d.comb += ready.eq(1)
 
 
             # delay for memory read
@@ -400,8 +401,8 @@ class BlinkOut(Elaboratable):
             m.d.sync += interval_counter.eq(interval_counter + 1)
             m.d.comb += self.sink.ready.eq(0)
 
-        with m.If(self.sink.valid == 1):
-            m.d.comb += self.out.eq(self.sink.data)
+        with m.If(self.sink.valid & self.sink.ready ):
+            m.d.sync += self.out.eq(self.sink.data)
 
         return m
 
@@ -409,11 +410,11 @@ class BlinkOut(Elaboratable):
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
     def __init__(self, mapping):
-        self.input = stream.SyncFIFOStream(char_incoming,10) 
+        self.input = stream.SyncFIFOStream(char_incoming,100) 
         self.morse = Morse(mapping)
         self.blink = BlinkOut()
 
-        self.output = stream.SyncFIFOStream(bitstream,20)
+        self.output = stream.SyncFIFOStream(bitstream,200)
 
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
@@ -446,22 +447,21 @@ def sim_data(s, sink, source):
             yield 
         print(val, ord(val))
         yield sink.data.eq(ord(val))
-        yield
         yield sink.valid.eq(1)
+        yield Tick()
+        yield sink.valid.eq(0)
+        yield Tick()
 
-    for i in range(100):
-        yield
     for i in s:
         yield from b(i)
-    yield
-    yield sink.valid.eq(0)
 
 
 
 
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
-    #test_string = " sphinx of black quartz judge my vow "
+    test_string = " sphinx of black quartz judge my vow "
+    #test_string = " morse code " 
     test_string = "SOS SOS SOS"
     #test_string = "SOS"
 
