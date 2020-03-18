@@ -1,5 +1,5 @@
 from nmigen import *
-from nmigen.lib.stream import *
+from stream import *
 
 import enum
 
@@ -9,8 +9,9 @@ import enum
 # TODO support parity, stop bits
 class UARTParity(enum.Enum):
     NONE = 0
-    ODD  = 1
+    ODD = 1
     EVEN = 2
+
 
 class UART(Elaboratable):
     """
@@ -20,25 +21,26 @@ class UART(Elaboratable):
         Set to ``round(clk-rate / baud-rate)``.
         E.g. ``12e6 / 115200`` = ``104``.
     """
-    def __init__(self, divisor, data_bits=8):
+
+    def __init__(self, tx, rx, divisor, data_bits=8):
         assert divisor >= 4
 
         self.data_bits = data_bits
-        self.divisor   = divisor
+        self.divisor = divisor
 
-        self.tx_o    = Signal()
-        self.rx_i    = Signal()
+        self.tx_o = Signal()
+        self.rx_i = Signal()
 
         self.layout = Layout([("data", data_bits)])
         self.tx = StreamSink(self.layout, False, False, name="tx")
         self.rx = StreamSource(self.layout, False, False, name="rx")
-        
-        self.rx_err  = Signal()
-        self.rx_ovf  = Signal()
+
+        self.rx_err = Signal()
+        self.rx_ovf = Signal()
 
     def elaborate(self, platform):
         m = Module()
-        
+
         tx_phase = Signal(range(self.divisor))
         tx_shreg = Signal(1 + self.data_bits + 1, reset=-1)
         tx_count = Signal(range(len(tx_shreg) + 1))
@@ -90,7 +92,7 @@ class UART(Elaboratable):
                 ]
                 with m.If(rx_count == 1):
                     m.d.sync += self.rx.valid.eq(1)
-                    
+
         with m.If(self.rx.valid & self.rx.ready):
             m.d.sync += self.rx.valid.eq(0)
 
@@ -98,11 +100,20 @@ class UART(Elaboratable):
 
 
 if __name__ == "__main__":
-    uart = UART(divisor=4)
+    tx = Signal()
+    rx = Signal()
+    uart = UART(tx, rx, divisor=4)
     ports = [
-        uart.tx_o, uart.rx_i,
-        uart.tx.data, uart.tx.valid, uart.tx.ready,
-        uart.rx.data, uart.rx.valid, uart.rx_err, uart.rx_ovf, uart.rx.ready
+        uart.tx_o,
+        uart.rx_i,
+        uart.tx.data,
+        uart.tx.valid,
+        uart.tx.ready,
+        uart.rx.data,
+        uart.rx.valid,
+        uart.rx_err,
+        uart.rx_ovf,
+        uart.rx.ready,
     ]
 
     import argparse
@@ -124,29 +135,32 @@ if __name__ == "__main__":
             while True:
                 yield uart.rx_i.eq((yield uart.tx_o))
                 yield
+
         sim.add_sync_process(loopback_proc)
 
         def transmit_proc():
             for i in range(0, 4):
-                #assert (yield uart.tx.ready)
-                #assert not (yield uart.rx.valid)
+                # assert (yield uart.tx.ready)
+                # assert not (yield uart.rx.valid)
 
-                yield uart.tx.data.eq(ord('A'))
+                yield uart.tx.data.eq(ord("A"))
                 yield uart.tx.valid.eq(1)
                 yield
-                #yield uart.tx.valid.eq(0)
+                # yield uart.tx.valid.eq(0)
                 yield
-                #assert not (yield uart.tx.ready)
+                # assert not (yield uart.tx.ready)
 
-                for _ in range(uart.divisor * 12): yield
+                for _ in range(uart.divisor * 12):
+                    yield
 
-                #assert (yield uart.tx.ready)
-                #assert (yield uart.rx.valid)
-                #assert not (yield uart.rx_err)
-                #assert (yield uart.rx.data) == ord('A')
+                # assert (yield uart.tx.ready)
+                # assert (yield uart.rx.valid)
+                # assert not (yield uart.rx_err)
+                # assert (yield uart.rx.data) == ord('A')
 
                 yield uart.rx.ready.eq(1)
                 yield
+
         sim.add_sync_process(transmit_proc)
 
         with sim.write_vcd("uart.vcd", "uart.gtkw"):
@@ -156,9 +170,7 @@ if __name__ == "__main__":
         from nmigen.back import verilog
 
         print(verilog.convert(uart, ports=ports))
-        
+
     if args.action == "program":
         platform = VersaECP5Platform()
         platform.build(uart, do_program=True)
-    
-
