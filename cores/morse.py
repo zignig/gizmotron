@@ -273,11 +273,10 @@ class Morse(Elaboratable):
             # wait for somthing to happen
             with m.State("IDLE"):
                 m.d.comb += ready.eq(1)
-                with m.If(self.sink.valid & ready ):
+                with m.If(self.sink.valid & ready):
                     m.d.sync += [char.eq(self.sink.data)]  # 8 to 7 bits
                     m.d.sync += char.eq(self.sink.data)
                     m.next = "RWAIT"
-
 
             # delay for memory read
             with m.State("RWAIT"):
@@ -401,7 +400,7 @@ class BlinkOut(Elaboratable):
             m.d.sync += interval_counter.eq(interval_counter + 1)
             m.d.comb += self.sink.ready.eq(0)
 
-        with m.If(self.sink.valid & self.sink.ready ):
+        with m.If(self.sink.valid & self.sink.ready):
             m.d.sync += self.out.eq(self.sink.data)
 
         return m
@@ -410,16 +409,16 @@ class BlinkOut(Elaboratable):
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
     def __init__(self, mapping):
-        self.input = stream.SyncFIFOStream(char_incoming,100) 
+        self.input = stream.SyncFIFOStream(char_incoming, 100)
         self.morse = Morse(mapping)
         self.blink = BlinkOut()
 
-        self.output = stream.SyncFIFOStream(bitstream,200)
+        self.output = stream.SyncFIFOStream(bitstream, 200)
 
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
         self.sink = self.input.sink
-        #self.sink = self.morse.sink
+        # self.sink = self.morse.sink
         self.source = self.output.source
 
     def elaborate(self, platform):
@@ -444,7 +443,7 @@ class MorseWrap(Elaboratable):
 def sim_data(s, sink, source):
     def b(val):
         while not (yield sink.ready):
-            yield 
+            yield
         print(val, ord(val))
         yield sink.data.eq(ord(val))
         yield sink.valid.eq(1)
@@ -456,14 +455,12 @@ def sim_data(s, sink, source):
         yield from b(i)
 
 
-
-
 if __name__ == "__main__":
     alpha, mem = build_mem(coding)
     test_string = " sphinx of black quartz judge my vow "
-    #test_string = " morse code " 
+    # test_string = " morse code "
     test_string = "SOS SOS SOS"
-    #test_string = "SOS"
+    # test_string = "SOS"
 
     # mo = Morse(mem)
     mo = MorseWrap(mem)

@@ -5,6 +5,7 @@
 
 __working__ = False
 
+
 class psk31:
     varicodes = [
         "1010101011",  # 00  NUL Null character

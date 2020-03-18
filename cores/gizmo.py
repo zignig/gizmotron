@@ -19,7 +19,7 @@ class IOMap:
 class GizmoCollection:
     " A collection of gizmos "
 
-    debug = False 
+    debug = False
 
     def __init__(self, boneless):
         # object.__setattr__(self, "_modules", OrderedDict())
@@ -105,7 +105,7 @@ class IO:
     maps ext_port inside a boneless processor 
     """
 
-    def __init__(self, sig_in=None, sig_out=None, name=None,we=None,re=None):
+    def __init__(self, sig_in=None, sig_out=None, name=None, we=None, re=None):
         # the signals to bind
         self.sig_in = sig_in
         self.sig_out = sig_out
@@ -156,7 +156,7 @@ class IO:
 
 class Gizmo:
     " A gizmo is a wrapper around an Elaboratable module that binds to the external interface of the Boneless-CPU"
-    debug = False 
+    debug = False
 
     def __init__(self, name, platform=None, **kwargs):
         for i, j in kwargs.items():
@@ -209,7 +209,7 @@ class Gizmo:
 
     def attach(self, m, boneless):
         " Generate and bind the gateway to the Boneless "
-        #TODO add the re we signals to the binding
+        # TODO add the re we signals to the binding
 
         if self.debug:
             print("<< " + self.name + " >>")
