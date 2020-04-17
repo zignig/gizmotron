@@ -28,7 +28,7 @@ class RX(Elaboratable):
         self.rx_ack = Signal()
         self.rx_error = Signal()
         self.divisor = _divisor(freq_in=clk_freq, freq_out=baud_rate, max_ppm=50000)
-        #print("divisor :", self.divisor)
+        # print("divisor :", self.divisor)
 
     def elaborate(self, platform):
         m = Module()
@@ -400,7 +400,7 @@ if __name__ == "__main__":
         ) as sim:
             sim.add_clock(freq)
             sim.add_sync_process(_test(tx, rx, tb))
-            #sim.run_until(100e-6, run_passive=True)
+            # sim.run_until(100e-6, run_passive=True)
             sim.run()
 
     if args.type == "uart":
