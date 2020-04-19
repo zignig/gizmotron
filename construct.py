@@ -24,8 +24,8 @@ Elaboratable._Elaboratable__silence = True
 def Construct(platform, fw=None, asm_file=None):
     b = Boneless(fw=fw, asm_file=asm_file)
 
-    #l = UserLeds("status_leds", platform=platform, source="blinky")
-    #b.add_periph(l)
+    l = UserLeds("status_leds", platform=platform, source="blinky")
+    b.add_periph(l)
 
     l = UserLeds("status", platform=platform, source="led")
     b.add_periph(l)

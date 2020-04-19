@@ -53,7 +53,21 @@ if __name__ == "__main__":
 \tBZ0\t-0x1\t\t\t; B0FF
 \t.word\t0xffff
     """
-    bounce(code)
+    code_d = [
+        RR('one'),
+        L('one'),
+        ADDI(R0,R0,100),
+        RR('one'),
+        [0] * 4 ,
+        RR('one'),
+    ]
+    code_e = [
+        RR('fail')
+    ]
+
+    #bounce(code)
     #bounce(code_a)
     #bounce(code_b) 
     #bounce(code_c)
+    bounce(code_d)
+    bounce(code_e)
