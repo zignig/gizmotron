@@ -1,0 +1,3 @@
+UART="/dev/ttyUSB0"
+SPEED=115200
+
