@@ -2,9 +2,9 @@ from nmigen import *
 from nmigen import tracer
 from nmigen.utils import log2_int
 
-from nmigen_soc import csr, wishbone
+from nmigen_soc import csr
 from nmigen_soc.memory import MemoryMap
-from nmigen_soc.csr.wishbone import WishboneCSRBridge
+#from nmigen_soc.csr.wishbone import WishboneCSRBridge
 
 from nmigen_soc.csr.bus import Multiplexer, Interface, Decoder
 
@@ -13,9 +13,11 @@ from .event import *
 
 __all__ = ["Peripheral", "CSRBank", "PeripheralBridge"]
 
+# lifted from https://github.com/lambdaconcept/lambdasoc/
+# ripped out the wishbone interface for bare CSR
 
 class Peripheral:
-    """Wishbone peripheral.
+    """CSR peripheral.
 
     A helper class to reduce the boilerplate needed to control a peripheral with a Wishbone interface.
     It provides facilities for instantiating CSR registers, requesting windows to subordinate busses
@@ -73,7 +75,7 @@ class Peripheral:
 
     @property
     def bus(self):
-        """Wishbone bus interface.
+        """CSR bus interface.
 
         Return value
         ------------
@@ -81,7 +83,7 @@ class Peripheral:
 
         Exceptions
         ----------
-        Raises :exn:`NotImplementedError` if the peripheral does not have a Wishbone bus.
+        Raises :exn:`NotImplementedError` if the peripheral does not have a CSR bus.
         """
         if self._bus is None:
             raise NotImplementedError("Peripheral {!r} does not have a bus interface"
@@ -91,7 +93,7 @@ class Peripheral:
     @bus.setter
     def bus(self, bus):
         if not isinstance(bus, Interface):
-            raise TypeError("Bus interface must be an instance of wishbone.Interface, not {!r}"
+            raise TypeError("Bus interface must be an instance of Interface, not {!r}"
                             .format(bus))
         self._bus = bus
 
@@ -144,11 +146,11 @@ class Peripheral:
                alignment=0, addr=None, sparse=None):
         """Request a window to a subordinate bus.
 
-        See :meth:`nmigen_soc.wishbone.Decoder.add` for details.
+        See :meth:`nmigen_soc.csr.Decoder.add` for details.
 
         Return value
         ------------
-        An instance of :class:`nmigen_soc.wishbone.Interface`.
+        An instance of :class:`nmigen_soc.csr.bus.Interface`.
         """
         window = wishbone.Interface(addr_width=addr_width, data_width=data_width,
                                     granularity=granularity, features=features)
@@ -171,7 +173,7 @@ class Peripheral:
         self._events.append(event)
         return event
 
-    def bridge(self, *, data_width=8, granularity=None, features=frozenset(), alignment=0):
+    def bridge(self, *, data_width=16, granularity=None, features=frozenset(), alignment=0):
         """Request a bridge to the resources of the peripheral.
 
         See :class:`PeripheralBridge` for details.
@@ -286,13 +288,13 @@ class PeripheralBridge(Elaboratable):
     granularity : int or None
         Granularity. See :class:`nmigen_soc.wishbone.Interface`.
     features : iter(str)
-        Optional signal set. See :class:`nmigen_soc.wishbone.Interface`.
+        Optional signal set. See :class:`nmigen_soc.csr.bus.Interface`.
     alignment : int
         Resource alignment. See :class:`nmigen_soc.memory.MemoryMap`.
 
     Attributes
     ----------
-    bus : :class:`nmigen_soc.wishbone.Interface`
+    bus : :class:`nmigen_soc.csr.bus.Interface`
         Wishbone bus providing access to the resources of the peripheral.
     irq : :class:`IRQLine`, out
         Interrupt request. It is raised if any event source is enabled and has a pending
@@ -346,7 +348,6 @@ class PeripheralBridge(Elaboratable):
         print(self._csr_subs)
         for i, csr_mux in enumerate(self._csr_subs):
             m.submodules[   "csr_mux_{}".format(i)] = csr_mux
-            #m.submodules["csr_bridge_{}".format(i)] = csr_bridge
 
         if self._int_src is not None:
             m.submodules._int_src = self._int_src
