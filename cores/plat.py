@@ -14,6 +14,9 @@ class BB(plat):
         UARTResource(
             0, rx="A8", tx="B8", attrs=Attrs(IO_STANDARD="SB_LVCMOS", PULLUP=1)
         ),
+        UARTResource(
+            1, rx="G1", tx="G2", attrs=Attrs(IO_STANDARD="SB_LVCMOS", PULLUP=1)
+        ),
         *LEDResources(
             "blinky", pins="J1 H2 H9 D9", attrs=Attrs(IO_STANDARD="SB_LVCMOS")
         ),

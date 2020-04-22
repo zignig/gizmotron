@@ -3,6 +3,8 @@ from nmigen_soc.csr import Decoder
 from periph.serial import AsyncSerialPeripheral
 from periph.timer import TimerPeripheral 
 from periph.bork import BorkPeripheral 
+from periph.leds import LedPeripheral 
+
 from nmigen_soc import wishbone
 
 from nmigen_soc.csr.bus import Multiplexer, Element, Decoder
@@ -24,26 +26,27 @@ class reg:
     
 
 class BusTest(Elaboratable):
-    def __init__(self,uart_divisor,uart_pins):
-        #self._arbiter = wishbone.Arbiter(addr_width=16, data_width=16, features={"cti", "bte"})
-        #self._decoder = wishbone.Decoder(addr_width=16, data_width=16, features={"cti", "bte"})
+    def __init__(self,uart_divisor,uart_pins,uart_pins2):
         self._decoder = Decoder(addr_width=16,data_width=16)
         
         print(uart_pins)        
         self.uart = AsyncSerialPeripheral(divisor=uart_divisor, pins=uart_pins)
         self._decoder.add(self.uart.bus)
 
-        #self.uart2 = AsyncSerialPeripheral(divisor=uart_divisor, pins=uart_pins)
-        #self._decoder.add(self.uart2.bus)
+        self.uart2 = AsyncSerialPeripheral(divisor=uart_divisor, pins=uart_pins2)
+        self._decoder.add(self.uart2.bus)
 
-        #self.timer = TimerPeripheral(32)
-        #self._decoder.add(self.timer.bus)
+        self.timer = TimerPeripheral(32)
+        self._decoder.add(self.timer.bus)
 
-        #self.timer2 = TimerPeripheral(32)
-        #self._decoder.add(self.timer2.bus)
+        self.timer2 = TimerPeripheral(32)
+        self._decoder.add(self.timer2.bus)
 
         self.bork = BorkPeripheral(32)
         self._decoder.add(self.bork.bus)
+
+        self.leds = LedPeripheral(Signal(2))
+        self._decoder.add(self.leds.bus)
 
         self.mem = self._decoder.bus.memory_map
 
@@ -66,8 +69,12 @@ class BusTest(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        #m.submodules.uart    = self.uart
+        m.submodules.uart    = self.uart
         m.submodules.bork = self.bork
+        m.submodules.timer = self.timer
+        m.submodules.timer2 = self.timer2
+        m.submodules.uart2 = self.uart2
+        m.submodules.leds = self.leds
 
         return m        
 
@@ -84,25 +91,28 @@ class myBus(Elaboratable):
         self.bus = bus
 
     def elaborate(self, platform):
-        clk = platform.request(platform.default_clk, 0)
-        print(clk)
+        #clk = platform.request(platform.default_clk, 0)
         m = Module()
-        m.domains.sync = ClockDomain()
-        m.d.comb += ClockSignal().eq(clk.i)
+        #m.domains.sync = ClockDomain()
+        #m.d.comb += ClockSignal().eq(clk.i)
 
         t1 = t()
         m.submodules.test = t1
-        #m.submodules.bus = self.bus 
+        if self.bus is not None:
+            m.submodules.bus = self.bus 
+
         return m
 
 if __name__ == "__main__":
     
     platform = BB()
     u = platform.request('uart',0)
-    uart_divisor = int(platform.default_clk_frequency // 9600 )
-    bt = BusTest(uart_divisor=uart_divisor,uart_pins=u)
+    u2 = platform.request('uart',1)
+    uart_divisor = int(platform.default_clk_frequency // 115200 )
+    bt = BusTest(uart_divisor=uart_divisor,uart_pins=u,uart_pins2=u2)
 
     r,l = bt.show()
+    r._show()
 
     m = myBus(bt)
 

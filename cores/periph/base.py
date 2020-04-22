@@ -343,9 +343,10 @@ class PeripheralBridge(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        for i, (csr_mux, csr_bridge) in enumerate(self._csr_subs):
+        print(self._csr_subs)
+        for i, csr_mux in enumerate(self._csr_subs):
             m.submodules[   "csr_mux_{}".format(i)] = csr_mux
-            m.submodules["csr_bridge_{}".format(i)] = csr_bridge
+            #m.submodules["csr_bridge_{}".format(i)] = csr_bridge
 
         if self._int_src is not None:
             m.submodules._int_src = self._int_src
