@@ -1,7 +1,7 @@
 # collection of cores
 
 
-__all__ = ["pll", "stream"]
+__all__ = ["pll", "stream","plat"]
 
 
 import os, os.path

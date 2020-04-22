@@ -6,6 +6,7 @@ from nmigen_soc import csr, wishbone
 from nmigen_soc.memory import MemoryMap
 from nmigen_soc.csr.wishbone import WishboneCSRBridge
 
+from nmigen_soc.csr.bus import Multiplexer, Interface, Decoder
 
 from .event import *
 
@@ -89,7 +90,7 @@ class Peripheral:
 
     @bus.setter
     def bus(self, bus):
-        if not isinstance(bus, wishbone.Interface):
+        if not isinstance(bus, Interface):
             raise TypeError("Bus interface must be an instance of wishbone.Interface, not {!r}"
                             .format(bus))
         self._bus = bus
@@ -302,46 +303,42 @@ class PeripheralBridge(Elaboratable):
             raise TypeError("Peripheral must be an instance of Peripheral, not {!r}"
                             .format(periph))
 
-        self._wb_decoder = wishbone.Decoder(addr_width=1, data_width=data_width,
-                                            granularity=granularity,
-                                            features=features, alignment=alignment)
+        self._decoder = Decoder(addr_width=1, data_width=data_width)
 
         self._csr_subs = []
 
         for bank, bank_addr, bank_alignment in periph.iter_csr_banks():
             if bank_alignment is None:
                 bank_alignment = alignment
-            csr_mux = csr.Multiplexer(addr_width=1, data_width=8, alignment=bank_alignment)
+            csr_mux = csr.Multiplexer(addr_width=1, data_width=16, alignment=bank_alignment)
             for elem, elem_addr, elem_alignment in bank.iter_csr_regs():
                 if elem_alignment is None:
                     elem_alignment = alignment
                 csr_mux.add(elem, addr=elem_addr, alignment=elem_alignment, extend=True)
 
-            csr_bridge = WishboneCSRBridge(csr_mux.bus, data_width=data_width)
-            self._wb_decoder.add(csr_bridge.wb_bus, addr=bank_addr, extend=True)
-            self._csr_subs.append((csr_mux, csr_bridge))
+            self._decoder.add(csr_mux.bus, addr=bank_addr, extend=True)
+            self._csr_subs.append(csr_mux)
 
         for window, window_addr, window_sparse in periph.iter_windows():
-            self._wb_decoder.add(window, addr=window_addr, sparse=window_sparse, extend=True)
+            self._decoder.add(window, addr=window_addr, sparse=window_sparse, extend=True)
 
         events = list(periph.iter_events())
         if len(events) > 0:
             self._int_src = InterruptSource(events, name="{}_ev".format(periph.name))
             self.irq      = self._int_src.irq
 
-            csr_mux = csr.Multiplexer(addr_width=1, data_width=8, alignment=alignment)
+            csr_mux = csr.Multiplexer(addr_width=1, data_width=16, alignment=alignment)
             csr_mux.add(self._int_src.status,  extend=True)
             csr_mux.add(self._int_src.pending, extend=True)
             csr_mux.add(self._int_src.enable,  extend=True)
 
-            csr_bridge = WishboneCSRBridge(csr_mux.bus, data_width=data_width)
-            self._wb_decoder.add(csr_bridge.wb_bus, extend=True)
-            self._csr_subs.append((csr_mux, csr_bridge))
+            self._decoder.add(csr_mux.bus, extend=True)
+            self._csr_subs.append(csr_mux)
         else:
             self._int_src = None
             self.irq      = None
 
-        self.bus = self._wb_decoder.bus
+        self.bus = self._decoder.bus
 
     def elaborate(self, platform):
         m = Module()
@@ -353,6 +350,6 @@ class PeripheralBridge(Elaboratable):
         if self._int_src is not None:
             m.submodules._int_src = self._int_src
 
-        m.submodules.wb_decoder = self._wb_decoder
+        m.submodules.decoder = self._decoder
 
         return m
