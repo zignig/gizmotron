@@ -125,7 +125,7 @@ class LocalLabels:
     """
 
     def __init__(self):
-        self._postfix = "_{}".format(random.randrange(2 ** 32))
+        self._postfix = "_{}".format(random.randrange(2 ** 16))
         self._names = {}
 
     def __call__(self, name):

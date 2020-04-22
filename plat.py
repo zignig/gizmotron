@@ -6,9 +6,10 @@ from nmigen.build import Resource, Subsignal, Pins, Attrs
 
 "Tiny BX in a BREAD BOARD , with 4 blinky and an FTDI serial "
 
+plat = TinyFPGABXPlatform
 
-class BB(TinyFPGABXPlatform):
-    resources = TinyFPGABXPlatform.resources + [
+class BB(plat):
+    resources = plat.resources + [
         # FTDI link back to pc
         UARTResource(
             0, rx="A8", tx="B8", attrs=Attrs(IO_STANDARD="SB_LVCMOS", PULLUP=1)

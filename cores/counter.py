@@ -5,6 +5,8 @@ from nmigen import *
 class counter(Elaboratable):
     def __init__(self):
         self.counter = Signal(64)
+        self.tripped = Signal()
+        self.overflow = Signal(64)
         self.en = Signal()
 
     def elaborate(self, platform):

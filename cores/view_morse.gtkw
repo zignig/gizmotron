@@ -1,212 +1,227 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Sat Mar  7 03:11:58 2020
+[*] Tue Apr 21 11:38:57 2020
 [*]
 [dumpfile] "/opt/FPGA/gizmotron/cores/morse.vcd"
-[dumpfile_mtime] "Sat Mar  7 03:08:59 2020"
-[dumpfile_size] 39182
+[dumpfile_mtime] "Tue Apr 21 11:30:39 2020"
+[dumpfile_size] 1182686
 [savefile] "/opt/FPGA/gizmotron/cores/view_morse.gtkw"
 [timestart] 0
 [size] 1920 1035
 [pos] -1 -1
-*-50.115734 262000000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-52.317760 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [sst_width] 228
 [signals_width] 276
 [sst_expanded] 1
 [sst_vpaned_height] 305
 @28
-top.clk
+top.$signal
+top.$signal$1
+top.$signal$2
+top.$signal$3
+top.$signal$4
+top.$signal$5
+top.$signal$6
+top.$signal$7
+top.$signal$8
+top.$signal$9
+top.$signal$10
+top.$signal$11
+top.\sink.ready
+top.\sink.ready$1
+top.\sink.ready$2
+top.\sink.valid
+top.\sink.valid$1
+top.\sink.valid$2
 top.\source.ready
+top.\source.ready$1
+top.\source.ready$2
 top.\source.valid
-@c00820
-[color] 2
+top.\source.valid$1
+top.\source.valid$2
+top.blink.\source.ready
+top.blink.\source.valid
+top.blink.clk
+top.blink.data__bitstream
+@22
+top.blink.interval_counter[4:0]
+@28
+top.blink.out
+top.blink.rst
+top.data__bitstream
+top.data__bitstream$1
+top.data__bitstream$2
+top.data__bitstream$3
+@22
 top.data__data[7:0]
 @28
-[color] 2
-(0)top.data__data[7:0]
-[color] 2
-(1)top.data__data[7:0]
-[color] 2
-(2)top.data__data[7:0]
-[color] 2
-(3)top.data__data[7:0]
-[color] 2
-(4)top.data__data[7:0]
-[color] 2
-(5)top.data__data[7:0]
-[color] 2
-(6)top.data__data[7:0]
-[color] 2
-(7)top.data__data[7:0]
-@1401200
--group_end
-@820
-[color] 3
-top.char[6:0]
-@c00820
-top.enc_r_addr[6:0]
-@28
-(0)top.enc_r_addr[6:0]
-(1)top.enc_r_addr[6:0]
-(2)top.enc_r_addr[6:0]
-(3)top.enc_r_addr[6:0]
-(4)top.enc_r_addr[6:0]
-(5)top.enc_r_addr[6:0]
-(6)top.enc_r_addr[6:0]
-@1401200
--group_end
-@c00024
-top.enc_r_data[15:0]
-@28
-(0)top.enc_r_data[15:0]
-(1)top.enc_r_data[15:0]
-(2)top.enc_r_data[15:0]
-(3)top.enc_r_data[15:0]
-(4)top.enc_r_data[15:0]
-(5)top.enc_r_data[15:0]
-(6)top.enc_r_data[15:0]
-(7)top.enc_r_data[15:0]
-(8)top.enc_r_data[15:0]
-(9)top.enc_r_data[15:0]
-(10)top.enc_r_data[15:0]
-(11)top.enc_r_data[15:0]
-(12)top.enc_r_data[15:0]
-(13)top.enc_r_data[15:0]
-(14)top.enc_r_data[15:0]
-(15)top.enc_r_data[15:0]
-@1401200
--group_end
-@c00024
-top.length[2:0]
-@28
-(0)top.length[2:0]
-(1)top.length[2:0]
-(2)top.length[2:0]
-@1401200
--group_end
-@24
-top.bit_count[2:0]
-@28
-top.fsm_state
-top.space
-top.nop
-@c00022
-top.bits[5:0]
-@28
-(0)top.bits[5:0]
-(1)top.bits[5:0]
-(2)top.bits[5:0]
-(3)top.bits[5:0]
-(4)top.bits[5:0]
-(5)top.bits[5:0]
-@800022
-top.shreg[5:0]
-@28
-(0)top.shreg[5:0]
-(1)top.shreg[5:0]
-(2)top.shreg[5:0]
-(3)top.shreg[5:0]
-(4)top.shreg[5:0]
-(5)top.shreg[5:0]
-@1001200
--group_end
-@1401200
--group_end
-@28
-top.bit
-top.clk
-top.\source.ready
-top.\source.valid
-@820
-[color] 2
-top.data__data[7:0]
-@c00820
-top.enc_r_addr[6:0]
-@28
-(0)top.enc_r_addr[6:0]
-(1)top.enc_r_addr[6:0]
-(2)top.enc_r_addr[6:0]
-(3)top.enc_r_addr[6:0]
-(4)top.enc_r_addr[6:0]
-(5)top.enc_r_addr[6:0]
-(6)top.enc_r_addr[6:0]
-@1401200
--group_end
-@24
-top.enc_r_data[15:0]
-@c00024
-top.length[2:0]
-@28
-(0)top.length[2:0]
-(1)top.length[2:0]
-(2)top.length[2:0]
-@1401200
--group_end
-@24
-top.bit_count[2:0]
-@28
-top.space
-top.nop
-top.fsm_state
-@c00820
-[color] 3
-top.char[6:0]
-@28
-[color] 3
-(0)top.char[6:0]
-[color] 3
-(1)top.char[6:0]
-[color] 3
-(2)top.char[6:0]
-[color] 3
-(3)top.char[6:0]
-[color] 3
-(4)top.char[6:0]
-[color] 3
-(5)top.char[6:0]
-[color] 3
-(6)top.char[6:0]
-@1401200
--group_end
+top.input.\sink.ready
+top.input.\sink.valid
+top.input.\source.ready
+top.input.\source.valid
 @22
-top.symbol_count[5:0]
-top.symbol_incr[5:0]
-top.gap_count[5:0]
-top.gap_incr[5:0]
-@24
-top.bit_count[2:0]
+top.input.data__data$1[7:0]
+top.input.data__data[7:0]
 @28
-top.out_data
-top.out_valid
+top.input.fifo.clk
 @22
-top.letter_gap_incr[5:0]
-top.letter_gap_incr[5:0]
-@200
+top.input.fifo.consume[6:0]
+@821
+top.data__data$1[7:0]
+@10022
+[color] 1
+top.output.fifo.level[7:0]
+@20000
 -
-@c00820
-[color] 3
-top.char[6:0]
+-
+@8022
+[color] 1
+top.input.fifo.level[6:0]
+@20000
+-
+-
 @28
 [color] 3
-(0)top.char[6:0]
-[color] 3
-(1)top.char[6:0]
-[color] 3
-(2)top.char[6:0]
-[color] 3
-(3)top.char[6:0]
-[color] 3
-(4)top.char[6:0]
-[color] 3
-(5)top.char[6:0]
-[color] 3
-(6)top.char[6:0]
-@1401200
--group_end
+top.output.data__bitstream$1
+@22
+top.input.fifo.produce[6:0]
+top.input.fifo.r_data[9:0]
 @28
-top.out_data
-@29
-top.out_valid
+top.input.fifo.r_en
+@22
+top.input.fifo.r_port.storage_r_addr[6:0]
+top.input.fifo.r_port.storage_r_data[9:0]
+@28
+top.input.fifo.r_rdy
+top.input.fifo.rst
+@22
+top.input.fifo.storage_r_addr[6:0]
+top.input.fifo.storage_r_data[9:0]
+top.input.fifo.storage_w_addr[6:0]
+top.input.fifo.storage_w_data[9:0]
+@28
+top.input.fifo.storage_w_en
+@22
+top.input.fifo.w_data[9:0]
+@28
+top.input.fifo.w_en
+top.input.fifo.w_port.clk
+top.input.fifo.w_port.rst
+@22
+top.input.fifo.w_port.storage_w_addr[6:0]
+top.input.fifo.w_port.storage_w_data[9:0]
+@28
+top.input.fifo.w_port.storage_w_en
+top.input.fifo.w_rdy
+@22
+top.input.r_data[9:0]
+@28
+top.input.r_en
+top.input.r_rdy
+@22
+top.input.w_data[9:0]
+@28
+top.input.w_en
+top.input.w_rdy
+top.morse.\sink.ready
+top.morse.\sink.valid
+top.morse.\source.ready
+top.morse.\source.valid
+top.morse.bit
+top.morse.bit_count[2:0]
+@22
+top.morse.bits[5:0]
+@820
+top.morse.char[6:0]
+@28
+top.morse.clk
+@22
+top.morse.current[15:0]
+@28
+top.morse.data__bitstream
+@22
+top.morse.data__data[7:0]
+top.morse.enc_r_addr[6:0]
+top.morse.enc_r_data[15:0]
+@28
+top.morse.fsm_state
+@22
+top.morse.gap_count[5:0]
+top.morse.gap_incr[5:0]
+@28
+top.morse.length[2:0]
+@22
+top.morse.letter_gap_count[5:0]
+top.morse.letter_gap_incr[5:0]
+@28
+top.morse.mem.clk
+@22
+top.morse.mem.enc_r_addr[6:0]
+top.morse.mem.enc_r_data[15:0]
+top.morse.mem.latch_addr[6:0]
+@28
+top.morse.mem.rst
+top.morse.nop
+top.morse.out_bit
+top.morse.out_data
+top.morse.out_valid
+top.morse.ready
+top.morse.rst
+@22
+top.morse.shreg[5:0]
+@28
+top.morse.space
+@22
+top.morse.symbol_count[5:0]
+top.morse.symbol_incr[5:0]
+@28
+top.output.\sink.ready
+top.output.\sink.valid
+top.output.\source.ready
+top.output.\source.valid
+top.output.data__bitstream
+top.output.fifo.clk
+@22
+top.output.fifo.consume[7:0]
+@20000
+-
+-
+@22
+top.output.fifo.produce[7:0]
+@28
+top.output.fifo.r_data[2:0]
+top.output.fifo.r_en
+@22
+top.output.fifo.r_port.storage_r_addr[7:0]
+@28
+top.output.fifo.r_port.storage_r_data[2:0]
+top.output.fifo.r_rdy
+top.output.fifo.rst
+@22
+top.output.fifo.storage_r_addr[7:0]
+@28
+top.output.fifo.storage_r_data[2:0]
+@22
+top.output.fifo.storage_w_addr[7:0]
+@28
+top.output.fifo.storage_w_data[2:0]
+top.output.fifo.storage_w_en
+top.output.fifo.w_data[2:0]
+top.output.fifo.w_en
+top.output.fifo.w_port.clk
+top.output.fifo.w_port.rst
+@22
+top.output.fifo.w_port.storage_w_addr[7:0]
+@28
+top.output.fifo.w_port.storage_w_data[2:0]
+top.output.fifo.w_port.storage_w_en
+top.output.fifo.w_rdy
+top.output.r_data[2:0]
+top.output.r_en
+top.output.r_rdy
+top.output.w_data[2:0]
+top.output.w_en
+top.output.w_rdy
 [pattern_trace] 1
 [pattern_trace] 0

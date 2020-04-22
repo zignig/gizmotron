@@ -4,6 +4,8 @@ from .uart import Serial
 
 
 class Stringer(Block):
+    strings = []
+
     class WriteString(SubR):
         def setup(self):
             self.params = ["address"]

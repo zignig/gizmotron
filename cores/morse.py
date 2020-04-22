@@ -2,7 +2,7 @@
 # Simon Kirkby 20200309
 # obeygiantrobot@gmail.com
 
-__working__ = False
+__working__ = True 
 
 from nmigen import *
 from nmigen.cli import pysim
@@ -409,11 +409,11 @@ class BlinkOut(Elaboratable):
 # Wrap the morse object with some FIFOs
 class MorseWrap(Elaboratable):
     def __init__(self, mapping):
-        self.input = stream.SyncFIFOStream(char_incoming, 100)
+        self.input = stream.SyncFIFOStream(char_incoming,1)
         self.morse = Morse(mapping)
         self.blink = BlinkOut()
 
-        self.output = stream.SyncFIFOStream(bitstream, 200)
+        self.output = stream.SyncFIFOStream(bitstream,1)
 
         # expose the streaming interfaces
         # TODO ask awygle if this is the best way
@@ -459,7 +459,7 @@ if __name__ == "__main__":
     alpha, mem = build_mem(coding)
     test_string = " sphinx of black quartz judge my vow "
     # test_string = " morse code "
-    test_string = "SOS SOS SOS"
+    #test_string = "SOS SOS SOS"
     # test_string = "SOS"
 
     # mo = Morse(mem)

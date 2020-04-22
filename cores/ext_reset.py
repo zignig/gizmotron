@@ -20,19 +20,6 @@ class ExternalReset(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        # leds for debug
-        #leds = []
-        #for n in itertools.count():
-        #    try:
-        #        l = platform.request("blinky", n)
-        #        leds.append(l)
-#
-#            except ResourceError:
-#                # print("run out of blinky", n)
-#                break
-#        print(leds)
-#        leds_cat = Cat(led.o for led in leds)
-
         counter = Signal(32)
         enable = Signal()  # enable the counter
         current = Signal()  # get the current pin state
@@ -41,10 +28,6 @@ class ExternalReset(Elaboratable):
         with m.If(enable == 1):
             m.d.sync += counter.eq(counter + 1)
 
-        # display the pin status on the first led
-        # m.d.sync += self.status.eq(self.pin)
-        # m.d.sync += leds_cat.eq(self.pin)
-        #m.d.sync += leds_cat.eq(toggle_count)
 
         with m.FSM() as fsm:
             with m.State("INIT"):
