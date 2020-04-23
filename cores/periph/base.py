@@ -16,9 +16,7 @@ __all__ = ["Peripheral", "CSRBank", "PeripheralBridge","Register"]
 drivers = {}
 def Register(**info):
     def inner(cls):
-        print(info,cls)
         drivers[info['driver']] = cls
-        print(drivers)
         return cls
     return inner 
 
@@ -313,7 +311,7 @@ class PeripheralBridge(Elaboratable):
             raise TypeError("Peripheral must be an instance of Peripheral, not {!r}"
                             .format(periph))
 
-        self._decoder = Decoder(addr_width=1, data_width=data_width)
+        self._decoder = Decoder(addr_width=2, data_width=data_width)
 
         self._csr_subs = []
 
@@ -353,7 +351,6 @@ class PeripheralBridge(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        print(self._csr_subs)
         for i, csr_mux in enumerate(self._csr_subs):
             m.submodules[   "csr_mux_{}".format(i)] = csr_mux
 

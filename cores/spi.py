@@ -13,4 +13,5 @@ class SPI(Peripheral,Elaboratable):
 
     def elaborate(self,platform):
         m = Module()
+        m.submodules._bridge = self._bridge
         return m

@@ -23,10 +23,7 @@ class LedPeripheral(Peripheral, Elaboratable):
 
         bank          = self.csr_bank()
         self.led      = bank.csr(16, "rw")
-        self._en      = bank.csr(    1, "rw")
-
-        self._bridge  = self.bridge(data_width=16, granularity=8,alignment=1)
-        self.bus      = self._bridge.bus
+        self._en      = bank.csr(1, "rw")
 
     def elaborate(self, platform):
         m = Module()

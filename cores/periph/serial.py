@@ -82,9 +82,9 @@ class AsyncSerialPeripheral(Peripheral, Elaboratable):
         self._rx_err_ev = self.event(mode="rise")
         self._tx_mty_ev = self.event(mode="rise")
 
-        self._bridge    = self.bridge(data_width=16, granularity=8, alignment=1)
-        self.bus        = self._bridge.bus
-        self.irq        = self._bridge.irq
+        #self._bridge    = self.bridge(data_width=16, granularity=8, alignment=1)
+        #self.bus        = self._bridge.bus
+        #self.irq        = self._bridge.irq
 
     def elaborate(self, platform):
         m = Module()

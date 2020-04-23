@@ -32,6 +32,7 @@ class PeripheralCollection(Elaboratable):
         
 
     def add(self,item):
+        print(item)
         self.devices.append(item)
 
     def build(self):
@@ -40,10 +41,11 @@ class PeripheralCollection(Elaboratable):
             for i in self.devices:
                 try:
                     self._decoder.add(i.bus)
+                    print(dir(i))
                 except NotImplementedError as e:
                     print(e)
-                    i._bus = i.bridge(data_width=self.data_width) 
-                    i.bus = i._bus.bus
+                    i._bridge = i.bridge(data_width=self.data_width) 
+                    i.bus = i._bridge.bus
                     self._decoder.add(i.bus)
             # map all the CSR devices
             for i,(start,end,width) in self.mem.all_resources():
@@ -62,9 +64,9 @@ class PeripheralCollection(Elaboratable):
         return self.map
         
     def elaborate(self, platform):
+        self.build()
         m = Module()
-        if not self._built:
-            for i in self.devices:
-                m.submodules[i.name] = i 
-
+        m.submodules.bus = self._decoder
+        for i in self.devices:
+            m.submodules[i.name] = i 
         return m        
