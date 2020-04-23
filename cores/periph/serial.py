@@ -3,11 +3,12 @@ from nmigen.lib.fifo import SyncFIFO
 
 from nmigen_stdio.serial import AsyncSerial
 
-from . import Peripheral
+from . import Peripheral,Register
 
 
 __all__ = ["AsyncSerialPeripheral"]
 
+@Register(driver="uart")
 
 class AsyncSerialPeripheral(Peripheral, Elaboratable):
     """Asynchronous serial transceiver peripheral.

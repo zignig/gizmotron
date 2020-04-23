@@ -5,29 +5,39 @@ from periph.timer import TimerPeripheral
 from periph.bork import BorkPeripheral 
 from periph.leds import LedPeripheral 
 
-from peripheral import Peripheral
+from periphcollection import PeripheralCollection
 from counter_p import CounterPeripheral
+from pwm import PWM
+from spi import SPI
 
-class Thing:
+
+# Quiet please
+Elaboratable._Elaboratable__silence = True
+
+class Thing(PeripheralCollection):
     def __init__(self):
-        p = self.p = Peripheral()
+        super().__init__()
         timer1 = TimerPeripheral(32)
-        p.add(timer1)
+        self.add(timer1)
 
-        t2 = TimerPeripheral(32)
-        p.add(t2)
+        timer2 = TimerPeripheral(32)
+        self.add(timer2)
 
-        borker = BorkPeripheral(32)
-        p.add(borker)
+        borker = BorkPeripheral()
+        self.add(borker)
 
         blinky = LedPeripheral(Signal(2))
-        p.add(blinky)
+        self.add(blinky)
         
         counter = CounterPeripheral(8)
-        p.add(counter)
+        self.add(counter)
 
-    def show(self):
-        return self.p.show()
+        spi_interface = SPI()
+        self.add(spi_interface)
+
+        o = Signal
+        pwm = PWM(o)
+        self.add(pwm)
 
 t = Thing()
 t.show()

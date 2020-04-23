@@ -1,36 +1,36 @@
+
+__csr_converted__ = False
+
 from nmigen import *
-from .gizmo import Gizmo, IO, BIT
+from periph.base import Peripheral
 
+class PWM(Peripheral, Elaboratable):
+    def __init__(self,output,width=16,name=None):
+        super().__init__()
+        bank = self.csr_bank()
+        self.enable = bank.csr(1,'rw')
+        self.value = bank.csr(width,'rw')
+        self.counter = Signal(width+1)
+        self._output = Signal()
+        self.output = output
 
-class _pwm(Elaboratable):
-    def __init__(self, pin):
-        self.counter = Signal(16)
-        self.value = Signal(16)
-        self.o = Signal()
-        self.active = Signal()
-        self.pin = pin
-
-    def elaborate(self, platform):
+        self._bridge  = self.bridge(data_width=16, granularity=8,alignment=1)
+        self.bus      = self._bridge.bus
+    
+    def elaborate(self,platform):
         m = Module()
-        with m.If(self.active):
-            m.d.sync += self.counter.eq(self.counter + 1)
+
+        m.d.comb += self.output.eq(self._output)
+
+        with m.If(self.enable.r_data):
+            m.d.sync += self.value.r_data.eq(self.value.r_data + 1)
             with m.If(self.counter < self.value):
                 m.d.sync += self.counter.eq(0)
-                m.d.comb += self.o.eq(1)
+                m.d.comb += self._output.eq(1)
             with m.Else():
-                m.d.comb += self.o.eq(0)
+                m.d.comb += self._output.eq(0)
         with m.Else():
-            m.d.comb += self.o.eq(0)
-        m.d.comb += self.pin.eq(self.o)
+            m.d.comb += self._output.eq(0)
+
         return m
-
-
-class Pwm(Gizmo):
-    def build(self, **kwargs):
-        pin = self.platform.request("pwm", 0)
-        p = _pwm(pin)
-        self.add_device(p)
-        a = IO(sig_in=p.active, name="pwm_active")
-        self.add_reg(a)
-        s = IO(sig_in=p.value, name="pwm_counter")
-        self.add_reg(s)
+        
