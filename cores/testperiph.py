@@ -1,16 +1,15 @@
 from nmigen import * 
 from periph.base import Peripheral,Register
 
-@Register(driver="spi")
-class SPI(Peripheral,Elaboratable):
+class Testing(Peripheral,Elaboratable):
     def __init__(self):
         super().__init__()
         bank = self.csr_bank()
         
-        self._en      = bank.csr(1,'w')
-        self._data_in = bank.csr(8,'w')
-        self._data_out = bank.csr(8,'r')
 
+        for i in range(50):
+            c = bank.csr(1,'rw',name="reg_"+str(i))
+            
     def elaborate(self,platform):
         m = Module()
         m.submodules._bridge = self._bridge

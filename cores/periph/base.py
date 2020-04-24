@@ -10,6 +10,8 @@ from nmigen_soc.csr.bus import Multiplexer, Interface, Decoder
 
 from .event import *
 
+import logging
+log = logging.getLogger(__package__)
 
 __all__ = ["Peripheral", "CSRBank", "PeripheralBridge","Register"]
 
@@ -68,6 +70,7 @@ class Peripheral:
         Name of the peripheral.
     """
     def __init__(self, name=None, src_loc_at=1):
+        log.info("Create peripheral %s",name)
         if name is not None and not isinstance(name, str):
             raise TypeError("Name must be a string, not {!r}".format(name))
         self.name      = name or tracer.get_var_name(depth=2 + src_loc_at).lstrip("_")
@@ -263,6 +266,7 @@ class CSRBank:
 
         elem_name = "{}_{}".format(self._name_prefix, name)
         elem = csr.Element(width, access, name=elem_name)
+        elem.root = self._name_prefix
         self._csr_regs.append((elem, addr, alignment))
         return elem
 
@@ -311,7 +315,7 @@ class PeripheralBridge(Elaboratable):
             raise TypeError("Peripheral must be an instance of Peripheral, not {!r}"
                             .format(periph))
 
-        self._decoder = Decoder(addr_width=2, data_width=data_width)
+        self._decoder = Decoder(addr_width=3, data_width=data_width)
 
         self._csr_subs = []
 

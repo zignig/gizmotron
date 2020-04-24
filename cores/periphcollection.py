@@ -5,6 +5,9 @@ from periph.base import Peripheral, PeripheralBridge
 
 Elaboratable._Elaboratable__silence = True
 
+import logger 
+log = logger.custom_logger(__name__)
+
 class Map:
     def __init__(self):
         self._dict = {} 
@@ -21,6 +24,7 @@ class Map:
 
 class PeripheralCollection(Elaboratable):
     def __init__(self,addr_width=16,data_width=16):
+        log.debug("start building periph")
         self._decoder = Decoder(addr_width=addr_width,data_width=data_width)
 
         self.data_width = data_width
@@ -32,7 +36,7 @@ class PeripheralCollection(Elaboratable):
         
 
     def add(self,item):
-        print(item)
+        log.info(f"add device %s",item.name)
         self.devices.append(item)
 
     def build(self):
@@ -41,16 +45,15 @@ class PeripheralCollection(Elaboratable):
             for i in self.devices:
                 try:
                     self._decoder.add(i.bus)
-                    print(dir(i))
                 except NotImplementedError as e:
-                    print(e)
+                    log.warning(str(e))
                     i._bridge = i.bridge(data_width=self.data_width) 
                     i.bus = i._bridge.bus
                     self._decoder.add(i.bus)
             # map all the CSR devices
             for i,(start,end,width) in self.mem.all_resources():
                 length = end - start
-                print(i,start,end,width,i.access,length)
+                log.debug("%s %s %s %s %s %s",i,start,end,width,i.access,length)
                 #if i.access.readable() and i.access.writeable():
                 if length  > 1:
                     for j in range(length):

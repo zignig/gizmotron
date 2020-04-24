@@ -6,7 +6,7 @@ from periph.base import Peripheral
 
 class PWM(Peripheral, Elaboratable):
     def __init__(self,output,width=16,name=None):
-        super().__init__()
+        super().__init__(name=name)
         bank = self.csr_bank()
         self.width = width
             
@@ -18,13 +18,8 @@ class PWM(Peripheral, Elaboratable):
 
         self.output = output
 
-        #self._bridge    = self.bridge(data_width=32, granularity=8, alignment=1)
-        #self.bus        = self._bridge.bus
-        #self.irq        = self._bridge.irq
-
     def elaborate(self,platform):
         m = Module()
-
         m.submodules._bridge = self._bridge
 
         m.d.comb += self.output.eq(self._output)
