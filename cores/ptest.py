@@ -14,13 +14,17 @@ from testperiph import Testing
 from plat import BB
 
 import logger
+import logging 
+
+logger.level = logging.DEBUG
 
 log = logger.custom_logger(__name__)
 
 class Thing(PeripheralCollection):
-    def __init__(self,pwm=None,uart=None,uart_divisor=None,**kwagrs):
+    def __init__(self,pwm=None,uart=None,uart_divisor=None,**kwargs):
         log.info("start build")
-        super().__init__()
+        log.info(str(*kwargs))
+        super().__init__(**kwargs)
 
         test = Testing()
         self.add(test)
@@ -59,6 +63,7 @@ if __name__ == "__main__":
     pwm_pin = platform.request('pwm',0)
     uart_divisor = int(platform.default_clk_frequency // 115200 )
     t = Thing(pwm=pwm_pin,uart=u,uart_divisor=uart_divisor)
+
     with pysim.Simulator(t, vcd_file=open("ptest.vcd", "w")) as sim:
         sim.add_clock(10)
         #sim.add_sync_process(sim_data(test_string, mo.sink, mo.source))
