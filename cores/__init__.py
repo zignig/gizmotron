@@ -1,7 +1,7 @@
 # collection of cores
 
 
-__all__ = ["pll", "stream","plat"]
+__all__ = ["pll", "stream","plat","warmboot"]
 
 
 import os, os.path

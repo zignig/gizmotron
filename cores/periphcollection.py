@@ -8,9 +8,10 @@ Elaboratable._Elaboratable__silence = True
 import logger 
 log = logger.custom_logger(__name__)
 
-class Map:
+class RegMap:
     def __init__(self):
         self._dict = {} 
+        self._children = None
 
     def _add(self,name,value):
         if name not in self._dict:
@@ -30,7 +31,7 @@ class PeripheralCollection(Elaboratable):
         self.data_width = data_width
         self.mem = self._decoder.bus.memory_map
         self.devices = []
-        self.map = Map()
+        self.map = RegMap()
 
         self._built = False
         
